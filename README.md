@@ -1,19 +1,24 @@
 # The World of Forms
 
 ## Overview
-**The World of Forms** is a design research project (2023–2025) exploring the interplay of rule-based, generative, and intuitive approaches to design. By focusing on form-generation algorithms developed by figures like Sébastien Truchet, Dominique Douat, Wilhelm Ostwald, and Hans Hinterreiter, this project investigates how structured systems can yield dynamic artistic expressions.
+**Die Welt der Formen** is a publishing project, historical research, educational endeavor, and design research initiative. It aims to republish and reinterpret Wilhelm Ostwald's seminal works, **"Die Harmonie der Formen"** and **"Die Welt der Formen"**, using contemporary, interactive methods. The project also explores other historical form-generation algorithms, including the methods of Sébastien Truchet, Dominique Douat, and Hans Hinterreiter.
 
 ## Objectives
-The research bridges traditional design principles with contemporary generative models, uncovering new possibilities at the intersection of science and art. Key areas of focus include:
-- Experimenting with materials like wood alongside 3D animation, augmented reality (AR), and coding.
-- Visual-to-music mapping and AI-driven design.
-- Integrating historical statistical and morphological theories into modern design systems.
+- Publish Wilhelm Ostwald's **"Die Harmonie der Formen"** and **"Die Welt der Formen"** in an interactive, digital format.
+- Update the works with the inclusion of Hans Hinterreiter's contributions.
+- Integrate historical form-generation algorithms, such as Truchet's and Douat's methods, into the project.
+- Provide educational materials that bridge historical insights and modern generative design techniques.
+
+## Background
+Wilhelm Ostwald, Nobel Prize-winning natural scientist, published his seminal work on form theory, **"Die Harmonie der Formen"**, in 1922. By 1928, he had expanded the theory into four collections, **"Die Welt der Formen"**, which included 240 form sequences printed on transparent film, allowing for endless combinations. Ostwald's work influenced movements such as the Werkbund, Bauhaus, and De Stijl.
+
+While his work on color theory remains celebrated, Ostwald's form theory has largely been forgotten, despite being admired by figures like Moholy-Nagy and later incorporated into the works of Max Bill, Karl Gerstner, and Hans Hinterreiter. This project seeks to reintroduce these ideas, offering a new lens on the interplay between ornament and art, system and construction, scientific and creative form-finding.
 
 ## Features
-This project includes:
-- Historical analyses of form-generation algorithms.
-- Experimentation with generative design systems across physical and digital media.
-- Interactive visual and auditory outputs using advanced technologies.
+- Interactive visualizations of Wilhelm Ostwald's **"Die Welt der Formen"**.
+- Historical and theoretical commentary on Ostwald's work.
+- Integration of form-generation algorithms from Truchet, Douat, and Hinterreiter.
+- Educational resources for exploring generative design systems.
 
 ## Installation
 To set up the project locally:
