@@ -50,12 +50,12 @@ This project is licensed under the MIT License.
 • Form-generation algorithms and interactivity.
 • Refine the website’s structure, design, and responsiveness.
 • Add metadata for SEO and test all features before launch.
-2. Book Development (Mid-2025):
+3. Book Development (Mid-2025):
 • Compile and translate materials for publication.
 • Design the layout with visuals inspired by the project.
 • Proofread and review content with academic and editorial feedback.
 • Coordinate with publishers or explore self-publishing options.
-3. Long-Term Goals:
+4. Long-Term Goals:
 • Develop workshops or online courses based on the project.
 • Present the research at conferences or design symposiums.
 • Explore future research and creative collaborations.
