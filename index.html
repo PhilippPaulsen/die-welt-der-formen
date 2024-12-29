@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Die Welt der Formen</title>
     <link rel="stylesheet" href="style.css">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js"></script>
 </head>
 <body>
     <header>
@@ -12,6 +13,13 @@
         <p>An exploration of the principles of forms by Wilhelm Ostwald and the methods of Sebastian Truchet.</p>
     </header>
     <main>
+        <!-- Interactive Section -->
+        <section id="interactive">
+            <h2>Interactive Example</h2>
+            <div id="click-me-container"></div>
+        </section>
+
+        <!-- Project Links -->
         <div class="project-links">
             <a href="notebooks/ostwald.html">Wilhelm Ostwald: Die Harmonie der Formen</a>
             <a href="notebooks/truchet.html">Sébastien Truchet: Méthode</a>
@@ -20,5 +28,14 @@
     <footer>
         <p>&copy; 2024 Die Welt der Formen</p>
     </footer>
+
+    <!-- Observable Notebook Integration -->
+    <script type="module">
+        import { Runtime, Inspector } from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js";
+        import define from "./notebooks/click-me.js"; // Path to your downloaded notebook
+
+        const runtime = new Runtime();
+        runtime.module(define, Inspector.into(document.querySelector("#click-me-container")));
+    </script>
 </body>
 </html>
