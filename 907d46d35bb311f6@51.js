@@ -1,7 +1,7 @@
 import define1 from "./493851ae5989f70a@398.js";
 
 function _1(md){return(
-md`# Processing (p5.js) 
+md`# Die Welt der Formen 
 
 Get started with creative coding. Learn more in the [tutorial](https://observablehq.com/@tmcw/p5).`
 )}
