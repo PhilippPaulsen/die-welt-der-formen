@@ -1,14 +1,24 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-<title>Die Welt der Formen</title>
-<link rel="stylesheet" type="text/css" href="./inspector.css">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Die Welt der Formen</title>
+    <link rel="stylesheet" href="style.css">
+</head>
 <body>
-<script type="module">
-
-import define from "./index.js";
-import {Runtime, Library, Inspector} from "./runtime.js";
-
-const runtime = new Runtime();
-const main = runtime.module(define, Inspector.into(document.body));
-
-</script>
+    <header>
+        <h1>Die Welt der Formen</h1>
+        <p>An exploration of the principles of forms by Wilhelm Ostwald and the methods of Sebastian Truchet.</p>
+    </header>
+    <main>
+        <div class="project-links">
+            <a href="notebooks/ostwald.html">Wilhelm Ostwald: Die Harmonie der Formen</a>
+            <a href="notebooks/truchet.html">Sébastien Truchet: Méthode</a>
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2024 Die Welt der Formen</p>
+    </footer>
+</body>
+</html>
