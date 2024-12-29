@@ -1,0 +1,38 @@
+/* Reset some basic styles */
+body, html {
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Prevent scrollbars from appearing */
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9; /* Light background */
+  }
+  
+  /* Header styling */
+  header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.8); /* Semi-transparent black */
+    color: white;
+    padding: 10px;
+    text-align: center;
+    font-size: 18px;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Footer styling */
+  footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px;
+    text-align: center;
+    font-size: 14px;
+    z-index: 10;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+  }
