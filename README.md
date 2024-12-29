@@ -29,18 +29,9 @@ To set up the project locally:
    cd die-welt-der-formen
 3. Open index.html in your browser to explore the interactive content.
 
-   Usage
-	•	Visit the homepage to explore interactive examples.
-	•	Fork the repository and adapt the code for your experiments.
-
-project-root/
-├── index.html        # Main page
-├── style.css         # Shared styles
-├── notebooks/        # Observable notebook files
-│   ├── click-me.js   # Example interactive notebook
-│   ├── ostwald.js    # Wilhelm Ostwald project
-│   ├── truchet.js    # Sébastien Truchet project
-└── README.md         # Project description
+## Usage
+• Visit the homepage to explore interactive examples.
+• Fork the repository and adapt the code for your experiments.
 
 ## Contributors
 	•	Philipp Paulsen: Researcher and Designer
@@ -52,10 +43,20 @@ This project is licensed under the MIT License.
 ---
 
 ### **Next Steps**
-1. Copy this content into a `README.md` file at the root of your repository.
-2. Update any placeholder information:
-   - Replace `<your-username>` and `<your-repo-name>` with your GitHub details.
-   - Add the GitHub Pages URL to the "Usage" section.
-
-Let me know if you’d like further edits or additions!
+1. Website Launch (January 2025):
+• Translate all German content into English.
+• Finalize and integrate interactive visualizations:
+• Observable notebooks for Wilhelm Ostwald and Sébastien Truchet.
+• Form-generation algorithms and interactivity.
+• Refine the website’s structure, design, and responsiveness.
+• Add metadata for SEO and test all features before launch.
+2. Book Development (Mid-2025):
+• Compile and translate materials for publication.
+• Design the layout with visuals inspired by the project.
+• Proofread and review content with academic and editorial feedback.
+• Coordinate with publishers or explore self-publishing options.
+3. Long-Term Goals:
+• Develop workshops or online courses based on the project.
+• Present the research at conferences or design symposiums.
+• Explore future research and creative collaborations.
 
