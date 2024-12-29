@@ -45,7 +45,7 @@ This project is licensed under the MIT License.
 ### **Next Steps**
 1. Website Launch (January 2025):
 - Translate all German content into English.
-- Finalize and integrate interactive visualizations:
+- Finalize and integrate interactive visualizations.
 - Observable notebooks for Wilhelm Ostwald and Sébastien Truchet.
 - Form-generation algorithms and interactivity.
 - Refine the website’s structure, design, and responsiveness.
@@ -58,5 +58,5 @@ This project is licensed under the MIT License.
 4. Long-Term Goals:
 - Develop workshops or online courses based on the project.
 - Present the research at conferences or design symposiums.
-• Explore future research and creative collaborations.
+- Explore future research and creative collaborations.
 
