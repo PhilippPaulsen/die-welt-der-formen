@@ -5,7 +5,16 @@ body {
   padding: 0;
   background-color: #fff;
   color: #000;
-  font-size: 14px;
+  font-size: 20px; /* Größere Standard-Schriftgröße */
+  line-height: 1.6; /* Bessere Lesbarkeit */
+}
+
+/* Begrenzung der Textbreite */
+#notebook, .content {
+  margin: 18px auto; /* Zentriert die Inhalte */
+  padding: 20px;
+  max-width: 800px; /* Maximale Breite für große Bildschirme */
+  background-color: #fff;
 }
 
 /* Navigation Bar */
@@ -105,13 +114,18 @@ body {
   border-top: 1px solid #ccc;
 }
 
-/* Notebook Content Styling */
-#notebook {
-  margin: 20px;
-  padding: 0px;
-  background-color: #fff; /* Optional für bessere Lesbarkeit */
-  border: 1px solid #fff; /* Optional zur Klarheit */
-  border-radius: 8px; /* Optional für ein weiches Erscheinungsbild */
+/* Responsive Styling für kleinere Geräte */
+@media (max-width: 768px) {
+  body {
+    font-size: 16px; /* Kleinere Schriftgröße auf kleinen Geräten */
+    padding: 10px;
+  }
+
+  #notebook, .content {
+    padding: 10px;
+    margin: 10px;
+    max-width: 90%; /* Passt sich dem Bildschirm an */
+  }
 }
 
 /* Inhaltsverzeichnis Styling */
