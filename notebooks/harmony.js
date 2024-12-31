@@ -1,5 +1,5 @@
 function _1(md){return(
-  md` # Die Harmonie der Formen`
+  md` ## The Harmony of Forms`
   )}
   
   function _2(md){return(
