@@ -1,13 +1,11 @@
 function _1(md){return(
-  md`## Wilhelm Ostwald: Die Harmonie der Formen`
+  md`## Wilhelm Ostwald:  
+  ## Die Harmonie der Formen`
   )}
   
   function _2(md){return(
-  md`By Wilhelm Ostwald  
-  With 106 Figures in the Text  
-  Leipzig, 1922 Unesma  
-  Translated and Edited by Philipp Paulsen  
-  Leipzig, 2025 Spector Books`
+  md`By Wilhelm Ostwald — With 106 Figures in the Text — Leipzig, 1922 Unesma  
+  Translated and Edited by Philipp Paulsen — Leipzig, 2025 Spector Books`
   )}
   
   function _3(md){return(
