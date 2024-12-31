@@ -43,16 +43,32 @@ body {
 }
 
 .dropbtn {
-  background-color: #fff;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  font-weight: bold;
-  padding: 5px 10px;
+  background-color: transparent;
+  border: none;
   cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
 }
 
-.dropbtn:hover {
-  background-color: #f0f0f0;
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 20px; /* Breite des Symbols */
+  height: 15px; /* Gesamthöhe des Symbols */
+}
+
+.hamburger span {
+  display: block;
+  height: 3px; /* Dicke der Balken */
+  width: 100%; /* Balkenbreite */
+  background-color: black; /* Farbe der Balken */
+  border-radius: 2px; /* Leichte Abrundung */
+}
+
+.hamburger span:hover {
+  background-color: gray; /* Farbe der Balken bei Hover */
 }
 
 .dropdown-content {
@@ -93,7 +109,39 @@ body {
 #notebook {
   margin: 20px;
   padding: 0px;
-  background-color: #fff; /* Optional for better readability */
-  border: 1px solid #fff;   /* Optional for clarity */
-  border-radius: 8px;       /* Optional for a softer look */
+  background-color: #fff; /* Optional für bessere Lesbarkeit */
+  border: 1px solid #fff; /* Optional zur Klarheit */
+  border-radius: 8px; /* Optional für ein weiches Erscheinungsbild */
+}
+
+/* Inhaltsverzeichnis Styling */
+ul {
+  list-style-type: none;
+  padding-left: 0;
+  margin: 20px 0;
+}
+
+ul > li {
+  margin: 10px 0;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+ul ul {
+  margin-left: 20px;
+}
+
+ul ul > li {
+  font-weight: normal;
+  font-size: 14px;
+}
+
+a {
+  text-decoration: underline; /* Immer unterstrichen */
+  color: black; /* Schwarzer Text */
+}
+
+a:hover {
+  text-decoration: underline; /* Keine Änderung bei Hover */
+  color: black; /* Keine Änderung bei Hover */
 }
