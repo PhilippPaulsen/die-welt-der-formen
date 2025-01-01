@@ -18,7 +18,7 @@
       .st3 {
         fill: #1d1d1b;
         font-family: Helvetica, Helvetica;
-        font-size: 6px;
+        font-size: 9px;
       }
     </style>
   </defs>
@@ -29,8 +29,8 @@
   <rect class="st2" x="233.41" y="16.74" width="9.92" height="9.92" transform="translate(54.47 174.91) rotate(-45)"/>
   <rect class="st2" x="157.72" y="16.75" width="9.92" height="9.92" transform="translate(10.94 84.25) rotate(-30)"/>
   <polygon class="st0" points="104.79 26.66 101.93 21.7 104.79 16.74 110.52 16.74 113.39 21.7 110.52 26.66 104.79 26.66"/>
-  <text class="st3" transform="translate(19.59 46.83)"><tspan x="0" y="0">1</tspan></text>
-  <text class="st3" transform="translate(90.46 46.83)"><tspan x="0" y="0">2</tspan></text>
-  <text class="st3" transform="translate(161.32 46.83)"><tspan x="0" y="0">3</tspan></text>
-  <text class="st3" transform="translate(225.1 46.83)"><tspan x="0" y="0">4</tspan></text>
+  <text class="st3" transform="translate(18.76 48.99)"><tspan x="0" y="0">1</tspan></text>
+  <text class="st3" transform="translate(89.62 48.99)"><tspan x="0" y="0">2</tspan></text>
+  <text class="st3" transform="translate(160.49 48.99)"><tspan x="0" y="0">3</tspan></text>
+  <text class="st3" transform="translate(224.27 48.99)"><tspan x="0" y="0">4</tspan></text>
 </svg>
