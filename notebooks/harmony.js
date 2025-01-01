@@ -164,28 +164,47 @@ function _1(md){return(
     - [Unilateral Imbalance](#unilateral-imbalance)
   
   - **Chapter 8.** [Solid Forms](#solid-forms)
-    - [Outlook on the Future](#outlook-on-the-future)
+    - [A Reference to the Future](#a-reference-to-the-future)
   
   - **Introduction** [Introduction](#introduction)`
   )}
   
-  function _5(md){return(
+  function _5(html)
+  {
+    const scaleFactor = 0.5; // 50% der Originalgröße
+    const images = document.querySelectorAll("img");
+  
+    images.forEach((img) => {
+      img.onload = () => {
+        const originalWidth = img.naturalWidth;
+        const originalHeight = img.naturalHeight;
+  
+        img.style.width = `${originalWidth * scaleFactor}px`;
+        img.style.height = `${originalHeight * scaleFactor}px`;
+      };
+    });
+  
+    return html`<p></p>`;
+  }
+  
+  
+  function _6(md){return(
   md`#### First Chapter
   ## Space and the Fundamental Principle of Spatial Harmony`
   )}
   
-  function _6(md){return(
+  function _7(md){return(
   md`#### Space
   By *space*, we mean the way in which we experience the external world. If we disregard all specific contents that come to our consciousness in the form of colors, sounds, temperatures, pressure sensations, etc., and instead ask what all parts of the external world have in common, their *spatial nature* remains. Accordingly, every object has its own share of the total space in which we perceive the external world; we call this share its *shape* [Gestalt] or form, whereby such a form or shape may exhibit all degrees of determinacy or indeterminacy.`
   )}
   
-  function _7(md){return(
+  function _8(md){return(
   md`#### The Three Types of Space  
   Space is either *corporeal*, *planar*, or finitely *linear*. In the first case, it is *three-dimensional*, in the second *two*-dimensional, and in the last *one*-dimensional. If we wish to consider its manifestations, as is necessary when working on a new domain, in the sense of increasing complexity, we must begin with the simplest case, the linear *space*, and then proceed to examine the two-dimensional and three-dimensional spaces.  
   In geometry, the aforementioned determinations are carried out with the utmost rigor. Planes have no thickness, lines no width, and points no extension. The practical-aesthetic spatial theory that concerns us here does not allow for such extensive abstractions. Our lines will always have a distinct width, our planes a certain thickness or height, without letting these considerations disturb us. It is only required that the one-dimensionality in lines and the two-dimensionality in planes predominate so strongly that the existing deviations do not carry weight, i.e., do not significantly alter the phenomena under investigation.`
   )}
   
-  function _8(md){return(
+  function _9(md){return(
   md`#### The Uniformity of Space
   When we move a rigid body through space, we
   generally perceive it as different. However, through a not entirely
@@ -201,7 +220,7 @@ function _1(md){return(
   therefore attribute to space uniformity (*homogeneity*). `
   )}
   
-  function _9(md){return(
+  function _10(md){return(
   md`#### Geometric and Illustrative Lines and Points
   A geometric line, which
   by definition has no width, is invisible, as visibility requires a width
@@ -214,7 +233,7 @@ function _1(md){return(
   visible. `
   )}
   
-  function _10(md){return(
+  function _11(md){return(
   md`#### The Fundamental Principle of Spatial Harmony
   If a point is represented by an *arbitrarily* shaped small surface, as shown in Fig.
   1, we are dissatisfied. We ask the designer why this particular random
@@ -224,13 +243,28 @@ function _1(md){return(
   questions. This assumes that the form is not tilted, as in Fig. 3; in
   such a case, we would inquire about a justification for this
   arbitrariness, whereas with an upright position, whether horizontal or
-  diagonal, as in Fig. 4, we are satisfied.  
-  Similarly, we agree if a line or stripe is evenly spaced, as shown in
+  diagonal, as in Fig. 4, we are satisfied.  `
+  )}
+  
+  function _12(htl){return(
+  htl.html`<img src="https://die-welt-der-formen.de/assets/1-4.svg" alt="Figure 1-4" style="width: auto; height: auto;">\``
+  )}
+  
+  function _13(md){return(
+  md`Similarly, we agree if a line or stripe is evenly spaced, as shown in
   Fig. 5. On the other hand, if the division is arbitrary, executed with
   unequal spacing, as in Fig. 6, we reject it. It lacks the small but
   distinctly present positive aesthetic value of uniform division, instead
   possessing a negative one; it appears unattractive.  
-  However, not every unequal division is unattractive. If the spacings of
+  `
+  )}
+  
+  function _14(htl){return(
+  htl.html`<img src="https://die-welt-der-formen.de/assets/5-7.svg" alt="Figure 5-7" style="width: auto; height: auto;">\``
+  )}
+  
+  function _15(md){return(
+  md`However, not every unequal division is unattractive. If the spacings of
   the divisions are assigned as, for example, those on the logarithmic
   slide rule for equally spaced numbers 1, 2, 3, 4, etc., Fig. 7, a
   positive aesthetic value arises. These spacings have the property that
@@ -264,12 +298,12 @@ function _1(md){return(
   harmony are merely specific applications, the *Goethean Law*.  `
   )}
   
-  function _11(md){return(
+  function _16(md){return(
   md`#### Second Chapter  
   ## Lines`
   )}
   
-  function _12(md){return(
+  function _17(md){return(
   md`#### Types of Lines
   The simplest structure that exists here is the
   uninterrupted, uniformly strong line, as drawn with the ruling pen,
@@ -288,7 +322,7 @@ function _1(md){return(
   is a very important task.  `
   )}
   
-  function _13(md){return(
+  function _18(md){return(
   md`#### Thickness of Lines  
   The first requirement that must be met by a line is its *clarity*. It
   was previously noted that the visibility of a line ceases when its width
@@ -299,7 +333,7 @@ function _1(md){return(
   should not be narrower than 1/2 mm for our purposes.  `
   )}
   
-  function _14(md){return(
+  function _19(md){return(
   md`#### Edge or Contour
   As a marker of a boundary, the line must follow it.
   In the simplest case, it lies directly on the boundary. However, there
@@ -316,7 +350,7 @@ function _1(md){return(
   than the outer one.  `
   )}
   
-  function _15(md){return(
+  function _20(md){return(
   md`#### Diversity
   When going beyond the immediate purpose of marking, one can multiply the simple, uniform line sequence for decorative purposes. This can be done in the following ways:
   
@@ -335,7 +369,7 @@ function _1(md){return(
       ¹ H. Prof. Krais brought this diversity to my attention.  `
   )}
   
-  function _16(md){return(
+  function _21(md){return(
   md`#### Individual Examination  
   We turn to the separate consideration of the cases just outlined. It
   should be noted that it will not later be possible to examine all
@@ -351,7 +385,7 @@ function _1(md){return(
   design of the line in the sense described here with greater restraint.  `
   )}
   
-  function _17(md){return(
+  function _22(md){return(
   md`#### Discontinuous Lines
   The resolution of a simple line can occur
       into *dots* and *dashes*. Accordingly, there are discontinuous
@@ -384,7 +418,7 @@ function _1(md){return(
       maintains lawfulness. `
   )}
   
-  function _18(md){return(
+  function _23(md){return(
   md`#### Unequal Thickness
   The design of the writing pen with two
       springy tips, which open depending on the pressure applied,
@@ -401,7 +435,7 @@ function _1(md){return(
       variations in thickness.`
   )}
   
-  function _19(md){return(
+  function _24(md){return(
   md`#### Dynamic Lines
   As book ornaments, lines can be found that show
       small irregularities, as if drawn freehand. They are an expression
@@ -415,7 +449,7 @@ function _1(md){return(
       simple aesthetic value inherent in visual lawfulness.  `
   )}
   
-  function _20(md){return(
+  function _25(md){return(
   md`#### Shifting.
   Repetition occurs along the direction of the entire
       line, as the chosen form is repeated at a fixed, consistent
@@ -435,11 +469,11 @@ function _1(md){return(
       desired length.`
   )}
   
-  function _21(md){return(
+  function _26(md){return(
   md`1) For the three-syllable foreign word *parallel*, Ostwald's original German text uses the term *bar* employed by Albrecht Dürer.`
   )}
   
-  function _22(md){return(
+  function _27(md){return(
   md`#### Sequences and Waves.
   The line repeated through shifting is
       initially assumed to be entirely arbitrary. In particular, we do not
@@ -469,7 +503,7 @@ function _1(md){return(
       wave.  `
   )}
   
-  function _23(md){return(
+  function _28(md){return(
   md`#### Continuity
   The lawful coherence within a line is referred to as
       its *continuity*. This relates to three distinct properties:
@@ -490,7 +524,7 @@ function _1(md){return(
       *shock*. `
   )}
   
-  function _24(md){return(
+  function _29(md){return(
   md`#### Direction
   The concept of direction is immediately intuitive for
       a straight line, as it is characterized by having only *one*
@@ -508,7 +542,7 @@ function _1(md){return(
       discontinuity.  `
   )}
   
-  function _25(md){return(
+  function _30(md){return(
   md`#### Curvature
   A line with uniform curvature throughout is the
       circle; it is the only such line. The larger the circle, the smaller
@@ -533,7 +567,7 @@ function _1(md){return(
       discontinuous.  `
   )}
   
-  function _26(md){return(
+  function _31(md){return(
   md`#### Lawfulness of Lines
   We thus have the following series of lines,
       in order of decreasing lawfulness:
@@ -579,7 +613,7 @@ function _1(md){return(
       sufficient.  `
   )}
   
-  function _27(md){return(
+  function _32(md){return(
   md`#### Mathematical Definitions
   According to the rules of analytic
       geometry, sequences and waves can first be related to an abscissa
@@ -598,7 +632,7 @@ function _1(md){return(
       differences being perceived.  `
   )}
   
-  function _28(md){return(
+  function _33(md){return(
   md`#### Waves.
   Based on the investigation just conducted, we can
       classify the different types of waves. The presence of *jumps* is
@@ -614,7 +648,7 @@ function _1(md){return(
       some other form of lawfulness to achieve aesthetic value.  `
   )}
   
-  function _29(md){return(
+  function _34(md){return(
   md`#### Alignment  
   To ensure the alignment (rapport) when designing waves, one proceeds
       by first specifying the direction in which the wave is to run
@@ -628,7 +662,7 @@ function _1(md){return(
       solving the task of alignment.`
   )}
   
-  function _30(md){return(
+  function _35(md){return(
   md`#### Sine Waves
   Until now, apart from continuity, we have made no
       assumptions about the shape of the wave line; its freedom is further
@@ -667,7 +701,7 @@ function _1(md){return(
       represented.  `
   )}
   
-  function _31(md){return(
+  function _36(md){return(
   md`#### The Ersatz Sine
   Since there is no simple technical means to draw sine waves
       mechanically, they are customarily replaced in art by two
@@ -684,7 +718,7 @@ function _1(md){return(
       them discontinuous.  `
   )}
   
-  function _32(md){return(
+  function _37(md){return(
   md`#### Reflection and Rotation
   Comparing the limited lawfulness of an
       arbitrary wave train with the perfect lawfulness of a sine wave
@@ -729,7 +763,7 @@ function _1(md){return(
       shifting above (p. 13).  `
   )}
   
-  function _33(md){return(
+  function _38(md){return(
   md`#### The Doctrine of Reflection
   By reflection, we generally mean a
       particular type of repetition, achieved as follows. Let any form *a
@@ -767,7 +801,7 @@ function _1(md){return(
       occurs without rotation.`
   )}
   
-  function _34(md){return(
+  function _39(md){return(
   md`#### Application
   For the purposes of the current discussion, only a
       small portion of this general doctrine of reflection is
@@ -786,7 +820,7 @@ function _1(md){return(
       unchanged in this process.`
   )}
   
-  function _35(md){return(
+  function _40(md){return(
   md`#### The Doctrine of Rotation
   A rotation occurs when a given form *a
       b*, Fig. 23, is related to a line, the axis *c*, and each of its
@@ -803,7 +837,7 @@ function _1(md){return(
       *rotation point*. The rotation angle retains its significance.  `
   )}
   
-  function _36(md){return(
+  function _41(md){return(
   md`#### Multiple Rotation
   Repeating the rotation by the same angle
       produces a third matching form, and so on. Here, it is crucial
@@ -827,7 +861,7 @@ function _1(md){return(
       infinitely large radius of curvature.  `
   )}
   
-  function _37(md){return(
+  function _42(md){return(
   md`#### Application
   For the present case, only rotation by half the full
       angle (two right angles) is applicable. Similar to reflection, this
@@ -843,7 +877,7 @@ function _1(md){return(
       rotational relationships.  `
   )}
   
-  function _38(md){return(
+  function _43(md){return(
   md`#### Water Waves
   The ubiquitous motion of water, which has given its
       name to the entire category of forms discussed here, serves as the
@@ -860,7 +894,7 @@ function _1(md){return(
       used with relentless enthusiasm by the Greeks.  `
   )}
   
-  function _39(md){return(
+  function _44(md){return(
   md`#### Broken Waves
   Many technical methods recommend the use of
       straight lines even for replicating curved shapes. Thus, it has long
@@ -886,7 +920,7 @@ function _1(md){return(
       wave and the other the steep sine wave.  `
   )}
   
-  function _40(md){return(
+  function _45(md){return(
   md`#### Intersecting Waves
   So far, wave lines have been chosen such that
       they do not show any intersections or crossings in their
@@ -903,7 +937,7 @@ function _1(md){return(
       variations.`
   )}
   
-  function _41(md){return(
+  function _46(md){return(
   md`#### Free Ends
   When a line terminates organically, that is, in a
       manner dictated or justified by the overall form, this is
@@ -929,12 +963,12 @@ function _1(md){return(
       for lengthening it; therefore, it is best left unchanged.  `
   )}
   
-  function _42(md){return(
+  function _47(md){return(
   md`#### Third Chapter  
   ## Braids`
   )}
   
-  function _43(md){return(
+  function _48(md){return(
   md`#### Concept
   Until now, we have discussed only simple lines in their
       variety. We now turn to the more complex case where *several*
@@ -956,7 +990,7 @@ function _1(md){return(
     `
   )}
   
-  function _44(md){return(
+  function _49(md){return(
   md`#### Bare Straight Lines
   Bare lines of uniform thickness are
       initially used with *equal spacing*, similar to the five lines of
@@ -989,7 +1023,7 @@ function _1(md){return(
       of the shadow effect.`
   )}
   
-  function _45(md){return(
+  function _50(md){return(
   md`#### Unequal Spacing.
   If the rule requiring equal spacing between
       lines in a group is lifted, a new freedom or arbitrariness arises,
@@ -1009,7 +1043,7 @@ function _1(md){return(
       examine in more detail.  `
   )}
   
-  function _46(md){return(
+  function _51(md){return(
   md`#### Fechner's Law
   Since this entire work deals with sensations, it
       is natural that the law governing the relationship between
@@ -1035,7 +1069,7 @@ function _1(md){return(
       according to a geometric sequence with a ratio of 0.7.  `
   )}
   
-  function _47(md){return(
+  function _52(md){return(
   md`#### Unequal Strength
   If the thickness of the parallel lines varies,
       it must be lawfully arranged if there are more than two. The
@@ -1063,7 +1097,7 @@ function _1(md){return(
       effects are based on the application of such *"hidden laws."*  `
   )}
   
-  function _48(md){return(
+  function _53(md){return(
   md`#### Personal Remark
   The fundamental significance of lawfulness for aesthetic effect
       first became clear to me during my childhood, in the context of a
@@ -1079,7 +1113,7 @@ function _1(md){return(
       this small attempt to be the first seed of the present work.`
   )}
   
-  function _49(md){return(
+  function _54(md){return(
   md`#### Groups
   A group of parallel lines, which is held together by one
       of the specified laws, can itself be treated as a single line. For
@@ -1095,7 +1129,7 @@ function _1(md){return(
       application, which results in *harmonies of a higher order*.  `
   )}
   
-  function _50(md){return(
+  function _55(md){return(
   md`#### Interrupted Lines
   Instead of the previously assumed continuous
       lines, interrupted lines, as described on page 11, can also be used
@@ -1111,7 +1145,7 @@ function _1(md){return(
       and unveil the richness of variations step by step.`
   )}
   
-  function _51(md){return(
+  function _56(md){return(
   md`#### Moving Line Groups
   A new class of variations arises when the
       previous straight lines are replaced with moving ones (primarily
@@ -1125,7 +1159,7 @@ function _1(md){return(
       vitality, Fig. 37.`
   )}
   
-  function _52(md){return(
+  function _57(md){return(
   md`#### The True Braid 
   If multiple waves are multiplied along the same straight line by
       shifting, their lines intersect in the most varied ways. The
@@ -1171,7 +1205,7 @@ function _1(md){return(
       Fig. 41.`
   )}
   
-  function _53(md){return(
+  function _58(md){return(
   md`#### Freer Braids  
   Any arbitrary waveform can be transformed into a braid through
       integral shifting, retaining the same characteristics regarding
@@ -1191,7 +1225,7 @@ function _1(md){return(
       form, whether static or dynamic, results in a dynamic braid.  `
   )}
   
-  function _54(md){return(
+  function _59(md){return(
   md`#### Reflection
   If one attempts to utilize the sine wave through
       right-angle reflection or half-rotation to create new structures, it
@@ -1225,7 +1259,7 @@ function _1(md){return(
       half a wavelength.  `
   )}
   
-  function _55(md){return(
+  function _60(md){return(
   md`#### The Law of Equal Density
   Braids created from various base forms
       according to one of the specified laws possess significantly
@@ -1263,7 +1297,7 @@ function _1(md){return(
       respective advantages and disadvantages.`
   )}
   
-  function _56(md){return(
+  function _61(md){return(
   md`#### Rotations
   A second method of doubling a given wave line
       involves rotating a wave segment by 1/2 around a suitably chosen
@@ -1280,7 +1314,7 @@ function _1(md){return(
       aiming for interesting and novel designs.  `
   )}
   
-  function _57(md){return(
+  function _62(md){return(
   md`#### Other Variations
   Finally, any braid can be treated as a single line, and multiple
       identical or different braids can be combined among themselves or
@@ -1291,12 +1325,12 @@ function _1(md){return(
       tasks require a particularly rich design of lines.`
   )}
   
-  function _58(md){return(
+  function _63(md){return(
   md`#### Fourth Chapter
   ## Bands`
   )}
   
-  function _59(md){return(
+  function _64(md){return(
   md`#### Concept  
   By bands, we understand those forms that are elongated in one
       direction, while possessing a certain width and are adorned with
@@ -1313,7 +1347,7 @@ function _1(md){return(
       transitioning into bands.`
   )}
   
-  function _60(md){return(
+  function _65(md){return(
   md`#### The Free Form  
   We start with an entirely arbitrary planar form in which no
       regularity exists, meaning no part is identical or similar (in a
@@ -1327,7 +1361,7 @@ function _1(md){return(
   `
   )}
   
-  function _61(md){return(
+  function _66(md){return(
   md`#### Pure Form Art
   A free form without regularity has no inherent aesthetic value. It
       can acquire such value by representing an object from the external
@@ -1354,7 +1388,7 @@ function _1(md){return(
       visual or light-based art.  `
   )}
   
-  function _62(md){return(
+  function _67(md){return(
   md`#### The Basic Elements of Form Art
   For us to perceive coherence, regularity, and thus beauty in a form, a relationship between the
       various parts of this form is required.  
@@ -1387,7 +1421,7 @@ function _1(md){return(
       same, infinitely extending plane. `
   )}
   
-  function _63(md){return(
+  function _68(md){return(
   md`#### Translation
   Translation occurs when the corresponding points of
       the original and the duplicate form are equidistant from one
@@ -1418,7 +1452,7 @@ function _1(md){return(
       execution.`
   )}
   
-  function _64(md){return(
+  function _69(md){return(
   md`#### The Lateral Characteristics of Bands  
   When a band is created through equidistant translation of a form, it
       can be differentiated into left and right, as well as top and
@@ -1433,7 +1467,7 @@ function _1(md){return(
       striving for aesthetic value.`
   )}
   
-  function _65(md){return(
+  function _70(md){return(
   md`#### Multiple Distances 
   In addition to equidistant translation, the case of a lawful
       variation in distances is noteworthy. If *a*represents the distance,
@@ -1452,7 +1486,7 @@ function _1(md){return(
       second and higher orders from those of the first order.  `
   )}
   
-  function _66(md){return(
+  function _71(md){return(
   md`#### Variable Translation
   According to the fundamental theorem of
       form harmonics, the governing law must visibly manifest in the
@@ -1474,7 +1508,7 @@ function _1(md){return(
       impression of a gradual fading out is to be achieved.  `
   )}
   
-  function _67(md){return(
+  function _72(md){return(
   md`#### Loose and Connected Forms
   The individual form that is repeated
       within the band can either be self-contained, with no connection to
@@ -1495,7 +1529,7 @@ function _1(md){return(
       create a unique appeal.  `
   )}
   
-  function _68(md){return(
+  function _73(md){return(
   md`#### Alignment
   When designing a cohesive pattern, ensuring the
       alignment (rapport) is straightforward and accurate can be achieved
@@ -1514,7 +1548,7 @@ function _1(md){return(
       particular effects. The next law offered here is the right angle.  `
   )}
   
-  function _69(md){return(
+  function _74(md){return(
   md`#### Rotation
   A shape undergoes pure rotation when a fixed center of
       rotation is defined within its plane, and all its points move in
@@ -1534,7 +1568,7 @@ function _1(md){return(
       original position after 2, 3, 4 ... n rotations.  `
   )}
   
-  function _70(md){return(
+  function _75(md){return(
   md`#### Properties of Rotation
   A pure rotation is characterized by its
       center of rotation and its angle of rotation. If the center lies
@@ -1579,7 +1613,7 @@ function _1(md){return(
       first created and then reflected.  `
   )}
   
-  function _71(md){return(
+  function _76(md){return(
   md`#### Reflection
   The third case of the lawful repetition of a planar
       form is reflection. This occurs as follows: An infinite line is
@@ -1610,7 +1644,7 @@ function _1(md){return(
       further repetition occurs.  `
   )}
   
-  function _72(md){return(
+  function _77(md){return(
   md`#### Variables
   In reflection, there are again two variables: the
       position of the mirror relative to the given free form,
@@ -1628,7 +1662,7 @@ function _1(md){return(
       required for this.  `
   )}
   
-  function _73(md){return(
+  function _78(md){return(
   md`#### Mirror Symmetry
   When a shape and its mirror image are combined
       into a single composite form, such mirror images are referred to as
@@ -1644,7 +1678,7 @@ function _1(md){return(
       can also be achieved through translation and rotation.`
   )}
   
-  function _74(md){return(
+  function _79(md){return(
   md`#### Translation and Rotation
   We now turn to higher-level form
       harmonies that arise from the combination of two types of
@@ -1676,7 +1710,7 @@ function _1(md){return(
       36). The same applies to the subsequent sections.  `
   )}
   
-  function _75(md){return(
+  function _80(md){return(
   md`#### Unequal Rotation and Translation
   A further diversity arises
       when the distances are alternated according to the rule *a b*, *a a
@@ -1688,7 +1722,7 @@ function _1(md){return(
       cases should therefore be approached with great caution.  `
   )}
   
-  function _76(md){return(
+  function _81(md){return(
   md`#### Translation and Reflection
   In the case of a band, the mirror
       line can lie either in the longitudinal or the transverse
@@ -1708,7 +1742,7 @@ function _1(md){return(
       In all cases, lawful variations in distances can also be applied.  `
   )}
   
-  function _77(md){return(
+  function _82(md){return(
   md`#### Parallel Mirrors
   If a second mirror is placed parallel to the
       first, the original form, along with its first mirror image, is
@@ -1722,7 +1756,7 @@ function _1(md){return(
       the band direction.  `
   )}
   
-  function _78(md){return(
+  function _83(md){return(
   md`#### Rotation and Reflection
   If a given free form is transformed into
       a mirror image, it can subsequently be turned into a turnling
@@ -1756,7 +1790,7 @@ function _1(md){return(
       translation is essential.  `
   )}
   
-  function _79(md){return(
+  function _84(md){return(
   md`#### Angle Mirrors
   Pattern designers and applied artists frequently
       use angle mirrors to create centrally organized patterns. It is well
@@ -1775,7 +1809,7 @@ function _1(md){return(
       definition of a rose.  `
   )}
   
-  function _80(md){return(
+  function _85(md){return(
   md`#### Reflection of a Continuous Turnling
   The reflection of a
       continuous turnling is a similar, yet counter-rotating turnling. The
@@ -1790,7 +1824,7 @@ function _1(md){return(
       from this reflected base according to the same principle.  `
   )}
   
-  function _81(md){return(
+  function _86(md){return(
   md`#### Translation, Rotation, and Reflection
   The combination of these
       three principles of formation results in bands composed of a series
@@ -1804,7 +1838,7 @@ function _1(md){return(
       attention.  `
   )}
   
-  function _82(md){return(
+  function _87(md){return(
   md`#### Edges and Center
   In band patterns, there is almost always a
       need to treat the edges and the central area differently. Even
@@ -1825,7 +1859,7 @@ function _1(md){return(
       visually impactful than larger ones.  `
   )}
   
-  function _83(md){return(
+  function _88(md){return(
   md`#### Combining Multiple Forms
   When filling a band with planar forms
       according to the principle of equal density (p. 39), it is often
@@ -1840,7 +1874,7 @@ function _1(md){return(
       three are impractical due to a lack of clarity.  `
   )}
   
-  function _84(md){return(
+  function _89(md){return(
   md`#### Loosened Forms
   The previously described forms, when executed
       with precision, such as by machine, often appear rigid and lifeless.
@@ -1888,7 +1922,7 @@ function _1(md){return(
       knows this was not an isolated case.  `
   )}
   
-  function _85(md){return(
+  function _90(md){return(
   md`#### Degrees of Loosening
   The loosening of rigid forms can be
       implemented in several stages. Initially, this is achieved by
@@ -1903,7 +1937,7 @@ function _1(md){return(
       longer predetermined.  `
   )}
   
-  function _86(md){return(
+  function _91(md){return(
   md`#### Retention of the Framework
   Another degree of freedom is as
       follows: the rectangular (or skewed) sections into which the band is
@@ -1920,7 +1954,7 @@ function _1(md){return(
       are more appropriate.  `
   )}
   
-  function _87(md){return(
+  function _92(md){return(
   md`#### Equidistant Points 
   A greater degree of loosening occurs when the band pattern includes
       only equidistant recurring points marked by a distinctive shape
@@ -1934,7 +1968,7 @@ function _1(md){return(
       disharmony.  `
   )}
   
-  function _88(md){return(
+  function _93(md){return(
   md`#### Equidistant Free Areas
   One can also forgo the recurring form
       elements described above and limit the uniform repetition to the
@@ -1945,7 +1979,7 @@ function _1(md){return(
       so on.  `
   )}
   
-  function _89(md){return(
+  function _94(md){return(
   md`#### Uniform Distribution
   Perhaps the smallest degree of lawfulness
       still capable of producing aesthetic effects is the approximately
@@ -1971,12 +2005,12 @@ function _1(md){return(
       reached.  `
   )}
   
-  function _90(md){return(
+  function _95(md){return(
   md`#### Fifth Chapter
   ## Unlimited Surfaces `
   )}
   
-  function _91(md){return(
+  function _96(md){return(
   md`#### Unlimited and Limited Surfaces
   The following investigations
       address the lawfulness of forms or shapes on a *plane*. The
@@ -1999,7 +2033,7 @@ function _1(md){return(
       they will be considered first.  `
   )}
   
-  function _92(md){return(
+  function _97(md){return(
   md`#### Derivation of Infinite Surface Patterns from Bands
   While the previously considered lines, braids, and bands extend in *one*
       direction, the plane possesses two dimensions. If we place on the
@@ -2029,7 +2063,7 @@ function _1(md){return(
       which the infinite pattern is constructed through repetition.  `
   )}
   
-  function _93(md){return(
+  function _98(md){return(
   md`#### The Stripe Pattern
   When applying the described method lawfully,
       the first and simplest case is the line, which is shifted parallel
@@ -2083,7 +2117,7 @@ function _1(md){return(
       optionally be further emphasized (with gold, black, white, etc.).  `
   )}
   
-  function _94(md){return(
+  function _99(md){return(
   md`#### The Braided Pattern
   The considerations just discussed apply
       initially to simple lines. However, they can also be appropriately
@@ -2099,7 +2133,7 @@ function _1(md){return(
       and 57 illustrate such overlaps.  `
   )}
   
-  function _95(md){return(
+  function _100(md){return(
   md`#### The Band Pattern
   Continuing the line of thought lawfully, we
       now consider filling the plane with *bands* through lateral
@@ -2111,7 +2145,7 @@ function _1(md){return(
       of the lawful filling of the plane.  `
   )}
   
-  function _96(md){return(
+  function _101(md){return(
   md`#### Loose and Coherent Forms
   When observing a given surface, it can
       be viewed in two ways: either as a bounded entity, i.e., as a
@@ -2129,7 +2163,7 @@ function _1(md){return(
       become evident.  `
   )}
   
-  function _97(md){return(
+  function _102(md){return(
   md`#### Loose and Tiling Forms
   Summarizing what has been discussed so
       far, the following general method emerges for the lawful covering of
@@ -2169,7 +2203,7 @@ function _1(md){return(
       relationships.  `
   )}
   
-  function _98(md){return(
+  function _103(md){return(
   md`#### Nets
   *Nets* serve as the basis for further investigations and
       are constructed as follows: The plane is covered with a set of
@@ -2188,7 +2222,7 @@ function _1(md){return(
       without disrupting the coherence.  `
   )}
   
-  function _99(md){return(
+  function _104(md){return(
   md`#### The Most General Net
   If one side of the parallelogram in the
       most general net is replaced by an arbitrarily shaped curve while
@@ -2219,7 +2253,7 @@ function _1(md){return(
       where the segments are everywhere equal to the wavelengths.  `
   )}
   
-  function _100(md){return(
+  function _105(md){return(
   md`#### Hexagonal Mesh
   In addition to the quadrilateral with parallel opposite sides, the
       hexagon with parallel and equal opposite sides also possesses the
@@ -2231,7 +2265,7 @@ function _1(md){return(
       pattern derived from such a skewed hexagon.  `
   )}
   
-  function _101(md){return(
+  function _106(md){return(
   md`#### Drawing
   To understand the properties of such forms, one begins
       by drawing a net of parallel lines at any angle and side ratio on
@@ -2257,7 +2291,7 @@ function _1(md){return(
       seeking to delve into the study of spatial harmony.  `
   )}
   
-  function _102(md){return(
+  function _107(md){return(
   md`#### More Orderly Nets
   Among the possible angles, the right angle
       (1/4) stands out as a special case, as it renders all angles equal.
@@ -2286,7 +2320,7 @@ function _1(md){return(
       can then serve as helpful guides when drawing.  `
   )}
   
-  function _103(md){return(
+  function _108(md){return(
   md`#### The Golden Ratio
   It is widely believed that the rectangle with
       side proportions governed by the \\"Golden Ratio\\" of 8:13 or 1:1.62
@@ -2316,7 +2350,7 @@ function _1(md){return(
       which will not be considered here for the time being.  `
   )}
   
-  function _104(md){return(
+  function _109(md){return(
   md`#### Application
   The described spatial division is extensively used
       for the decoration of surfaces. Since the lines connecting the nodes
@@ -2330,7 +2364,7 @@ function _1(md){return(
       beauty.  `
   )}
   
-  function _105(md){return(
+  function _110(md){return(
   md`#### Alignment
   The creation of such patterns begins with determining
       the type and size of the mesh. Depending on whether the emphasis is
@@ -2355,7 +2389,7 @@ function _1(md){return(
       providing an accurate representation of the overall effect.  `
   )}
   
-  function _106(md){return(
+  function _111(md){return(
   md`#### Loose Patterns
   If the connection of forms across the entire
       surface is not pursued, the procedure becomes significantly simpler.
@@ -2371,7 +2405,7 @@ function _1(md){return(
       compensates through the appeal of shapes and colors.  `
   )}
   
-  function _107(md){return(
+  function _112(md){return(
   md`#### Rotation and Reflection
   The previous considerations have been
       explicitly limited to cases where the repetition of the form was
@@ -2389,7 +2423,7 @@ function _1(md){return(
       properties of the mesh.  `
   )}
   
-  function _108(md){return(
+  function _113(md){return(
   md`#### The Parallelogram Mesh
   In the most general case, where the two
       distances and the angles are different, the mesh becomes a
@@ -2436,7 +2470,7 @@ function _1(md){return(
       development.  `
   )}
   
-  function _109(md){return(
+  function _114(md){return(
   md`#### Division of Turnlings
   A twofold turnling has the property that
       it can be divided by any line passing through the center of rotation
@@ -2457,7 +2491,7 @@ function _1(md){return(
       interconnection, Fig. 63.  `
   )}
   
-  function _110(md){return(
+  function _115(md){return(
   md`#### The Rectangular Mesh
   The rectangle has a twofold center of
       rotation in the middle and additionally two axes of symmetry that
@@ -2474,7 +2508,7 @@ function _1(md){return(
       symmetry are utilized.  `
   )}
   
-  function _111(md){return(
+  function _116(md){return(
   md`#### Rectangular Turnlings
   To utilize the property of the rectangle
       as a twofold turnling, the two free lines are replaced with two
@@ -2493,7 +2527,7 @@ function _1(md){return(
       are filled with appropriately aligned decorative elements.  `
   )}
   
-  function _112(md){return(
+  function _117(md){return(
   md`#### Rectangular Mirror Line
   If one attempts to replicate any
       arbitrary line between two adjacent nodes of the rectangular net
@@ -2512,7 +2546,7 @@ function _1(md){return(
       Fig. 68.Fig. 69.Fig. 70.  `
   )}
   
-  function _113(md){return(
+  function _118(md){return(
   md`#### The Rhombus Net
   The rhombus has four parallel sides, a twofold
       center of rotation, and two perpendicular mirror lines, its
@@ -2550,7 +2584,7 @@ function _1(md){return(
       numerous common patterns.  `
   )}
   
-  function _114(md){return(
+  function _119(md){return(
   md`#### The Square Net
   In a square, there is a fourfold center of
       rotation and four mirror lines oriented towards the sides and
@@ -2631,7 +2665,7 @@ function _1(md){return(
   `
   )}
   
-  function _115(md){return(
+  function _120(md){return(
   md`#### The Triangular Grid
   It was previously noted that the nodes of
       the rhombus grid with an angle of 1/6 also serve as the nodes of a
@@ -2684,7 +2718,7 @@ function _1(md){return(
       rotating an arbitrary line by 1/3.  `
   )}
   
-  function _116(md){return(
+  function _121(md){return(
   md`#### The Hexagonal Net
   Apart from the equilateral triangle and the
       square, the regular hexagon is the only regular polygon that can
@@ -2714,7 +2748,7 @@ function _1(md){return(
       threefold turnlings arise as in the triangular net (p. 87).  `
   )}
   
-  function _117(md){return(
+  function _122(md){return(
   md`#### Geometric Patterns
   The previous considerations focused on the
       boundaries of coherent fields and the variety associated with them.
@@ -2747,7 +2781,7 @@ function _1(md){return(
       patterns" in the narrower sense.  `
   )}
   
-  function _118(md){return(
+  function _123(md){return(
   md`#### Varieties
   In the preceding explanations, the phrase "the
       simplest" has been frequently repeated. Each time, it signifies
@@ -2805,7 +2839,7 @@ function _1(md){return(
       to finite surfaces. These will be briefly addressed below.  `
   )}
   
-  function _119(md){return(
+  function _124(md){return(
   md`#### Example
   To illustrate the remarkable variety and beauty of such
       geometric patterns, Figs. 87 to 102 depict forms derived from
@@ -2835,7 +2869,7 @@ function _1(md){return(
       higher-order patterns.  `
   )}
   
-  function _120(md){return(
+  function _125(md){return(
   md`#### Curved Lines
   Another extensive group of geometric patterns
       arises when the restriction to straight-line connections between
@@ -2875,7 +2909,7 @@ function _1(md){return(
       wealth of distinctive and unused forms.  `
   )}
   
-  function _121(md){return(
+  function _126(md){return(
   md`#### Distortions
   All patterns based on lawfully arranged nodes allow
       for an extraordinarily diverse range of transformations through the
@@ -2901,7 +2935,7 @@ function _1(md){return(
       dimensions of the pattern and the surface do not initially align.  `
   )}
   
-  function _122(md){return(
+  function _127(md){return(
   md`#### Non-Flat Surfaces
   The laws developed for flat surfaces can be
       applied to other curved surfaces with minor modifications. The first
@@ -2921,7 +2955,7 @@ function _1(md){return(
       the entire surface and are therefore only slightly curved.  `
   )}
   
-  function _123(md){return(
+  function _128(md){return(
   md`#### The Two Sources of Art
   The desire to use free and most free
       linear and planar forms pictorially originates from the activity of
@@ -2955,7 +2989,7 @@ function _1(md){return(
       variation.  `
   )}
   
-  function _124(md){return(
+  function _129(md){return(
   md`#### Freer Forms
   If one wishes to move from strictly lawful
       repetitions of form to freer design, the justification for this
@@ -2984,7 +3018,7 @@ function _1(md){return(
       "naturalistic" its depiction becomes.  `
   )}
   
-  function _125(md){return(
+  function _130(md){return(
   md`#### Preservation of Lawfulness
   It is essential, however, that
       despite all freedom, the underlying lawfulness is strictly observed.
@@ -3014,7 +3048,7 @@ function _1(md){return(
       lawfulness of some kind.  `
   )}
   
-  function _126(md){return(
+  function _131(md){return(
   md`#### The Law of Equivalent Substitution
   As shown above, the rigidity
       of strictly lawful forms can be gradually loosened by replacing
@@ -3040,12 +3074,12 @@ function _1(md){return(
       aesthetic effect, the feeling alone suffices.  `
   )}
   
-  function _127(md){return(
+  function _132(md){return(
   md`#### Sixth Chapter  
   ## Bounded Surfaces`
   )}
   
-  function _128(md){return(
+  function _133(md){return(
   md`#### General Principles
   Every surface intended for decoration must
       necessarily be bounded. When designing the decoration, its
@@ -3066,7 +3100,7 @@ function _1(md){return(
       bounded surfaces?  `
   )}
   
-  function _129(md){return(
+  function _134(md){return(
   md`#### Application of Infinite Patterns
   The first consideration for
       using infinite patterns has already been stated: The primary lines
@@ -3097,7 +3131,7 @@ function _1(md){return(
       with the effect of the superimposed decorative forms (cf. below).  `
   )}
   
-  function _130(md){return(
+  function _135(md){return(
   md`#### Processing the Surface The Central Piece
   The given shape
       should first be examined to determine whether it has a central point
@@ -3124,7 +3158,7 @@ function _1(md){return(
       occupies about 1/2 to 1/4 of the total surface area.  `
   )}
   
-  function _131(md){return(
+  function _136(md){return(
   md`#### Borders and Spandrels
   The *border* constitutes a second
       prominent area. It is typically decorated with lines, braids, or
@@ -3143,7 +3177,7 @@ function _1(md){return(
       can be decorated along with the border and center.  `
   )}
   
-  function _132(md){return(
+  function _137(md){return(
   md`#### Central Piece, Border, and Spandrel  
   The central piece, border, and spandrel are thus the primary
       components into which the bounded form is divided. It is by no means
@@ -3159,7 +3193,7 @@ function _1(md){return(
       exclusive development.  `
   )}
   
-  function _133(md){return(
+  function _138(md){return(
   md`#### Background and Superimposed Ornament
   Another essential
       conceptual distinction has already been noted, namely, the
@@ -3185,7 +3219,7 @@ function _1(md){return(
       the next perspective of dividing and decorating given forms.  `
   )}
   
-  function _134(md){return(
+  function _139(md){return(
   md`#### Division of the Surface
   Up to now, it has been assumed that the
       given surface is to be treated as a whole. In many cases, especially
@@ -3226,7 +3260,7 @@ function _1(md){return(
       refinement.  `
   )}
   
-  function _135(md){return(
+  function _140(md){return(
   md`#### Influence of Gravity
   It must also be considered that a geometrically existing axis of
       symmetry may lose this property for other reasons. For instance, a
@@ -3242,7 +3276,7 @@ function _1(md){return(
       even greater.  `
   )}
   
-  function _136(md){return(
+  function _141(md){return(
   md`#### The Golden Ratio
   This case provides an opportunity where the
       much-cited Golden Ratio can be appropriately applied. Since the
@@ -3258,12 +3292,12 @@ function _1(md){return(
       suitable where this prerequisite applies.  `
   )}
   
-  function _137(md){return(
+  function _142(md){return(
   md`#### Seventh Chapter
   ## Pictorial Art  `
   )}
   
-  function _138(md){return(
+  function _143(md){return(
   md`#### Free Surface Arrangement
   If one avoids emphasizing boundaries
       through lines or bands and blends the decorative forms of different
@@ -3294,7 +3328,7 @@ function _1(md){return(
       attach themselves to these two sources.  `
   )}
   
-  function _139(md){return(
+  function _144(md){return(
   md`#### The Backwardness of Light Art
   While, for example, music has
       followed a direct path to the goal of highly developed pure art
@@ -3327,7 +3361,7 @@ function _1(md){return(
       mastered color range.  `
   )}
   
-  function _140(md){return(
+  function _145(md){return(
   md`#### Painting
   Thus, we see visual art taking a side path that,
       particularly in our time, appears to have become a dead end. It is
@@ -3370,7 +3404,7 @@ function _1(md){return(
       consciously pursued.  `
   )}
   
-  function _141(md){return(
+  function _146(md){return(
   md`#### The Regularity of Free Forms
   Our current, thoroughly
       naturalistic pictorial art is generally unable to fully execute
@@ -3414,7 +3448,7 @@ function _1(md){return(
       principles of regularity can be applied in detail.  `
   )}
   
-  function _142(md){return(
+  function _147(md){return(
   md`#### Uniform Density
   The simplest formal regularity applicable here
       is the *uniformity of surface coverage*. There should be no
@@ -3432,7 +3466,7 @@ function _1(md){return(
       Japanese.  `
   )}
   
-  function _143(md){return(
+  function _148(md){return(
   md`#### The Central Axis
   Another very natural way to organize a surface
       is by emphasizing the central element. The most important part of
@@ -3448,7 +3482,7 @@ function _1(md){return(
       favor of more dynamic boundary movements.  `
   )}
   
-  function _144(md){return(
+  function _149(md){return(
   md`#### Composite Balance
   This is where the principle of composite balance (p. 101) comes into
       play. If one side is treated more loosely than the other, it must
@@ -3462,7 +3496,7 @@ function _1(md){return(
       This constitutes "artistic quality" in a higher sense.  `
   )}
   
-  function _145(md){return(
+  function _150(md){return(
   md`#### Other Mirror-Image Forms
   In addition to compositions based on the central element or pyramid,
       there are many others structured around simple geometric shapes,
@@ -3476,7 +3510,7 @@ function _1(md){return(
       and bottom while leaving that of left and right undisturbed.  `
   )}
   
-  function _146(md){return(
+  function _151(md){return(
   md`#### Asymmetrical Weighting
   The harmony of form does not lie solely
       in uniformity or balance but in its lawfulness overall. Thus, any
@@ -3502,12 +3536,12 @@ function _1(md){return(
       is well-grounded and executed without uncertainty.  `
   )}
   
-  function _147(md){return(
+  function _152(md){return(
   md`#### Eighth Chapter
   ## Solid Forms`
   )}
   
-  function _148(md){return(
+  function _153(md){return(
   md`#### A Reference to the Future
   The title of this chapter indicates
       that a work on the harmony of form, following the study of
@@ -3554,16 +3588,16 @@ function _1(md){return(
     main.variable(observer()).define(["md"], _2);
     main.variable(observer()).define(["md"], _3);
     main.variable(observer()).define(["md"], _4);
-    main.variable(observer()).define(["md"], _5);
+    main.variable(observer()).define(["html"], _5);
     main.variable(observer()).define(["md"], _6);
     main.variable(observer()).define(["md"], _7);
     main.variable(observer()).define(["md"], _8);
     main.variable(observer()).define(["md"], _9);
     main.variable(observer()).define(["md"], _10);
     main.variable(observer()).define(["md"], _11);
-    main.variable(observer()).define(["md"], _12);
+    main.variable(observer()).define(["htl"], _12);
     main.variable(observer()).define(["md"], _13);
-    main.variable(observer()).define(["md"], _14);
+    main.variable(observer()).define(["htl"], _14);
     main.variable(observer()).define(["md"], _15);
     main.variable(observer()).define(["md"], _16);
     main.variable(observer()).define(["md"], _17);
@@ -3698,6 +3732,11 @@ function _1(md){return(
     main.variable(observer()).define(["md"], _146);
     main.variable(observer()).define(["md"], _147);
     main.variable(observer()).define(["md"], _148);
+    main.variable(observer()).define(["md"], _149);
+    main.variable(observer()).define(["md"], _150);
+    main.variable(observer()).define(["md"], _151);
+    main.variable(observer()).define(["md"], _152);
+    main.variable(observer()).define(["md"], _153);
     return main;
   }
   
