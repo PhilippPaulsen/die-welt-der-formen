@@ -31,8 +31,7 @@ function _1(md){return(
   )}
   
   function _5(md){return(
-  md`#### Dank  
-  Herzlichen Dank an die Deutsche Bücherei Leipzig und das Wilhelm-Ostwald-Archiv Großbooten.`
+  md`**Herzlichen Dank** an die Deutsche Bücherei Leipzig und das Wilhelm-Ostwald-Archiv Großbooten.`
   )}
   
   export default function define(runtime, observer) {
