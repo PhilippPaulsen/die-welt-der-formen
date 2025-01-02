@@ -32,7 +32,7 @@
           </div>
         </div>
       </nav>
-
+      
     <!-- Divider -->
     <hr class="divider">
 
@@ -42,7 +42,7 @@
     <!-- Observable Notebook Integration -->
     <script type="module">
         import { Runtime, Inspector } from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js";
-        import define from "./notebooks/intro.js"; // Replace with your desired notebook file
+        import define from "./notebooks/world_d.js"; // Replace with your desired notebook file
 
         const runtime = new Runtime();
         runtime.module(define, Inspector.into(document.querySelector("#notebook")));

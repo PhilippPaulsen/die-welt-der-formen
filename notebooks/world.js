@@ -538,103 +538,7 @@ function _1(md){return(
   )}
   
   function _34(md){return(
-  md`#### Third Triangle`
-  )}
-  
-  function _35(md){return(
-  md`<!-- -->
-  - 9 subtriangles, 10 nodes, 8 patterns, Sheets 5 to 12.  
-    **Sheet 5: The Net.**The mesh width is three times the length of the
-    first triangle\\'s net.  
-    **Sheet 6: The Segment.**At first glance, one might expect a denser
-    net in the second position to follow the basic net on Sheet 5.
-    However, examining the nodes of the main triangle shows that no nodes
-    lie at the midpoints of the sides. Consequently, no node line can
-    stand perpendicular to a side midpoint, a prerequisite for a
-    second-position net. Such nets only form in triangles of even order,
-    such as the 2nd, 4th, 6th, and so on.  
-    Pattern 6 consists of the middle segments of the triangle sides, which
-    lie between two nodes. It contains only lines that do not form closed
-    shapes. For decorative purposes, these lines can either be emphasized
-    with color or enriched through modifications or surrounding designs,
-    creating a wealth of lawful beauty. It should be noted that each
-    segment has a symmetry axis passing through its midpoint, requiring
-    all modifications and adornments to consist of two mirror-symmetric
-    halves.  
-    These line patterns gain further significance when paired with other
-    patterns, often creating closed shapes from open ones. We refer to
-    such patterns, which do not enclose areas, as open patterns.  
-    **Sheet 7: The Six-Star.**This is the first pattern to contain six
-    lines in the triangle rather than three. Like Pattern 6, it consists
-    of segments of the triangle sides, but these are located at the
-    corners rather than in the middle. They do not intersect the symmetry
-    axes and therefore do not meet the three-line condition. In each
-    corner, six triangles converge, forming six-pointed stars with their
-    centers at the net points.  
-    Here and in subsequent patterns, we refer to open shapes formed by
-    line intersections as \\"stars.\\" Closed star-like shapes, such as on
-    Sheet 20, are called \\"spikes\\"; Sheet 20 features the six-pointed
-    spike.  
-    In designing this pattern, one should avoid lengthening or shortening
-    the rays. The entire pattern features a single consistent length, both
-    in the rays and in the distances between stars. This harmony should
-    not be disrupted without reason.  
-    **Sheet 8: The Hexagon.**This pattern consists of hexagons, whose
-    formation becomes clear upon observing the motif. We refer to such
-    shapes as island patterns, owing to their apparent similarity.  
-    The size and spacing of the hexagons are governed by the simplest laws
-    of order. When Sheet 8 is combined with Sheet 6, it produces a regular
-    hexagonal net, composed entirely of identical, regular hexagons that
-    fit together without gaps. (As is well known, triangles, squares, and
-    hexagons are the only regular polygons that can tile a plane without
-    gaps.) Altering the size or spacing of the hexagons would damage the
-    harmony of the form.  
-    **Sheet 9: The Rhombus.**This pattern features the well-known rhombus
-    design with angles of 1/3 and 1/6. It consists of identical rhombuses,
-    which are not parallel but rotated by 1/3 relative to each other,
-    forming three groups of parallel rhombuses.  
-    One can group three rhombuses into a hexagon or six into a six-pointed
-    star. Larger hexagons formed from 12 rhombuses and even more extensive
-    overall shapes are also present. The hexagons fit together seamlessly,
-    or are \\"tight\\"; the six-pointed stars, however, leave rhombuses
-    between them.  
-    We call patterns like Sheet 9, which cover the entire plane, closed
-    patterns. Nets 1, 2, 3, and 5 are also closed, as is the Trihex on
-    Sheet 4. However, while the former consist entirely of identical
-    subareas, the Trihex features two types of subareas: triangles and
-    hexagons.  
-    **Sheet 10: The Overlapping Triangle.**This intricate pattern can be
-    broken down into triangles larger than the net triangle and in the
-    second position. All lines are perpendicular to corresponding net
-    lines and arrange in three sets at a 1/3 angle. The triangles overlap
-    slightly, forming regular hexagons, rhombuses, and triangles, all with
-    the same side length (except for large hexagons, which have double the
-    side length). Since all lines are parallel to the symmetry axes of the
-    net triangle, this pattern is highly lawful. Any greater or lesser
-    overlap would make the form more complex and disrupt these
-    symmetries.  
-    **Sheet 11: The Overlapping Hexagon.**Just as Pattern 10 results from
-    overlapping triangles, Pattern 11 emerges from overlapping hexagons.
-    Here, their arrangement is the most lawful possible, with the sides of
-    three hexagons meeting at a single point. All lines are parallel to
-    the net lines.  
-    This overlapping arrangement creates a regular six-pointed star within
-    each hexagon. The entire pattern can be seen as composed of such
-    six-pointed stars, with rhombuses remaining between them, as they do
-    not fit tightly. This offers a second interpretation of the pattern.  
-    A third interpretation arises if one considers three rhombuses meeting
-    at a point as the primary form. The six-pointed stars then appear as
-    incidental background shapes.  
-    **Sheet 12: The Overlapping Tri-Star.**This is the first pattern to
-    feature lines that are neither parallel nor perpendicular to the net
-    lines. Such patterns with \\"foreign\\" angles (which are, of course,
-    lawfully related to the net angles) will become increasingly common.  
-    Pattern 12 can be entirely constructed from overlapping tri-stars,
-    whose tips lie at three net points, while a fourth lies at the center
-    of the tri-star. Careful examination will reveal that all lines in the
-    pattern belong to such tri-stars. At each net point, six tri-stars
-    converge.  
-  `
+  md`## …`
   )}
   
   export default function define(runtime, observer) {
@@ -673,7 +577,6 @@ function _1(md){return(
     main.variable(observer()).define(["md"], _32);
     main.variable(observer()).define(["htl"], _33);
     main.variable(observer()).define(["md"], _34);
-    main.variable(observer()).define(["md"], _35);
     return main;
   }
   
