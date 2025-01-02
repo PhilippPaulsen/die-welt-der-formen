@@ -374,15 +374,15 @@ function _1(md){return(
   )}
   
   function _14(md){return(
-  md`- **No. 1:** From the first triangle, 1 subtriangle.
+  md`**No. 1:** From the first triangle, 1 subtriangle.
   
-  - **Nos. 2 to 4:** From the second triangle, 4 subtriangles.
+  **Nos. 2 to 4:** From the second triangle, 4 subtriangles.
   
-  - **Nos. 5 to 12:** From the third triangle, 9 subtriangles.
+  **Nos. 5 to 12:** From the third triangle, 9 subtriangles.
   
-  - **Nos. 13 to 29:** From the fourth triangle, 16 subtriangles.
+  **Nos. 13 to 29:** From the fourth triangle, 16 subtriangles.
   
-  - **Nos. 30 to 62:** From the fifth triangle, 25 subtriangles.
+  **Nos. 30 to 62:** From the fifth triangle, 25 subtriangles.
     
   The 57 patterns of the sixth triangle have already been drawn. They
     include many new features compared to the earlier ones and will be
@@ -390,11 +390,11 @@ function _1(md){return(
     Each pattern displays its sequential number in the top left corner
     and, in the form of bold round dots, the nodes of the triangle in
     which it was created. Each of the six (or three) node lines within the
-    designated triangle can be considered the \\"theme\\" of the pattern.  
-    The first sheet of each group---specifically, sheets 1, 2, 5, 13, and
-    30---shows the pattern that results from replicating the primary
-    triangle when the triangle\\'s sides (i.e., the connections between the
-    nodes located at its corners) are used as the theme: the \\"net.\\" The
+    designated triangle can be considered the "theme" of the pattern.  
+    The first sheet of each group—specifically, sheets 1, 2, 5, 13, and
+    30—shows the pattern that results from replicating the primary
+    triangle when the triangle's sides (i.e., the connections between the
+    nodes located at its corners) are used as the theme: the "net." The
     remaining patterns follow, arranged so that similar ones are grouped
     together.  
     The names assigned to each pattern, to which I devoted considerable
@@ -407,14 +407,14 @@ function _1(md){return(
   )}
   
   function _15(md){return(
-  md`#### First Triangle`
+  md`## First Triangle
+  One subtriangle, 3 nodes, 1 pattern, Sheet 1.  `
   )}
   
   function _16(md){return(
   md`<!-- -->
-  
-  - One subtriangle, 3 nodes, 1 pattern, Sheet 1.  
-    **Sheet 1: The Net.**Among the three nodes of the first triangle,
+  **Sheet 1: The Net**  
+  Among the three nodes of the first triangle,
     only the triangle\\'s sides are possible as node lines. Consequently,
     there is only one pattern, namely the net.  `
   )}
@@ -424,22 +424,38 @@ function _1(md){return(
   )}
   
   function _18(md){return(
-  md`#### Second Triangle`
+  md`## Second Triangle
+  Four subtriangles, 6 nodes, 3 patterns, Sheets 2, 3, 4.  `
   )}
   
   function _19(md){return(
   md`<!-- -->
+  **Sheet 2: The Net.**  
+  This net has mesh twice as wide as in Sheet 1
+    but otherwise resembles it. `
+  )}
   
-  - Four subtriangles, 6 nodes, 3 patterns, Sheets 2, 3, 4.  
-    **Sheet 2: The Net.**This net has mesh twice as wide as in Sheet 1
-    but otherwise resembles it.  
-    **Sheet 3: The Net in Second Position.**The theme lies along the
+  function _20(htl){return(
+  htl.html`<img src="https://die-welt-der-formen.de/assets/002.svg" alt="Folie 002" style="width: auto; height: auto;">`
+  )}
+  
+  function _21(md){return(
+  md`  **Sheet 3: The Net in Second Position.**  
+    The theme lies along the
     symmetry axis, so the pattern contains only three lines, just like the
     net. These lines also form a triangular net, but their lines are
     perpendicular to those in Sheet 2, with smaller mesh size; the ratio
     of mesh size corresponds to the height of a triangle to its side. This
-    is called the "second position" of the triangles.  
-    **Sheet 4: The Trihex.**The thematic line connects the midpoints of
+    is called the "second position" of the triangles.`
+  )}
+  
+  function _22(htl){return(
+  htl.html`<img src="https://die-welt-der-formen.de/assets/003.svg" alt="Folie 003" style="width: auto; height: auto;">`
+  )}
+  
+  function _23(md){return(
+  md`**Sheet 4: The Trihex.**  
+  The thematic line connects the midpoints of
     the triangle's sides, standing perpendicular to and intersecting the
     symmetry axis. Thus, the pattern again contains only three lines. Upon
     replication, these align to form continuous lines intersecting like
@@ -456,18 +472,20 @@ function _1(md){return(
     different surface elements: triangles and hexagons.  `
   )}
   
-  function _20(md){return(
-  md`#### Combinations of Two Patterns`
+  function _24(htl){return(
+  htl.html`<img src="https://die-welt-der-formen.de/assets/004.svg" alt="Folie 004" style="width: auto; height: auto;">`
   )}
   
-  function _21(md){return(
-  md`<!-- -->
-  
-  - There are three combinations of two patterns. Their number generally
+  function _25(md){return(
+  md`#### Combinations of Two Patterns  
+  There are three combinations of two patterns. Their number generally
     follows the formula 1/2n (n−1), where n is the number of basic
-    patterns. For this case, 1/2 × 3 × 2 = 3.
+    patterns. For this case, 1/2 × 3 × 2 = 3.`
+  )}
   
-  - **Combination of Sheets 2 and 3:** This produces a complex pattern
+  function _26(md){return(
+  md`<!-- -->
+  **Combination of Sheets 2 and 3:** This produces a complex pattern
     that can be interpreted as consisting entirely of regular hexagons,
     each divided into 12 right-angled triangles by a twelve-pointed star.
     Alternatively, it can also appear as triangles divided by six-pointed
@@ -481,27 +499,49 @@ function _1(md){return(
     some practice, once accustomed, one can derive extensive enjoyment
     from it. Moreover, this observation prepares for the coloration of
     these patterns, as color distribution can highlight each
-    interpretation for the viewer.
+    interpretation for the viewer.`
+  )}
   
-  1.  **Combination of Sheets 2 and 4:** This creates a dense net similar
+  function _27(htl){return(
+  htl.html`<img src="https://die-welt-der-formen.de/assets/002_003.svg" alt="Folie 002 + 003" style="width: auto; height: auto;">`
+  )}
+  
+  function _28(md){return(
+  md`**Combination of Sheets 2 and 4:** This creates a dense net similar
       to Sheet 1. This can be explained by examining the two patterns
       within the triangle: one provides the main triangles, while the
-      other divides each into four subtriangles.
+      other divides each into four subtriangles.`
+  )}
   
-  2.  **Combination of Sheets 3 and 4:** This results in an intricate
+  function _29(htl){return(
+  htl.html`<img src="https://die-welt-der-formen.de/assets/002_004.svg" alt="Folie 002 + 004" style="width: auto; height: auto;">`
+  )}
+  
+  function _30(md){return(
+  md`**Combination of Sheets 3 and 4:** This results in an intricate
       lattice where both the triangles and hexagons from Sheet 4 are
-      divided into six smaller triangles by inserted six-pointed stars.
+      divided into six smaller triangles by inserted six-pointed stars.`
+  )}
   
-  3.  **Combination of Sheets 2, 3, and 4**: When attempting to combine all three patterns, the result
+  function _31(htl){return(
+  htl.html`<img src="https://die-welt-der-formen.de/assets/003_004.svg" alt="Folie 003 + 004" style="width: auto; height: auto;">`
+  )}
+  
+  function _32(md){return(
+  md`**Combination of Sheets 2, 3, and 4**: When attempting to combine all three patterns, the result
       essentially mirrors the pattern of Sheets 3 and 4. However, the
       stars within the hexagons become twelve-pointed.  `
   )}
   
-  function _22(md){return(
+  function _33(htl){return(
+  htl.html`<img src="https://die-welt-der-formen.de/assets/002_003_004.svg" alt="Folie 002 + 003 + 004" style="width: auto; height: auto;">`
+  )}
+  
+  function _34(md){return(
   md`#### Third Triangle`
   )}
   
-  function _23(md){return(
+  function _35(md){return(
   md`<!-- -->
   - 9 subtriangles, 10 nodes, 8 patterns, Sheets 5 to 12.  
     **Sheet 5: The Net.**The mesh width is three times the length of the
@@ -618,10 +658,22 @@ function _1(md){return(
     main.variable(observer()).define(["htl"], _17);
     main.variable(observer()).define(["md"], _18);
     main.variable(observer()).define(["md"], _19);
-    main.variable(observer()).define(["md"], _20);
+    main.variable(observer()).define(["htl"], _20);
     main.variable(observer()).define(["md"], _21);
-    main.variable(observer()).define(["md"], _22);
+    main.variable(observer()).define(["htl"], _22);
     main.variable(observer()).define(["md"], _23);
+    main.variable(observer()).define(["htl"], _24);
+    main.variable(observer()).define(["md"], _25);
+    main.variable(observer()).define(["md"], _26);
+    main.variable(observer()).define(["htl"], _27);
+    main.variable(observer()).define(["md"], _28);
+    main.variable(observer()).define(["htl"], _29);
+    main.variable(observer()).define(["md"], _30);
+    main.variable(observer()).define(["htl"], _31);
+    main.variable(observer()).define(["md"], _32);
+    main.variable(observer()).define(["htl"], _33);
+    main.variable(observer()).define(["md"], _34);
+    main.variable(observer()).define(["md"], _35);
     return main;
   }
   
