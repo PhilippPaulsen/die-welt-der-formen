@@ -24,12 +24,18 @@ function _1(md){return(
   md`*Philipp Paulsen* is a graphic designer, researcher, and educator, focusing on editorial, exhibition, and system design. After Cultural Studies at Humboldt University Berlin, he graduated in Graphic Design at the Academy of Fine Arts Leipzig (HGB). In 2006 he co-founded Bachmann-Paulsen, collaborating with a variety of cultural and independent business institutions. His work received awards and was exhibited internationally, including The Most Beautiful German Books (DE), International Festival for Poster- and Graphic-Design, Chaumont (FR), and Weltformat, Luzern (CH). He served as an instructor in Typography at HGB 2011–14, and was teaching Graphic Design at the German University in Cairo 2014–24. Since 2024 he lectures at International University (IU). 2018–23 he co-organized 100/100 – Hundred Best Arabic Posters competition Round 2 and 3. He is especially interested in the interplay between rule-based, generative, and intuitive design.`
   )}
   
+  function _5(md){return(
+  md`#### Dank  
+  Herzlichen Dank an die Deutsche Bücherei Leipzig und das Wilhelm-Ostwald-Archiv Großbooten.`
+  )}
+  
   export default function define(runtime, observer) {
     const main = runtime.module();
     main.variable(observer()).define(["md"], _1);
     main.variable(observer()).define(["md"], _2);
     main.variable(observer()).define(["md"], _3);
     main.variable(observer()).define(["md"], _4);
+    main.variable(observer()).define(["md"], _5);
     return main;
   }
   
