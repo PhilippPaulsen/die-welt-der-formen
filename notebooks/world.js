@@ -71,74 +71,36 @@ function _1(md){return(
   )}
   
   function _9(md){return(
-  md`**The Specific Case**  
-  The content of this portfolio concerns the lawful forms of reflected
-  node lines within triangular meshes. The explanation of these terms
-  arises from the origin of the presented patterns.  
-  It is well known that the equilateral triangle, square, and hexagon are
-  the only regular polygons that can completely fill a plane through
-  adjacency. These, therefore, constitute the most lawful spatial
-  divisions. Of course, there are numerous other coherent forms (cf. *The
-  Harmony of Forms,* p. 68), but all of them are less regular.  
-  Among these three regular spatial divisions, we focus primarily on those
-  formed by triangles, as the simplest figures. They have the unique
-  property of filling the plane not merely through translation, as squares
-  and hexagons do, but by making each pair of adjacent triangles mirror
-  images of each other, as can be immediately observed in Plate 1 of this
-  portfolio. Such a mirror pair forms a rhombus, which then fills the
-  plane solely through translation.  
-  In triangular mesh No. 1, larger regular triangles can be formed by
-  combining individual and sub-triangles. Doubling the side length creates
-  a composite triangle containing 22=4 sub-triangles, which fill the plane
-  in the same manner. Tripling the side length results in 32=9
-  sub-triangles; in general, a side length of nn produces n2
-  sub-triangles.  
-  Within a single triangle, only its three vertices serve as distinguished
-  points. The next composite triangle, containing 22 sub-triangles, has
-  six such points or nodes; the third has 10, the fourth 15, and the fifth
-  21 nodes, all formed by the vertices of their sub-triangles.  
-  Now, let us draw a straight line between any two nodes within a
-  composite triangle. This line is our "theme," and we ask what becomes
-  of it when we apply the laws inherent in the regular triangle.  
-  The triangle has three mirror lines, each running from a vertex to the
-  midpoint of the opposite side. By activating these mirrors, the original
-  line typically transforms into six lines, lawfully arranged within the
-  triangle (in some cases, only three), all equal in length and
-  symmetrically aligned with the vertices and sides. Together, these lines
-  form the "shape," which, according to its origin, also possesses the
-  three mirror lines.  
-  We then imagine the entire plane filled with identical triangles, each
-  containing the same shape. We remove the sides and nodes, leaving only
-  the lines of the shape. By joining as many such triangles as desired, we
-  create an unlimited "pattern," capable of filling any plane.  
-  This work presents all patterns that can be created by connecting any
-  nodes within the first to the fifth composite triangles (containing 1,
-  4, 9, 16, and 25 sub-triangles and 3, 6, 10, 15, and 21 nodes,
-  respectively). These patterns encompass everything lawful–and thus
-  beautiful–that is possible under the given conditions, solving a
-  problem that no one has previously dared to pose, let alone resolve.  
-  It should be emphasized that the domain explored here represents only a
-  small portion of the entire range of possibilities. However, using the
-  same principles that enabled the exploration of this domain, other areas
-  can also be conquered, and further methods for venturing into adjacent
-  fields will be demonstrated in the future.  
-  To immediately bring the general instructions given here to life, a
-  single example will be worked through to illustrate the general
-  procedure.  
-  Figure 1 depicts a composite triangle made up of 16 sub-triangles,
-  containing 15 nodes. From the left vertex, we draw a straight line to
-  the uppermost internal node–this is the "theme." Through reflection
-  in the three dashed mirror lines, the theme generates a total of six
-  lines, which, upon further reflection, only transform into each other
-  and produce no additional lines. Together, these lines form the shape
-  shown in Figure 2. When this shape is repeated through the complete
-  tiling of identical triangles, the result is the unlimited pattern
-  depicted as a network of lines in Figure 3, whose simple yet rich beauty
-  I never tire of contemplating.  
-  We now ask *how many forms are possible*. Among nn points, 1/2n (n−1)
-  connections are possible. Thus, the three nodes of the first triangle
-  yield three connections, the six nodes of the second triangle yield 15,
-  the ten nodes of the third triangle yield 45, and so on.`
+  md`### The Specific Case
+  
+  The contents of this portfolio comprise the lawful forms of the mirrored node lines within a triangular grid. The explanation of these terms is derived from the generation of the shared patterns.
+  
+  As is well-known, the equilateral triangle, square, and hexagon are the only regular polygons that can completely fill a plane through adjacency. These thus constitute the most lawful divisions of space. There are, of course, numerous other consistent forms (see *Harmonie der Formen*, p. 68), but they are all less regular.
+  
+  Among these three regular space divisions, we primarily examine those formed by triangles, as the simplest figures. These have the particularity that they do not fill the plane solely by translation, as squares and hexagons do, but that every two adjacent triangles are mutual mirror images, as can be readily observed in Sheet 1 of the portfolio. Such a mirrored pair, forming a rhombus, can then fill the plane through translation alone.
+  
+  In the triangular grid (No. 1), larger regular triangles can be formed by combining the individual sub-triangles. Doubling the side length yields a composite triangle containing \\(2^2 = 4\\) sub-triangles, which fill the plane in exactly the same manner. A tripling of the side length results in \\(3^2 = 9\\) sub-triangles, and, in general, \\(n\\)-times the side length yields \\(n^2\\) sub-triangles.
+  
+  In a single triangle, only the three vertices are distinguished points. The next composite triangle, with \\(2^2\\) sub-triangles, has six such points or *nodes*; the third has ten, the fourth fifteen, and the fifth twenty-one nodes, all formed by the vertices of its sub-triangles.
+  
+  We now draw a straight line between any two nodes of a composite triangle. This is our "theme," and we ask what becomes of it when we apply the laws inherent in the regular triangle to it.
+  
+  The triangle first possesses three axes of symmetry, each passing from one vertex to the midpoint of the opposite side. Applying these axes transforms the initial line into, generally, six lines that are lawfully arranged within the triangle (in certain cases, only three), all of which are of equal length and correspond consistently to the vertices and edges. These lines form the "shape," which, by its generation, also possesses the three axes of symmetry.
+  
+  Now we imagine the entire plane filled with identical triangles, each containing this shape. We let the sides and nodes disappear, leaving only the lines of the shape. As many such triangles are joined together, an infinite "pattern" arises, which can fill any arbitrary plane.
+  
+  In the present work, all patterns are depicted that can be generated by the straight-line connection of any nodes within the first to fifth composite triangles (containing \\(1, 4, 9, 16, 25\\) sub-triangles and \\(3, 6, 10, 15, 21\\) nodes, respectively). Thus, they encompass everything that is lawful and therefore beautiful under the stated conditions, thereby solving a problem that no one had previously dared to pose, let alone solve.
+  
+  It must immediately be emphasized that the area explored here represents only a very small portion of the total possibilities. However, by the same principles used to address this area, any other domain can be conquered, and the means for venturing into neighboring domains will continue to be demonstrated.
+  
+  To bring the above general instructions vividly to life, a specific example is worked through to make the general procedure clear.
+  
+  In **Fig. 1**, a composite triangle consisting of 16 sub-triangles is shown, containing 15 nodes. From the left vertex, we draw a straight line to the topmost interior node—this is the "theme." Reflecting this line across the three dashed symmetry axes generates six lines in total, which transform into one another through further reflections without yielding any new lines. Together, they form the shape in **Fig. 2**. Repeating this shape through the seamless alignment of identical triangles creates the infinite pattern in the form of a lattice of lines, **Fig. 3**, whose simple yet rich beauty I have never tired of observing.
+  
+  We now ask about the *number of possible shapes.* Between \\(n\\) points, there are \\( \\frac{1}{2} n (n - 1) \\) possible connections. Consequently, the three nodes of the first triangle yield three connections, the six nodes of the second yield fifteen, the ten nodes of the third yield forty-five cases or shapes, and so on.
+  
+  However, many of these cases are equivalent. Each of the six lines in **Fig. 2** produces the same shape, even though different nodes are connected each time. If each theme generated six equivalent lines, the number of distinct patterns would not be \\( \\frac{1}{2} n (n - 1) \\), but one-sixth of that, namely \\( \\frac{1}{12} n (n - 1) \\).
+  `
   )}
   
   function _10(md){return(
