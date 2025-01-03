@@ -26,13 +26,12 @@ To set up the project locally:
 3. Open index.html in your browser to explore the interactive content.
 
 ## Usage
-• Visit the homepage to explore interactive examples.
-• Fork the repository and adapt the code for your experiments.
+- Visit the homepage to explore interactive examples.
+- Fork the repository and adapt the code for your experiments.
 - Visit the homepage to explore interactive examples.
 - Fork the repository and adapt the code for your experiments.
 
 ## Contributors
-	•	Philipp Paulsen: Researcher and Designer
 - Philipp Paulsen: Researcher and Designer
 
 ## License
@@ -50,13 +49,11 @@ To set up the project locally:
 - Form-generation algorithms and interactivity.
 - Refine the website’s structure, design, and responsiveness.
 - Add metadata for SEO and test all features before launch.
-3. Book Development (Mid-2025):
 2. Book Development (Mid-2025):
 - Compile and translate materials for publication.
 - Design the layout with visuals inspired by the project.
 - Proofread and review content with academic and editorial feedback.
 - Coordinate with publishers or explore self-publishing options.
-4. Long-Term Goals:
 3. Long-Term Goals:
 - Develop workshops or online courses based on the project.
 - Present the research at conferences or design symposiums.
