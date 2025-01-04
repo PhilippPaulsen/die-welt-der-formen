@@ -150,6 +150,11 @@ body {
     padding: 10px;
   }
 
+  canvas {
+    width: 320px !important;
+    height: auto !important;
+  }  
+
   #notebook, .content {
     padding: 10px;
     margin: 10px;
