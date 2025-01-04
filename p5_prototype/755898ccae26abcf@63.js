@@ -244,7 +244,7 @@ p5((s) => {
         } else {
             connections.push([nodeId]);
         }
-        s.redraw();
+    return s; // Return the p5 instance
     }
 })
 )}
