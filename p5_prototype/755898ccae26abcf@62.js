@@ -10,12 +10,51 @@ p5((s) => {
     let squareSize = canvasSize / 5; // Central square size
     let nodes = [];
     let connections = [];
+    let nodeCount = 4; // Default number of nodes
     let symmetryMode = "rotation_reflection"; // Default symmetry mode
 
     s.setup = () => {
-        s.createCanvas(canvasSize, canvasSize);
+        // Create a container for the canvas and controls
+        const container = document.createElement("div");
+        container.style.display = "flex";
+        container.style.flexDirection = "column";
+        container.style.alignItems = "center";
+        s.canvas.parentElement.appendChild(container);
 
-        // Add Clear button to the notebook UI
+        s.createCanvas(canvasSize, canvasSize);
+        container.appendChild(s.canvas);
+
+        // Add Canvas Size slider
+        const canvasSizeSlider = document.createElement("input");
+        canvasSizeSlider.type = "range";
+        canvasSizeSlider.min = 200; // Minimum canvas size
+        canvasSizeSlider.max = 800; // Maximum canvas size
+        canvasSizeSlider.value = canvasSize; // Default value
+        canvasSizeSlider.style.margin = "10px";
+        canvasSizeSlider.oninput = (e) => {
+            canvasSize = parseInt(e.target.value);
+            squareSize = canvasSize / 5; // Update square size
+            s.resizeCanvas(canvasSize, canvasSize);
+            setupNodes(); // Recalculate nodes
+            s.redraw();
+        };
+        container.appendChild(canvasSizeSlider);
+
+        // Add Node Count slider
+        const nodeSlider = document.createElement("input");
+        nodeSlider.type = "range";
+        nodeSlider.min = 3; // Minimum nodes
+        nodeSlider.max = 10; // Maximum nodes
+        nodeSlider.value = nodeCount; // Default value
+        nodeSlider.style.margin = "10px";
+        nodeSlider.oninput = (e) => {
+            nodeCount = parseInt(e.target.value);
+            setupNodes(); // Recalculate nodes
+            s.redraw();
+        };
+        container.appendChild(nodeSlider);
+
+        // Add Clear button
         const clearButton = document.createElement("button");
         clearButton.textContent = "Clear";
         clearButton.style.margin = "10px";
@@ -23,7 +62,19 @@ p5((s) => {
             connections = [];
             s.redraw();
         };
-        s.canvas.parentElement.appendChild(clearButton);
+        container.appendChild(clearButton);
+
+        // Add Undo button
+        const undoButton = document.createElement("button");
+        undoButton.textContent = "Undo";
+        undoButton.style.margin = "10px";
+        undoButton.onclick = () => {
+            if (connections.length > 0) {
+                connections.pop(); // Remove the last connection
+                s.redraw();
+            }
+        };
+        container.appendChild(undoButton);
 
         // Initialize nodes
         setupNodes();
@@ -65,16 +116,12 @@ p5((s) => {
 
     function setupNodes() {
         nodes = [];
-        const nodeCount = 4; // Default number of nodes
         const step = squareSize / (nodeCount - 1);
-        let idCounter = 1;
-
         for (let i = 0; i < nodeCount; i++) {
             for (let j = 0; j < nodeCount; j++) {
                 nodes.push({
                     x: s.width / 2 - squareSize / 2 + i * step,
                     y: s.height / 2 - squareSize / 2 + j * step,
-                    id: idCounter++,
                 });
             }
         }
@@ -120,36 +167,40 @@ p5((s) => {
             s.line(startNode.x, startNode.y, endNode.x, endNode.y);
 
             if (symmetryMode === "rotation_reflection") {
-                // Reflect across horizontal axis
-                const hStart = getHorizontalMirrorNode(startNode);
-                const hEnd = getHorizontalMirrorNode(endNode);
-                s.line(hStart.x, hStart.y, hEnd.x, hEnd.y);
-
-                // Reflect across vertical axis
-                const vStart = getVerticalMirrorNode(startNode);
-                const vEnd = getVerticalMirrorNode(endNode);
-                s.line(vStart.x, vStart.y, vEnd.x, vEnd.y);
-
-                // Reflect across both axes (point reflection)
-                const pStart = getPointMirrorNode(startNode);
-                const pEnd = getPointMirrorNode(endNode);
-                s.line(pStart.x, pStart.y, pEnd.x, pEnd.y);
-
-                // Rotate original and reflected connections
-                [90, 180, 270].forEach((angle) => {
-                    drawRotatedConnection(startNode, endNode, angle);
-                    drawRotatedConnection(hStart, hEnd, angle);
-                    drawRotatedConnection(vStart, vEnd, angle);
-                    drawRotatedConnection(pStart, pEnd, angle);
-                });
+                // Reflect and rotate connections
+                reflectAndRotateConnections(startNode, endNode);
             }
 
             if (symmetryMode === "rotation") {
-                // Rotate original connection
-                [90, 180, 270].forEach((angle) => {
-                    drawRotatedConnection(startNode, endNode, angle);
-                });
+                rotateConnections(startNode, endNode);
             }
+        });
+    }
+
+    function reflectAndRotateConnections(startNode, endNode) {
+        const hStart = getHorizontalMirrorNode(startNode);
+        const hEnd = getHorizontalMirrorNode(endNode);
+        s.line(hStart.x, hStart.y, hEnd.x, hEnd.y);
+
+        const vStart = getVerticalMirrorNode(startNode);
+        const vEnd = getVerticalMirrorNode(endNode);
+        s.line(vStart.x, vStart.y, vEnd.x, vEnd.y);
+
+        const pStart = getPointMirrorNode(startNode);
+        const pEnd = getPointMirrorNode(endNode);
+        s.line(pStart.x, pStart.y, pEnd.x, pEnd.y);
+
+        [90, 180, 270].forEach((angle) => {
+            drawRotatedConnection(startNode, endNode, angle);
+            drawRotatedConnection(hStart, hEnd, angle);
+            drawRotatedConnection(vStart, vEnd, angle);
+            drawRotatedConnection(pStart, pEnd, angle);
+        });
+    }
+
+    function rotateConnections(startNode, endNode) {
+        [90, 180, 270].forEach((angle) => {
+            drawRotatedConnection(startNode, endNode, angle);
         });
     }
 
