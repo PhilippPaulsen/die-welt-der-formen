@@ -80,8 +80,21 @@ p5((s) => {
         };
         container.appendChild(undoButton);
 
+        // Add Random button
+        const randomButton = document.createElement("button");
+        randomButton.textContent = "+ Random";
+        randomButton.style.width = "320px"; // Fixed width
+        randomButton.style.margin = "10px 0";
+        randomButton.onclick = addRandomConnection;
+        container.appendChild(randomButton);
+
         // Initialize nodes
         setupNodes();
+
+        // Add 5 random connections on startup
+        for (let i = 0; i < 5; i++) {
+            addRandomConnection();
+        }
 
         // No continuous redraw
         s.noLoop();
@@ -116,7 +129,7 @@ p5((s) => {
         });
 
         if (clickedNode) handleNodeClick(clickedNode);
-    }
+    };
 
     function setupNodes() {
         nodes = [];
@@ -240,6 +253,17 @@ p5((s) => {
             x: centerX + dx * Math.cos(rad) - dy * Math.sin(rad),
             y: centerY + dx * Math.sin(rad) + dy * Math.cos(rad),
         };
+    }
+
+    function addRandomConnection() {
+        if (nodes.length < 2) return; // Ensure at least two nodes
+        const startId = Math.floor(Math.random() * nodes.length) + 1;
+        let endId;
+        do {
+            endId = Math.floor(Math.random() * nodes.length) + 1;
+        } while (endId === startId); // Ensure the connection is not to the same node
+        connections.push([startId, endId]);
+        s.redraw();
     }
 
     function handleNodeClick(nodeId) {

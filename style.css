@@ -1,30 +1,30 @@
 /* Einbindung der Suisse-Schrift */
 @font-face {
   font-family: "Suisse";
-  src: url("assets/suisse-book.woff2") format("woff2"),
+  src: url("assets/suisse-book.woff2") format("woff2");
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Suisse";
-  src: url("assets/suisse-bookIt.woff2") format("woff2"),
+  src: url("assets/suisse-bookIt.woff2") format("woff2");
   font-weight: normal;
-  font-style: normal;
+  font-style: italic;
 }
 
 @font-face {
   font-family: "Suisse";
-  src: url("assets/suisse-bold.woff2") format("woff2"),
+  src: url("assets/suisse-bold.woff2") format("woff2");
   font-weight: bold;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Suisse";
-  src: url("assets/suisse-boldIt.woff2") format("woff2"),
+  src: url("assets/suisse-boldIt.woff2") format("woff2");
   font-weight: bold;
-  font-style: normal;
+  font-style: italic;
 }
 
 /* General Styling */
@@ -34,16 +34,35 @@ body {
   padding: 0;
   background-color: #fff;
   color: #000;
-  font-size: 20px; /* Größere Standard-Schriftgröße */
-  line-height: 1.4; /* Bessere Lesbarkeit */
+  font-size: 20px;
+  line-height: 1.4;
 }
 
-/* Begrenzung der Textbreite */
+a {
+  color: #000; /* Black text */
+  text-decoration: underline; /* Keep underline for visibility */
+}
+
+a:hover {
+  color: #000; /* Keep black on hover */
+  text-decoration: underline; /* No change on hover */
+}
+
+a:visited {
+  color: #000; /* Ensure visited links are also black */
+}
+
+a:active {
+  color: #000; /* Keep black when clicked */
+}
+
+/* Left-align the main content */
 #notebook, .content {
-  margin: 18px auto; /* Zentriert die Inhalte */
+  margin: 18px auto;
   padding: 20px;
-  max-width: 800px; /* Maximale Breite für große Bildschirme */
+  max-width: 800px;
   background-color: #fff;
+  text-align: left; /* Ensures content is left-aligned */
 }
 
 /* Navigation Bar */
@@ -93,20 +112,20 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  width: 20px; /* Breite des Symbols */
-  height: 15px; /* Gesamthöhe des Symbols */
+  width: 20px;
+  height: 15px;
 }
 
 .hamburger span {
   display: block;
-  height: 3px; /* Dicke der Balken */
-  width: 100%; /* Balkenbreite */
-  background-color: black; /* Farbe der Balken */
-  border-radius: 2px; /* Leichte Abrundung */
+  height: 3px;
+  width: 100%;
+  background-color: black;
+  border-radius: 2px;
 }
 
 .hamburger span:hover {
-  background-color: gray; /* Farbe der Balken bei Hover */
+  background-color: gray;
 }
 
 .dropdown-content {
@@ -143,64 +162,32 @@ body {
   border-top: 1px solid #ccc;
 }
 
-/* Responsive Styling für kleinere Geräte */
+/* Responsive Styling for Smaller Screens */
 @media (max-width: 768px) {
   body {
-    font-size: 16px; /* Kleinere Schriftgröße auf kleinen Geräten */
+    font-size: 16px;
     padding: 10px;
   }
 
   canvas {
     width: 320px !important;
     height: auto !important;
-  }  
+  }
 
   #notebook, .content {
     padding: 10px;
     margin: 10px;
-    max-width: 90%; /* Passt sich dem Bildschirm an */
+    max-width: 90%;
   }
 }
 
-/* Inhaltsverzeichnis Styling */
-ul {
-  list-style-type: none;
-  padding-left: 0;
-  margin: 20px 0;
-}
-
-ul > li {
-  margin: 10px 0;
-  font-size: 14px;
-  font-weight: bold;
-}
-
-ul ul {
-  margin-left: 20px;
-}
-
-ul ul > li {
-  font-weight: normal;
-  font-size: 14px;
-}
-
-a {
-  text-decoration: underline; /* Immer unterstrichen */
-  color: black; /* Schwarzer Text */
-}
-
-a:hover {
-  text-decoration: underline; /* Keine Änderung bei Hover */
-  color: black; /* Keine Änderung bei Hover */
-}
-
-/* Styling for p5.js UI Elements */
+/* p5.js UI Controls Styling */
 .p5-controls {
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* Left align */
+  align-items: center;
   gap: 10px;
-  margin-top: 10px; /* Add spacing above */
+  margin-top: 15px;
 }
 
 .p5-controls button,
@@ -214,22 +201,25 @@ a:hover {
   border-radius: 4px;
   padding: 5px 10px;
   cursor: pointer;
+  width: 100%;
+  max-width: 320px;
 }
 
 .p5-controls button:hover,
 .p5-controls select:hover,
 .p5-controls input[type="range"]:hover {
-  background: #f0f0f0; /* Light gray hover effect */
+  background: #f0f0f0;
 }
 
 .p5-controls button:active {
-  background: #e0e0e0; /* Slightly darker gray for active state */
+  background: #e0e0e0;
 }
 
 .p5-controls input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
-  width: 200px; /* Fixed width for sliders */
+  width: 100%;
+  max-width: 320px;
   height: 6px;
   background: #000;
   outline: none;
@@ -255,6 +245,6 @@ a:hover {
 }
 
 /* Ensure spacing between canvas and controls */
-.p5-canvas + .p5-controls {
+canvas + .p5-controls {
   margin-top: 10px;
 }
