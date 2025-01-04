@@ -6,7 +6,7 @@ md`## Die Welt der Formen  `
 
 function _generator(p5){return(
 p5((s) => {
-    let canvasSize = 320; // Default canvas size
+    let canvasSize = 640; // Default canvas size
     let squareSize = canvasSize / 5; // Central square size
     let nodes = [];
     let connections = [];
@@ -14,11 +14,11 @@ p5((s) => {
     let symmetryMode = "rotation_reflection"; // Default symmetry mode
 
     s.setup = () => {
-        // Create a container for the canvas and controls
         const container = document.createElement("div");
         container.style.display = "flex";
         container.style.flexDirection = "column";
-        container.style.alignItems = "center";
+        container.style.alignItems = "flex-start"; // Align to the left
+        container.style.maxWidth = "320px"; // Consistent width
         s.canvas.parentElement.appendChild(container);
 
         s.createCanvas(canvasSize, canvasSize);
@@ -30,7 +30,8 @@ p5((s) => {
         canvasSizeSlider.min = 200; // Minimum canvas size
         canvasSizeSlider.max = 800; // Maximum canvas size
         canvasSizeSlider.value = canvasSize; // Default value
-        canvasSizeSlider.style.margin = "10px";
+        canvasSizeSlider.style.width = "320px"; // Fixed width
+        canvasSizeSlider.style.margin = "10px 0";
         canvasSizeSlider.oninput = (e) => {
             canvasSize = parseInt(e.target.value);
             squareSize = canvasSize / 5; // Update square size
@@ -46,7 +47,8 @@ p5((s) => {
         nodeSlider.min = 3; // Minimum nodes
         nodeSlider.max = 10; // Maximum nodes
         nodeSlider.value = nodeCount; // Default value
-        nodeSlider.style.margin = "10px";
+        nodeSlider.style.width = "320px"; // Fixed width
+        nodeSlider.style.margin = "10px 0";
         nodeSlider.oninput = (e) => {
             nodeCount = parseInt(e.target.value);
             setupNodes(); // Recalculate nodes
@@ -57,7 +59,8 @@ p5((s) => {
         // Add Clear button
         const clearButton = document.createElement("button");
         clearButton.textContent = "Clear";
-        clearButton.style.margin = "10px";
+        clearButton.style.width = "320px"; // Fixed width
+        clearButton.style.margin = "10px 0";
         clearButton.onclick = () => {
             connections = [];
             s.redraw();
@@ -67,7 +70,8 @@ p5((s) => {
         // Add Undo button
         const undoButton = document.createElement("button");
         undoButton.textContent = "Undo";
-        undoButton.style.margin = "10px";
+        undoButton.style.width = "320px"; // Fixed width
+        undoButton.style.margin = "10px 0";
         undoButton.onclick = () => {
             if (connections.length > 0) {
                 connections.pop(); // Remove the last connection
@@ -112,7 +116,7 @@ p5((s) => {
         });
 
         if (clickedNode) handleNodeClick(clickedNode);
-    };
+    }
 
     function setupNodes() {
         nodes = [];
@@ -244,7 +248,7 @@ p5((s) => {
         } else {
             connections.push([nodeId]);
         }
-    return s; // Return the p5 instance
+        s.redraw();
     }
 })
 )}
