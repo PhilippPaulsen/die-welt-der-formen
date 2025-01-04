@@ -188,3 +188,68 @@ a:hover {
   text-decoration: underline; /* Keine Änderung bei Hover */
   color: black; /* Keine Änderung bei Hover */
 }
+
+/* Styling for p5.js UI Elements */
+.p5-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Left align */
+  gap: 10px;
+  margin-top: 10px; /* Add spacing above */
+}
+
+.p5-controls button,
+.p5-controls input[type="range"],
+.p5-controls select {
+  font-family: "Suisse", Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  color: #000;
+  background: #fff;
+  border: 1px solid #000;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.p5-controls button:hover,
+.p5-controls select:hover,
+.p5-controls input[type="range"]:hover {
+  background: #f0f0f0; /* Light gray hover effect */
+}
+
+.p5-controls button:active {
+  background: #e0e0e0; /* Slightly darker gray for active state */
+}
+
+.p5-controls input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 200px; /* Fixed width for sliders */
+  height: 6px;
+  background: #000;
+  outline: none;
+  border-radius: 4px;
+}
+
+.p5-controls input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #000;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.p5-controls input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #000;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Ensure spacing between canvas and controls */
+.p5-canvas + .p5-controls {
+  margin-top: 10px;
+}

@@ -1,0 +1,14 @@
+{
+  "name": "755898ccae26abcf",
+  "main": "755898ccae26abcf@41.js",
+  "version": "41.0.0",
+  "homepage": "https://observablehq.com/d/755898ccae26abcf",
+  "author": {
+    "name": "the-world-of-forms",
+    "url": "https://observablehq.com/@the-world-of-forms"
+  },
+  "type": "module",
+  "peerDependencies": {
+    "@observablehq/runtime": "4 - 5"
+  }
+}
