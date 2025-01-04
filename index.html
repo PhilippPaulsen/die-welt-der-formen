@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The World of Forms</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="./p5_prototype/inspector.css"> <!-- Observable CSS -->
     <script type="module" src="https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/addons/p5.dom.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/addons/p5.sound.min.js"></script>
 </head>
 <body>
     <!-- Navigation Bar -->
@@ -41,8 +45,8 @@
 
     <!-- Observable Notebook Integration -->
     <script type="module">
-        import { Runtime, Inspector } from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js";
-        import define from "./notebooks/intro.js"; // Replace with your desired notebook file
+        import define from "./p5_prototype/index.js"; // Notebook file
+        import { Runtime, Library, Inspector } from "./p5_prototype/runtime.js";
 
         const runtime = new Runtime();
         runtime.module(define, Inspector.into(document.querySelector("#notebook")));
