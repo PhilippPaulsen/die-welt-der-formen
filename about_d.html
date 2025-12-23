@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Harmony of Forms</title>
+  <title>Über</title>
   <link rel="stylesheet" href="style.css">
   <script type="module" src="https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js"></script>
 </head>
@@ -13,12 +13,12 @@
   <!-- Navigation Bar -->
   <nav class="top-bar">
     <div class="brand">
-      <strong>The Harmony of Forms</strong>
+      <strong>Über</strong>
     </div>
 
     <div class="header-right">
       <div class="dropdown">
-        <button class="dropbtn" aria-label="Toggle navigation menu">
+        <button class="dropbtn" aria-label="Navigation umschalten">
           <!-- Hamburger-Menü -->
           <div class="hamburger">
             <span></span>
@@ -27,17 +27,17 @@
           </div>
         </button>
         <div class="dropdown-content">
-          <a href="index.html">Start</a>
-          <a href="harmony.html" class="active">Harmony</a>
-          <a href="world.html">World</a>
-          <a href="about.html">About</a>
+          <a href="index_d.html">Start</a>
+          <a href="harmony_d.html">Harmonie</a>
+          <a href="world_d.html">Welt</a>
+          <a href="about_d.html" class="active">Über</a>
         </div>
       </div>
 
       <div class="lang-switch">
-        <a href="harmony.html" class="active">EN</a>
+        <a href="about.html">EN</a>
         <span>|</span>
-        <a href="harmony_d.html">DE</a>
+        <a href="about_d.html" class="active">DE</a>
       </div>
     </div>
   </nav>
@@ -51,7 +51,7 @@
   <!-- Observable Notebook Integration -->
   <script type="module">
     import { Runtime, Inspector } from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js";
-    import define from "./notebooks/harmony.js"; // Replace with your desired notebook file
+    import define from "./notebooks/about_d.js"; // Replace with your desired notebook file
 
     const runtime = new Runtime();
     runtime.module(define, Inspector.into(document.querySelector("#notebook")));

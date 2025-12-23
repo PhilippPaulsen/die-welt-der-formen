@@ -46,16 +46,10 @@ function _5(md) {
 
 export default function define(runtime, observer) {
   const main = runtime.module();
-  // main.variable(observer()).define(["md"], _1); // German Bio
-  main.variable(observer()).define(["md"], _2); // English Bio
-  // main.variable(observer()).define(["html"], _3); // German Details
-  main.variable(observer()).define(["html"], _4); // English Details
-
-  // Translated Acknowledgement
-  main.variable(observer()).define(["md"], function (md) {
-    return (
-      md`**Special thanks** to the German National Library Leipzig and the Wilhelm Ostwald Archive Großbooten.`
-    )
-  });
+  main.variable(observer()).define(["md"], _1); // German Bio
+  // main.variable(observer()).define(["md"], _2); // English Bio
+  main.variable(observer()).define(["html"], _3); // German Details
+  // main.variable(observer()).define(["html"], _4); // English Details
+  main.variable(observer()).define(["md"], _5); // German Acknowledgement
   return main;
 }
