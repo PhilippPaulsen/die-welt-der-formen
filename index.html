@@ -1,62 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="The World of Forms — A design research project reviving Wilhelm Ostwald's form theory through interactive generative design and historical context.">
-    <meta property="og:title" content="The World of Forms">
-    <meta property="og:description" content="Explore the intersection of historical form theory and generative design. Reviving Wilhelm Ostwald's work with modern interactive tools.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://www.die-welt-der-formen.de">
-    <meta property="og:image" content="https://www.die-welt-der-formen.de/assets/WdF.svg">
-    <title>The World of Forms</title>
-    <link rel="icon" type="image/svg+xml" href="assets/WdF.svg">
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="./p5_prototype/inspector.css"> <!-- Observable CSS -->
-    <script type="module" src="https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/addons/p5.dom.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/addons/p5.sound.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="The World of Forms — A design research project reviving Wilhelm Ostwald's form theory through interactive generative design and historical context.">
+  <meta property="og:title" content="The World of Forms">
+  <meta property="og:description"
+    content="Explore the intersection of historical form theory and generative design. Reviving Wilhelm Ostwald's work with modern interactive tools.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.die-welt-der-formen.de">
+  <meta property="og:image" content="https://www.die-welt-der-formen.de/assets/WdF.svg">
+  <title>The World of Forms</title>
+  <link rel="icon" type="image/svg+xml" href="assets/WdF.svg">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="./p5_prototype/inspector.css"> <!-- Observable CSS -->
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/addons/p5.dom.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/addons/p5.sound.min.js"></script>
 </head>
+
 <body>
-    <!-- Navigation Bar -->
-    <nav class="top-bar">
-        <div class="brand">
-          <strong>The World of Forms</strong>
+  <!-- Navigation Bar -->
+  <nav class="top-bar">
+    <div class="brand">
+      <strong>The World of Forms</strong>
+    </div>
+    <div class="dropdown">
+      <button class="dropbtn" aria-label="Toggle navigation menu">
+        <!-- Hamburger-Menü -->
+        <div class="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
-        <div class="dropdown">
-          <button class="dropbtn">
-            <!-- Hamburger-Menü -->
-            <div class="hamburger">
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
-          </button>
-          <div class="dropdown-content">
-            <a href="index.html">Main</a>
-            <a href="harmony_d.html">Die Harmonie der Formen</a>
-            <a href="harmony.html">The Harmony of Forms</a>
-            <a href="world_d.html">Die Welt der Formen</a>
-            <a href="world.html">The World of Forms</a>
-            <a href="about.html">About</a>
-          </div>
-        </div>
-      </nav>
+      </button>
+      <div class="dropdown-content">
+        <a href="index.html">Main</a>
+        <a href="harmony_d.html">Die Harmonie der Formen</a>
+        <a href="harmony.html">The Harmony of Forms</a>
+        <a href="world_d.html">Die Welt der Formen</a>
+        <a href="world.html">The World of Forms</a>
+        <a href="about.html">About</a>
+      </div>
+    </div>
+  </nav>
 
-    <!-- Divider -->
-    <hr class="divider">
+  <!-- Divider -->
+  <hr class="divider">
 
-    <!-- Observable Notebook Container -->
-    <main id="notebook"></main>
+  <!-- Observable Notebook Container -->
+  <main id="notebook"></main>
 
-    <!-- Observable Notebook Integration -->
-    <script type="module">
-        import define from "./p5_prototype/index.js"; // Notebook file
-        import { Runtime, Library, Inspector } from "./p5_prototype/runtime.js";
+  <!-- Observable Notebook Integration -->
+  <script type="module">
+    import define from "./p5_prototype/index.js"; // Notebook file
+    import { Runtime, Library, Inspector } from "./p5_prototype/runtime.js";
 
-        const runtime = new Runtime();
-        runtime.module(define, Inspector.into(document.querySelector("#notebook")));
-    </script>
+    const runtime = new Runtime();
+    runtime.module(define, Inspector.into(document.querySelector("#notebook")));
+  </script>
 </body>
+
 </html>
