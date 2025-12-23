@@ -58,30 +58,88 @@
 
     <!-- App Interface -->
     <div id="interface-container">
-        <div id="canvas-target"></div>
+        <div id="canvas-container"></div>
 
         <div class="p5-controls">
-            <label for="canvasSize">Leinwandgröße</label>
-            <input type="range" id="canvasSize" min="200" max="800" value="600">
 
-            <label for="nodeCount">Anzahl Knoten</label>
-            <input type="range" id="nodeCount" min="3" max="10" value="4">
-
-            <div class="button-group">
-                <button id="btnClear">Löschen</button>
-                <button id="btnUndo">Rückgängig</button>
-                <button id="btnRandom">+ Zufall</button>
+            <!-- Shape Icons -->
+            <div class="control-group">
+                <div class="icon-row">
+                    <button class="shape-icon-btn active" data-shape="triangle" title="Dreieck">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 4L4 20h16L12 4z" />
+                        </svg>
+                    </button>
+                    <button class="shape-icon-btn" data-shape="square" title="Quadrat">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="4" y="4" width="16" height="16" />
+                        </svg>
+                    </button>
+                    <button class="shape-icon-btn" data-shape="hex" title="Sechseck">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 2l8.66 5v10L12 22 3.34 17V7L12 2z" />
+                        </svg>
+                    </button>
+                </div>
             </div>
+
+            <!-- Nodes Input (Simple Number) -->
+            <div class="control-group">
+                <input type="number" id="node-count-input" min="1" max="5" value="3" title="Anzahl Knoten (1-5)">
+            </div>
+
+            <!-- Visibility Toggle (Eye Icon) -->
+            <div class="control-group">
+                <button id="btn-toggle-nodes" class="action-btn active" title="Knoten anzeigen">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="control-group">
+                <div class="button-group icon-group">
+                    <button id="btn-clear" class="action-btn" title="Leeren">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                        </svg>
+                    </button>
+                    <button id="btn-undo" class="action-btn" title="Rückgängig">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M9 14 4 9l5-5" />
+                            <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11" />
+                        </svg>
+                    </button>
+                    <button id="btn-random" class="action-btn" title="Zufall">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l-5 5M4 4l5 5" />
+                        </svg>
+                    </button>
+                    <button id="btn-save" class="action-btn" title="Bild speichern">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Hidden Canvas Size Slider -->
+            <input type="range" id="canvas-size-slider" min="200" max="800" value="600" style="display:none;">
         </div>
     </div>
 
-    <!-- Hidden Observable anchor is no longer needed -->
-
     <!-- Vanilla P5 Initialization -->
-    <script type="module">
-        import sketch from "./p5_prototype/sketch.js";
-        new p5(sketch);
-    </script>
+    <!-- Global P5 Sketch (Not a module) -->
+    <script src="p5_prototype/sketch.js"></script>
 
     <!-- Main Content (DE) -->
     <section class="content">
