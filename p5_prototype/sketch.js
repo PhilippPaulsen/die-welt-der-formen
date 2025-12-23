@@ -1,5 +1,5 @@
 export default function sketch(s) {
-    let canvasSize = 640; // Default canvas size
+    let canvasSize = 600; // Default canvas size
     let squareSize = canvasSize / 5; // Central square size
     let nodes = [];
     let connections = [];
