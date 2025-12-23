@@ -431,3 +431,56 @@ canvas+.p5-controls {
     gap: 15px;
   }
 }
+
+/* Help Overlay */
+#help-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  opacity: 1;
+  transition: opacity 0.2s;
+}
+
+#help-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.help-content {
+  background: #fff;
+  border: 1px solid #000;
+  padding: 30px;
+  max-width: 400px;
+  text-align: left;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.help-content ul {
+  padding-left: 20px;
+  margin-bottom: 20px;
+}
+
+.help-content li {
+  margin-bottom: 5px;
+}
+
+.help-content button {
+  background: #000;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: bold;
+}
+
+.help-content button:hover {
+  background: #333;
+}

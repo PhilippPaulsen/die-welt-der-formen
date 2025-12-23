@@ -91,14 +91,23 @@
                 <input type="number" id="node-count-input" min="1" max="5" value="3" title="Anzahl Knoten (1-5)">
             </div>
 
-            <!-- Visibility Toggle (Eye Icon) -->
+            <!-- Visibility Toggle (Eye Icon) & Curve Toggle (Wave Icon) -->
             <div class="control-group">
-                <button id="btn-toggle-nodes" class="action-btn active" title="Knoten anzeigen">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                        <circle cx="12" cy="12" r="3" />
-                    </svg>
-                </button>
+                <div class="button-group icon-group">
+                    <button id="btn-toggle-nodes" class="action-btn active" title="Knoten anzeigen">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                    </button>
+                    <button id="btn-toggle-curve" class="action-btn" title="Krümmung an/aus">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M4 12c2-4 6-4 8 0s6 4 8 0" />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <!-- Action Buttons -->
@@ -117,6 +126,13 @@
                             <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11" />
                         </svg>
                     </button>
+                    <button id="btn-redo" class="action-btn" title="Wiederholen">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M15 14 20 9l-5-5" />
+                            <path d="M20 9h-10.5a5.5 5.5 0 0 0 -5.5 5.5v0a5.5 5.5 0 0 0 5.5 5.5H13" />
+                        </svg>
+                    </button>
                     <button id="btn-random" class="action-btn" title="Zufall">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
@@ -129,11 +145,32 @@
                             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
                         </svg>
                     </button>
+                    <button id="btn-help" class="action-btn" title="Hilfe">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </button>
                 </div>
             </div>
 
             <!-- Hidden Canvas Size Slider -->
             <input type="range" id="canvas-size-slider" min="200" max="800" value="600" style="display:none;">
+
+            <!-- Help Overlay -->
+            <div id="help-overlay" class="hidden">
+                <div class="help-content">
+                    <p><strong>Bedienung:</strong></p>
+                    <ul>
+                        <li>Klicke auf Knoten, um sie zu verbinden.</li>
+                        <li>Nutze die Steuerung für Form und Komplexität.</li>
+                        <li>Schalte Knoten und Krümmung an/aus.</li>
+                    </ul>
+                    <button id="close-help">Schließen</button>
+                </div>
+            </div>
         </div>
     </div>
 
