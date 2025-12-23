@@ -304,10 +304,27 @@ a:active {
     background-color: #f0f0f0;
   }
 
-  canvas {
-    width: 320px !important;
-    height: auto !important;
+  /* Canvas Styling */
+  #canvas-container {
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+    margin-bottom: 20px;
+    display: flex !important;
+    justify-content: center;
+    background-color: #fff;
   }
+
+  #canvas-container canvas {
+    width: 100% !important;
+    height: auto !important;
+    outline: none;
+    border: none !important;
+    box-shadow: none !important;
+    display: block;
+  }
+
+
 
   #notebook,
   .content {
@@ -317,86 +334,100 @@ a:active {
   }
 }
 
-/* p5.js UI Controls Styling */
+/* p5.js UI Controls Styling - Horizontal Toolbar */
 .p5-controls {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  /* Align controls left */
-  gap: 10px;
-  margin-top: 15px;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  /* Center everything vertically */
+  flex-wrap: wrap;
+  gap: 15px;
+  /* Tighter gap */
+  margin-top: 20px;
   width: 100%;
   max-width: 600px;
-  /* Match default canvas size or logical max */
 }
 
-.button-group {
+.control-group {
   display: flex;
-  gap: 10px;
-  width: 100%;
-  max-width: 320px;
+  flex-direction: column;
+  justify-content: center;
+  /* Center items */
+  gap: 0;
 }
 
 .p5-controls label {
-  font-size: 14px;
-  margin-bottom: -5px;
+  display: none;
+  /* Hide any remaining labels */
 }
 
-.p5-controls button,
-.p5-controls input[type="range"],
-.p5-controls select {
+/* Icon Rows (Shapes) */
+.icon-row {
+  display: flex;
+  gap: 5px;
+}
+
+/* Button Group (Actions) */
+.button-group.icon-group {
+  display: flex;
+  gap: 5px;
+  flex-direction: row;
+}
+
+/* Buttons (Shapes & Actions) */
+.shape-icon-btn,
+.action-btn {
+  background: #fff;
+  border: 1px solid #000;
+  border-radius: 4px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+  color: #000;
+}
+
+.shape-icon-btn:hover,
+.action-btn:hover {
+  background: #f0f0f0;
+}
+
+.shape-icon-btn.active {
+  background: #000;
+  color: #fff;
+}
+
+/* Small Number Inputs */
+.p5-controls input[type="number"] {
   font-family: "Suisse", Helvetica, Arial, sans-serif;
   font-size: 16px;
   color: #000;
   background: #fff;
   border: 1px solid #000;
   border-radius: 4px;
-  padding: 5px 10px;
-  cursor: pointer;
-  width: 100%;
-  max-width: 320px;
+  padding: 5px;
+  width: 60px;
+  height: 40px;
+  box-sizing: border-box;
+  margin: 0;
 }
 
-.p5-controls button:hover,
-.p5-controls select:hover,
-.p5-controls input[type="range"]:hover {
-  background: #f0f0f0;
-}
 
-.p5-controls button:active {
-  background: #e0e0e0;
-}
 
-.p5-controls input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  max-width: 320px;
-  height: 6px;
-  background: #000;
-  outline: none;
-  border-radius: 4px;
-}
-
-.p5-controls input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  background: #000;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-.p5-controls input[type="range"]::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  background: #000;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-/* Ensure spacing between canvas and controls */
+/* Ensure canvas spacing */
 canvas+.p5-controls {
   margin-top: 10px;
+}
+
+/* Mobile responsive fallback */
+@media (max-width: 600px) {
+  .p5-controls {
+    justify-content: space-between;
+    gap: 15px;
+  }
 }
