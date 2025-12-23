@@ -23,6 +23,7 @@ let outerCorners = [];
 let centroid = { x: 0, y: 0 };
 let nodes = [];
 let connections = [];
+let redoStack = [];
 
 // ----------------- HELPERS --------------------------------------
 function rotateAround(pt, center, angleDeg) {
@@ -97,6 +98,21 @@ function setup() {
         });
     }
 
+    // Curve Toggle Button
+    const curveBtn = select('#btn-toggle-curve');
+    if (curveBtn) {
+        curveBtn.mousePressed(() => {
+            if (curveAmount === 0) {
+                curveAmount = 25; // Enable curve
+                curveBtn.addClass('active');
+            } else {
+                curveAmount = 0; // Disable curve
+                curveBtn.removeClass('active');
+            }
+            redraw();
+        });
+    }
+
     // Show nodes Toggle Button
     const nodeBtn = select('#btn-toggle-nodes');
     if (nodeBtn) {
@@ -115,16 +131,55 @@ function setup() {
 
     // Action Buttons
     const clearBtn = select('#btn-clear');
-    clearBtn && clearBtn.mousePressed(() => { connections = []; redraw(); });
+    clearBtn && clearBtn.mousePressed(() => {
+        connections = [];
+        redoStack = []; // Clear redo on clear
+        redraw();
+    });
 
     const backBtn = select('#btn-undo');
-    backBtn && backBtn.mousePressed(() => { if (connections.length) connections.pop(); redraw(); });
+    backBtn && backBtn.mousePressed(() => {
+        if (connections.length) {
+            redoStack.push(connections.pop()); // Push to redo stack
+            redraw();
+        }
+    });
+
+    const redoBtn = select('#btn-redo');
+    redoBtn && redoBtn.mousePressed(() => {
+        if (redoStack.length) {
+            connections.push(redoStack.pop()); // Pop from redo stack
+            redraw();
+        }
+    });
 
     const randBtn = select('#btn-random');
-    randBtn && randBtn.mousePressed(() => { addRandomConnection(); redraw(); });
+    randBtn && randBtn.mousePressed(() => {
+        addRandomConnection();
+        redoStack = []; // Clear redo on new action
+        redraw();
+    });
 
     const dlBtn = select('#btn-save');
     dlBtn && dlBtn.mousePressed(() => saveCanvas('world_of_forms', 'png'));
+
+    // Help Button Logic
+    const helpBtn = select('#btn-help');
+    const helpOverlay = select('#help-overlay');
+    const closeHelpBtn = select('#close-help');
+
+    if (helpBtn && helpOverlay) {
+        helpBtn.mousePressed(() => {
+            helpOverlay.removeClass('hidden');
+        });
+        closeHelpBtn && closeHelpBtn.mousePressed(() => {
+            helpOverlay.addClass('hidden');
+        });
+        // Close on background click
+        helpOverlay.mousePressed((e) => {
+            if (e.target.id === 'help-overlay') helpOverlay.addClass('hidden');
+        });
+    }
 
     rebuildGrid(currentShape);
     // Draw a random connection on start
@@ -139,9 +194,9 @@ function draw() {
     const bgColor = getComputedStyle(document.body).getPropertyValue('--panel-bg-color') || '#ffffff';
     background(bgColor);
 
-    // Linienfarbe wie Picker/CSS, Füllung standardmäßig schwarz
+    // Linienfarbe wie Picker/CSS, keine Füllung für die Kurven
     stroke(lineColor);
-    fill(0);
+    noFill();
 
     drawTessellation();
 
@@ -279,6 +334,7 @@ function mousePressed() {
     if (foundId !== null) {
         if (!connections.length || connections[connections.length - 1].length === 2) connections.push([foundId]);
         else connections[connections.length - 1].push(foundId);
+        redoStack = []; // Clear redo stack on manual add
         redraw();
     }
 }
@@ -321,18 +377,18 @@ function drawConnectionWithSymmetry(p1, p2, center) {
     if (symmetryMode === 'reflection_only') {
         const sRef = reflectVerticallyAround(p1, center);
         const eRef = reflectVerticallyAround(p2, center);
-        drawCurvedBezier(sRef, eRef, curveAmount);
+        drawCurvedBezier(sRef, eRef, -curveAmount);
     }
     if (symmetryMode === 'rotation_reflection3' || symmetryMode === 'rotation_reflection6') {
         const sRef = reflectVerticallyAround(p1, center);
         const eRef = reflectVerticallyAround(p2, center);
-        drawCurvedBezier(sRef, eRef, curveAmount);
+        drawCurvedBezier(sRef, eRef, -curveAmount);
         rotAngles.forEach(a => {
             const sR = rotateAround(p1, center, a);
             const eR = rotateAround(p2, center, a);
             const sRR = reflectVerticallyAround(sR, center);
             const eRR = reflectVerticallyAround(eR, center);
-            drawCurvedBezier(sRR, eRR, curveAmount);
+            drawCurvedBezier(sRR, eRR, -curveAmount);
         });
     }
 }
