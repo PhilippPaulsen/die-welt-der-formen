@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Die Welt der Formen — Ein Designforschungsprojekt zur Wiederentdeckung von Wilhelm Ostwalds Formenlehre durch interaktives generatives Design.">
+    <meta property="og:title" content="Die Welt der Formen">
+    <meta property="og:description"
+        content="Erforsche die Schnittstelle von historischer Formtheorie und generativem Design. Eine Wiederbelebung von Wilhelm Ostwalds Werk mit modernen interaktiven Tools.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.die-welt-der-formen.de/index_d.html">
+    <meta property="og:image" content="https://www.die-welt-der-formen.de/assets/WdF.svg">
+    <title>Die Welt der Formen</title>
+    <link rel="icon" type="image/svg+xml" href="assets/WdF.svg">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="./p5_prototype/inspector.css"> <!-- Observable CSS -->
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/addons/p5.dom.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/addons/p5.sound.min.js"></script>
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <nav class="top-bar">
+        <div class="brand">
+            <strong>Die Welt der Formen</strong>
+        </div>
+
+        <div class="header-right">
+            <div class="dropdown">
+                <button class="dropbtn" aria-label="Navigation umschalten">
+                    <!-- Hamburger-Menü -->
+                    <div class="hamburger">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </button>
+                <div class="dropdown-content">
+                    <a href="index_d.html">Main</a>
+                    <a href="harmony.html">Harmony</a>
+                    <a href="world.html">World</a>
+                    <a href="about.html">About</a>
+                </div>
+            </div>
+
+            <div class="lang-switch">
+                <a href="index.html">EN</a>
+                <span>|</span>
+                <a href="index_d.html" class="active">DE</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Divider -->
+    <hr class="divider">
+
+    <!-- Observable Notebook Container -->
+    <main id="notebook"></main>
+
+    <!-- Observable Notebook Integration -->
+    <script type="module">
+        import define from "./p5_prototype/index.js"; // Notebook file
+        import { Runtime, Library, Inspector } from "./p5_prototype/runtime.js";
+
+        const runtime = new Runtime();
+        runtime.module(define, Inspector.into(document.querySelector("#notebook")));
+    </script>
+
+    <!-- Main Content (DE) -->
+    <section class="content">
+        <h2>Die Welt der Formen</h2>
+        <p>
+            Der Naturforscher und Nobelpreisträger Wilhelm Ostwald veröffentlichte 1922 seine Formenlehre <em>Die
+                Harmonie der Formen</em>. Bis 1928 folgten vier Mappenwerke unter dem Titel <em>Die Welt der
+                Formen</em>, in denen die Lehre methodisch ausformuliert wurde. Die 240 Serien von Formen, auf
+            transparenten Blättern gedruckt, erlauben unzählige Kombinationsmöglichkeiten und stellen ein frühes
+            Beispiel regelbasierter Programmierung im Bereich von Kunst und Design dar.
+        </p>
+        <p>
+            Ostwalds Farben- und Formlehre beeinflussten nicht nur den Werkbund, sondern auch das Bauhaus und die
+            niederländische Kunstbewegung De Stijl. Designer wie Moholy-Nagy, Herbert Bayer oder später Vertreter der
+            Konkreten Kunst wie Max Bill, Karl Gerstner, und besonders Hans Hinterreiter, nahmen seine Ideen begeistert
+            auf. Dennoch ist Ostwalds Formenlehre – im Gegensatz zu seiner Farbenlehre – heute weitgehend in
+            Vergessenheit geraten.
+        </p>
+        <p>
+            Dieses Forschungsprojekt möchte dazu beitragen, Ostwalds Formenlehre einer breiteren Öffentlichkeit
+            zugänglich zu machen: Im Herbst 2025 erscheint eine kritische Neuauflage im Verlag Spector Books Leipzig,
+            die auch bisher unveröffentlichte Manuskripte und Fragmente einschließt, sowie Ostwalds Arbeiten im
+            Spannungsfeld von Wissenschaft und Kunst, Gesetzmäßigkeit und Intuition, Ornament und Figuration einordnet.
+            Begleitend dazu lädt diese digitale Plattform (aktuell im Beta-Status) dazu ein, Ostwalds Texte, Formen und
+            Gesetze mithilfe von interaktiven Grafiken zu entdecken.
+        </p>
+    </section>
+</body>
+
+</html>
