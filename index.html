@@ -15,8 +15,7 @@
   <title>The World of Forms</title>
   <link rel="icon" type="image/svg+xml" href="assets/WdF.svg">
   <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="./p5_prototype/inspector.css"> <!-- Observable CSS -->
-  <script type="module" src="https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js"></script>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/addons/p5.dom.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/addons/p5.sound.min.js"></script>
@@ -78,17 +77,12 @@
     </div>
   </div>
 
-  <!-- Hidden Observable anchor (logic still runs via runtime) -->
-  <div id="notebook" style="display: none;"></div>
+  <!-- Hidden Observable anchor is no longer needed -->
 
-  <!-- Observable Notebook Integration -->
+  <!-- Vanilla P5 Initialization -->
   <script type="module">
-    import define from "./p5_prototype/index.js"; // Notebook file
-    import { Runtime, Library, Inspector } from "./p5_prototype/runtime.js";
-
-    const runtime = new Runtime();
-    // We inspect into #notebook to ensure the cell runs, but the graphic will be rendered into #canvas-target via p5.parent()
-    runtime.module(define, Inspector.into(document.querySelector("#notebook")));
+    import sketch from "./p5_prototype/sketch.js";
+    new p5(sketch);
   </script>
 
   <!-- Main Content (EN) -->
