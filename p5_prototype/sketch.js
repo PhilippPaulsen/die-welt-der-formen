@@ -275,9 +275,9 @@ function tileHex() {
 // --- SQUARE ---
 function tileSquare() {
     const s = dist(outerCorners[0].x, outerCorners[0].y, outerCorners[1].x, outerCorners[1].y); // tile size
-    const cols = ceil(width / s) + 4; const rows = ceil(height / s) + 4;
-    for (let i = -2; i < cols; i++) {
-        for (let j = -2; j < rows; j++) {
+    const cols = ceil(width / s) + 6; const rows = ceil(height / s) + 6;
+    for (let i = -4; i < cols; i++) {
+        for (let j = -4; j < rows; j++) {
             const tileC = { x: centroid.x + i * s, y: centroid.y + j * s };
             drawShapeCell(tileC, false);
         }
@@ -288,16 +288,17 @@ function tileSquare() {
 function tileTriangle() {
     // Justage-Parameter für das Dreieck-Tiling:
     // Passe horizontalAdjust und verticalAdjust manuell an, um die horizontale/vertikale Abstände zwischen den Dreiecken zu feintunen.
-    // Standardwerte: horizontalAdjust = 0.0, verticalAdjust = 0.08
-    const horizontalAdjust = -0.01;
-    const verticalAdjust = 0.01;
+    // Justage-Parameter für das Dreieck-Tiling (Reset auf 0 für exakte Mathematik)
+    const horizontalAdjust = 0.0;
+    const verticalAdjust = 0.0;
 
     const s = dist(outerCorners[1].x, outerCorners[1].y, outerCorners[2].x, outerCorners[2].y);
     const h = (sqrt(3) / 2) * s;
 
     // --- Manuelle Verschiebung des gesamten Musters ---
-    const offsetX = -s * 2.49; // negative Werte: nach links, positive: nach rechts
-    const offsetY = -h * 3.02; // negative Werte: nach oben, positive: nach unten
+    // Reset auf 0, da das Gitter relativ zu "B" (zentrales Dreieck) aufgebaut wird.
+    const offsetX = 0;
+    const offsetY = 0;
 
     // Schrittweiten mit manueller Justage
     const v1 = { x: s * (1 + horizontalAdjust), y: 0 }; // horizontale Schrittweite (angepasst)
@@ -305,11 +306,11 @@ function tileTriangle() {
 
     // Ursprung für das Gitter
     const B = outerCorners[1];
-    const cols = ceil(width / (s * (1 + horizontalAdjust))) + 4;
-    const rows = ceil(height / (h * (1 + verticalAdjust))) + 4;
+    const cols = ceil(width / (s * (1 + horizontalAdjust))) + 8;
+    const rows = ceil(height / (h * (1 + verticalAdjust))) + 8;
 
-    for (let j = -2; j < rows; j++) {
-        for (let i = -2; i < cols; i++) {
+    for (let j = -4; j < rows; j++) {
+        for (let i = -4; i < cols; i++) {
             const anchor = {
                 x: B.x + i * v1.x + j * v2.x + offsetX,
                 y: B.y + i * v1.y + j * v2.y + offsetY
