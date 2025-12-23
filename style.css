@@ -159,6 +159,11 @@ a:active {
   white-space: nowrap;
 }
 
+.dropdown-content a.active {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
 /* Language Switcher */
 .lang-switch {
   display: flex;
