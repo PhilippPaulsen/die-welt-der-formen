@@ -125,7 +125,7 @@ a:active {
 }
 
 .hamburger span:hover {
-  background-color: gray;
+  background-color: #555;
 }
 
 .dropdown-content {
