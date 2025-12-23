@@ -12,80 +12,61 @@ function _generator(p5) {
             let nodeCount = 4; // Default number of nodes
             let symmetryMode = "rotation_reflection"; // Default symmetry mode
 
+
             s.setup = () => {
-                const container = document.createElement("div");
-                container.style.display = "flex";
-                container.style.flexDirection = "column";
-                container.style.alignItems = "flex-start"; // Align to the left
-                container.style.maxWidth = "320px"; // Consistent width
-                s.canvas.parentElement.appendChild(container);
+                // Create Canvas and attach to specific container
+                const c = s.createCanvas(canvasSize, canvasSize);
+                c.parent("canvas-target");
 
-                s.createCanvas(canvasSize, canvasSize);
-                container.appendChild(s.canvas);
-
-                // Add Canvas Size slider
-                const canvasSizeSlider = document.createElement("input");
-                canvasSizeSlider.type = "range";
-                canvasSizeSlider.min = 200; // Minimum canvas size
-                canvasSizeSlider.max = 800; // Maximum canvas size
-                canvasSizeSlider.value = canvasSize; // Default value
-                canvasSizeSlider.style.width = "320px"; // Fixed width
-                canvasSizeSlider.style.margin = "10px 0";
-                canvasSizeSlider.oninput = (e) => {
-                    canvasSize = parseInt(e.target.value);
-                    squareSize = canvasSize / 5; // Update square size
-                    s.resizeCanvas(canvasSize, canvasSize);
-                    setupNodes(); // Recalculate nodes
-                    s.redraw();
-                };
-                container.appendChild(canvasSizeSlider);
-
-                // Add Node Count slider
-                const nodeSlider = document.createElement("input");
-                nodeSlider.type = "range";
-                nodeSlider.min = 3; // Minimum nodes
-                nodeSlider.max = 10; // Maximum nodes
-                nodeSlider.value = nodeCount; // Default value
-                nodeSlider.style.width = "320px"; // Fixed width
-                nodeSlider.style.margin = "10px 0";
-                nodeSlider.oninput = (e) => {
-                    nodeCount = parseInt(e.target.value);
-                    setupNodes(); // Recalculate nodes
-                    s.redraw();
-                };
-                container.appendChild(nodeSlider);
-
-                // Add Clear button
-                const clearButton = document.createElement("button");
-                clearButton.textContent = "Clear";
-                clearButton.style.width = "320px"; // Fixed width
-                clearButton.style.margin = "10px 0";
-                clearButton.onclick = () => {
-                    connections = [];
-                    s.redraw();
-                };
-                container.appendChild(clearButton);
-
-                // Add Undo button
-                const undoButton = document.createElement("button");
-                undoButton.textContent = "Undo";
-                undoButton.style.width = "320px"; // Fixed width
-                undoButton.style.margin = "10px 0";
-                undoButton.onclick = () => {
-                    if (connections.length > 0) {
-                        connections.pop(); // Remove the last connection
+                // Bind Canvas Size slider
+                const canvasSizeSlider = document.getElementById("canvasSize");
+                if (canvasSizeSlider) {
+                    canvasSizeSlider.value = canvasSize; // Sync initial value
+                    canvasSizeSlider.oninput = (e) => {
+                        canvasSize = parseInt(e.target.value);
+                        squareSize = canvasSize / 5; // Update square size
+                        s.resizeCanvas(canvasSize, canvasSize);
+                        setupNodes(); // Recalculate nodes
                         s.redraw();
-                    }
-                };
-                container.appendChild(undoButton);
+                    };
+                }
 
-                // Add Random button
-                const randomButton = document.createElement("button");
-                randomButton.textContent = "+ Random";
-                randomButton.style.width = "320px"; // Fixed width
-                randomButton.style.margin = "10px 0";
-                randomButton.onclick = addRandomConnection;
-                container.appendChild(randomButton);
+                // Bind Node Count slider
+                const nodeSlider = document.getElementById("nodeCount");
+                if (nodeSlider) {
+                    nodeSlider.value = nodeCount; // Sync initial value
+                    nodeSlider.oninput = (e) => {
+                        nodeCount = parseInt(e.target.value);
+                        setupNodes(); // Recalculate nodes
+                        s.redraw();
+                    };
+                }
+
+                // Bind Clear button
+                const clearButton = document.getElementById("btnClear");
+                if (clearButton) {
+                    clearButton.onclick = () => {
+                        connections = [];
+                        s.redraw();
+                    };
+                }
+
+                // Bind Undo button
+                const undoButton = document.getElementById("btnUndo");
+                if (undoButton) {
+                    undoButton.onclick = () => {
+                        if (connections.length > 0) {
+                            connections.pop(); // Remove the last connection
+                            s.redraw();
+                        }
+                    };
+                }
+
+                // Bind Random button
+                const randomButton = document.getElementById("btnRandom");
+                if (randomButton) {
+                    randomButton.onclick = addRandomConnection;
+                }
 
                 // Initialize nodes
                 setupNodes();

@@ -64,6 +64,7 @@ a:active {
 
 /* Left-align the main content */
 #notebook,
+#interface-container,
 .content {
   margin: 18px auto;
   padding: 20px;
@@ -71,6 +72,17 @@ a:active {
   background-color: #fff;
   text-align: left;
   /* Ensures content is left-aligned */
+}
+
+#interface-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  /* Align everything left by default */
+}
+
+#canvas-target {
+  margin-bottom: 20px;
 }
 
 /* Standardized Header Typography */
@@ -266,9 +278,25 @@ a:active {
 .p5-controls {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
+  /* Align controls left */
   gap: 10px;
   margin-top: 15px;
+  width: 100%;
+  max-width: 640px;
+  /* Match default canvas size or logical max */
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.p5-controls label {
+  font-size: 14px;
+  margin-bottom: -5px;
 }
 
 .p5-controls button,
