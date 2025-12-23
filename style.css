@@ -38,6 +38,19 @@ body {
   line-height: 1.5;
 }
 
+/* Editorial Content Styling (Start / About) */
+.editorial-page,
+.editorial-page #notebook,
+.editorial-page .content {
+  color: #555;
+}
+
+.editorial-page h1,
+.editorial-page h2,
+.editorial-page h3 {
+  color: #555;
+}
+
 h1 {
   font-size: 24px;
   font-weight: bold;
