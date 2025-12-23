@@ -39,30 +39,38 @@ body {
 }
 
 a {
-  color: #000; /* Black text */
-  text-decoration: underline; /* Keep underline for visibility */
+  color: #000;
+  /* Black text */
+  text-decoration: underline;
+  /* Keep underline for visibility */
 }
 
 a:hover {
-  color: #000; /* Keep black on hover */
-  text-decoration: underline; /* No change on hover */
+  color: #000;
+  /* Keep black on hover */
+  text-decoration: underline;
+  /* No change on hover */
 }
 
 a:visited {
-  color: #000; /* Ensure visited links are also black */
+  color: #000;
+  /* Ensure visited links are also black */
 }
 
 a:active {
-  color: #000; /* Keep black when clicked */
+  color: #000;
+  /* Keep black when clicked */
 }
 
 /* Left-align the main content */
-#notebook, .content {
+#notebook,
+.content {
   margin: 18px auto;
   padding: 20px;
   max-width: 800px;
   background-color: #fff;
-  text-align: left; /* Ensures content is left-aligned */
+  text-align: left;
+  /* Ensures content is left-aligned */
 }
 
 /* Navigation Bar */
@@ -99,60 +107,34 @@ a:active {
   display: inline-block;
 }
 
+/* Navigation Links (Desktop Default) */
 .dropbtn {
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-}
-
-.hamburger {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  width: 20px;
-  height: 15px;
-}
-
-.hamburger span {
-  display: block;
-  height: 3px;
-  width: 100%;
-  background-color: black;
-  border-radius: 2px;
-}
-
-.hamburger span:hover {
-  background-color: #555;
+  display: none;
+  /* Hide hamburger by default on desktop */
 }
 
 .dropdown-content {
-  display: none;
-  position: absolute;
-  right: 0;
-  background-color: #fff;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
-  border: 1px solid #ccc;
-  z-index: 1;
+  display: flex;
+  /* Horizontal layout */
+  flex-direction: row;
+  background-color: transparent;
+  box-shadow: none;
+  border: none;
+  min-width: auto;
+  position: static;
 }
 
 .dropdown-content a {
   color: black;
-  padding: 8px 12px;
+  padding: 0 15px;
   text-decoration: none;
-  display: block;
-  font-size: 14px;
+  font-size: 16px;
+  white-space: nowrap;
 }
 
 .dropdown-content a:hover {
-  background-color: #f0f0f0;
-}
-
-.dropdown:hover .dropdown-content {
-  display: block;
+  text-decoration: underline;
+  background-color: transparent;
 }
 
 /* Divider Line */
@@ -163,10 +145,71 @@ a:active {
 }
 
 /* Responsive Styling for Smaller Screens */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   body {
     font-size: 16px;
     padding: 10px;
+  }
+
+  /* Mobile Navigation Overrides */
+  .dropbtn {
+    display: flex;
+    /* Show hamburger */
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    align-items: center;
+  }
+
+  /* Hamburger Icon */
+  .hamburger {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 20px;
+    height: 15px;
+  }
+
+  .hamburger span {
+    display: block;
+    height: 3px;
+    width: 100%;
+    background-color: black;
+    border-radius: 2px;
+  }
+
+  .hamburger span:hover {
+    background-color: #555;
+  }
+
+  .dropdown-content {
+    display: none;
+    /* Hide initially */
+    flex-direction: column;
+    /* Vertical layout */
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: #fff;
+    min-width: 200px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    border: 1px solid #ccc;
+    z-index: 1000;
+  }
+
+  .dropdown:hover .dropdown-content {
+    display: flex;
+    /* Show on hover */
+  }
+
+  .dropdown-content a {
+    padding: 12px 16px;
+    border-bottom: 1px solid #eee;
+  }
+
+  .dropdown-content a:hover {
+    background-color: #f0f0f0;
   }
 
   canvas {
@@ -174,7 +217,8 @@ a:active {
     height: auto !important;
   }
 
-  #notebook, .content {
+  #notebook,
+  .content {
     padding: 10px;
     margin: 10px;
     max-width: 90%;
@@ -245,6 +289,6 @@ a:active {
 }
 
 /* Ensure spacing between canvas and controls */
-canvas + .p5-controls {
+canvas+.p5-controls {
   margin-top: 10px;
 }
