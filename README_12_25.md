@@ -4,8 +4,8 @@
 *(Aligned with project goals, README scope, and current site state)*
 
 This checklist prioritizes clarity, structure, and research legibility over feature expansion.  
-Primary focus: **improving the existing website**.  
-Secondary focus: **making Raumharmonik visible as an emerging research strand**.
+Primary focus: **consolidating the website as an editorial and research environment**.  
+Secondary focus: **making Raumharmonik visible as an emerging, explicitly open research strand**.
 
 ---
 
@@ -18,7 +18,7 @@ Secondary focus: **making Raumharmonik visible as an emerging research strand**.
   - historical + contemporary
   - editorial + generative
 - Add or refine a short framing sentence:
-  > “This platform is a digital research and editorial environment.”
+  > “This platform is a digital editorial and research environment dedicated to the reconstruction and continuation of Wilhelm Ostwald’s theory of form.”
 - Align tone and terminology across all main pages.
 - Identify terms that require explanation or contextual framing.
 
@@ -33,9 +33,9 @@ Secondary focus: **making Raumharmonik visible as an emerging research strand**.
 - Ensure active navigation states are clearly visible.
 - Check DE / EN parity (structure, tone, hierarchy).
 - Standardize page titles and headings.
-- Add a short “What is this page?” introduction to:
-  - Harmony of Forms
-  - World of Forms
+- Add a short “What is this page?” editorial introduction to:
+  - Harmony of Forms (edition / reference text)
+  - World of Forms (systematic documentation of generative principles)
 - Visually separate:
   - introduction
   - main content
@@ -51,8 +51,8 @@ Secondary focus: **making Raumharmonik visible as an emerging research strand**.
 
 - Add a short editorial introduction:
   - historical context
-  - editorial status
-  - how to read the text
+  - editorial status (digital edition / reference)
+  - how to read and use the text as a theoretical source
 - Improve figure placement and textual references.
 - Break up very long text blocks visually.
 - Ensure figures clearly relate to nearby passages.
@@ -67,7 +67,8 @@ Secondary focus: **making Raumharmonik visible as an emerging research strand**.
 
 - Add a clear introductory explanation:
   - this is a system, not a gallery
-  - patterns result from rules
+  - patterns result from explicit formal rules
+  - the presentation is documentary rather than exploratory
 - Explicitly explain:
   - theme
   - reflection
@@ -87,7 +88,8 @@ Secondary focus: **making Raumharmonik visible as an emerging research strand**.
 
 **Raumharmonik**
 - Add a short visible note (Start or About page):
-  - Raumharmonik as an additional research strand
+  - Raumharmonik as a continuation explicitly announced by Ostwald
+  - framed as an open research horizon rather than a completed section
   - clearly marked as ongoing
   - no separate navigation yet
 
@@ -107,7 +109,9 @@ Secondary focus: **making Raumharmonik visible as an emerging research strand**.
 
 #### **Optional Extension — Interactive Elements (Only if Useful)**
 
-Interactive elements should **support understanding**, not distraction.
+Interactive elements should **support understanding of formal rules**, not visual distraction.
+
+Replacing static SVG figures with interactive JavaScript visualizations is considered a long-term enhancement and should only be implemented where interaction clarifies structural principles (e.g. symmetry, repetition, transformation) that static images cannot adequately convey.
 
 - Use interactivity only where it explains:
   - repetition
