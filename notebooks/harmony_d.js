@@ -1,21 +1,29 @@
-function _1(md){return(
-  md` ## Die Harmonie der Formen`
-  )}
-  
-  function _2(md){return(
-  md`Von Wilhelm Ostwald, mit 106 Figuren im Text, Leipzig, 1922 Unesma  
+function _1(md) {
+  return (
+    md` ## Die Harmonie der Formen`
+  )
+}
+
+function _2(md) {
+  return (
+    md`Von Wilhelm Ostwald, mit 106 Figuren im Text, Leipzig, 1922 Unesma  
   Herausgegeben von Philipp Paulsen, Leipzig, 2025 Spector Books`
-  )}
-  
-  function _3(md){return(
-  md`**Es ist doch im Grunde nichts wünschenswerter, als eine große Masse zu
+  )
+}
+
+function _3(md) {
+  return (
+    md`**Es ist doch im Grunde nichts wünschenswerter, als eine große Masse zu
   organisieren.**  
   (Goethe an Schiller am 14. Aug. 1799)`
-  )}
-  
-  function _4(md){return(
-  md`## Inhalt
-  
+  )
+}
+
+function _4(md) {
+  return (
+    md`<details>
+  <summary style="cursor: pointer; font-weight: bold; font-size: 1.2em; margin-bottom: 1em;">Inhalt</summary>
+
   - **Erstes Kapitel.** [Der Raum und das Hauptgesetz der Raumharmonik](#der-raum-und-das-hauptgesetz-der-raumharmonik)
     - [Der Raum](#der-raum)
     - [Die drei Arten des Raumes](#die-drei-arten-des-raumes)
@@ -24,6 +32,8 @@ function _1(md){return(
     - [Geometrische und zeichnerische Linien und Punkte](#geometrische-und-zeichnerische-linien-und-punkte)
     - [Der Hauptsatz der Raumharmonik](#der-hauptsatz-der-raumharmonik)
   
+  <br>
+
   - **Zweites Kapitel.** [Linien](#linien)
     - [Arten der Linien](#arten-der-linien)
     - [Stärke der Linien](#staerke-der-linien)
@@ -55,6 +65,8 @@ function _1(md){return(
     - [Überschneidende Wellen](#ueberschneidende-wellen)
     - [Freie Enden](#freie-enden)
   
+  <br>
+
   - **Drittes Kapitel.** [Flechten](#flechten)
     - [Begriff](#begriff)
     - [Bare Gerade](#bare-gerade)
@@ -72,6 +84,8 @@ function _1(md){return(
     - [Drehungen](#drehungen)
     - [Andere Abwandlungen](#andere-abwandlungen)
   
+  <br>
+
   - **Viertes Kapitel.** [Bänder](#baender)
     - [Begriff](#begriff)
     - [Die freie Form](#die-freie-form)
@@ -105,6 +119,8 @@ function _1(md){return(
     - [Gleichabständige freie Gebiete](#gleichabstaendige-freie-gebiete)
     - [Gleichförmige Belegung](#gleichfoermige-belegung)
   
+  <br>
+
   - **Fünftes Kapitel.** [Unbegrenzte Flächen](#unbegrenzte-flaechen)
     - [Unbegrenzte und begrenzte Flächen](#unbegrenzte-und-begrenzte-flaechen)
     - [Ableitung unbegrenzter Flächenmuster aus Bändern](#ableitung-unbegrenzter-flaechenmuster-aus-baendern)
@@ -119,41 +135,54 @@ function _1(md){return(
     - [Gesetzliche Netze](#gesetzliche-netze)
     - [Der Goldene Schnitt](#der-goldene-schnitt)
   
+  <br>
+
   - **Sechstes Kapitel.** [Begrenzte Flächen](#begrenzte-flaechen)
   
+  <br>
+
   - **Siebentes Kapitel.** [Die Bildkunst](#die-bildkunst)
   
+  <br>
+
   - **Achtes Kapitel.** [Körperformen](#koerperformen)
     - [Verweisung auf die Zukunft](#verweisung-auf-die-zukunft)
-  `
-  )}
-  
-  function _5(html)
-  {
-    const scaleFactor = 0.5; // 50% der Originalgröße
-    const images = document.querySelectorAll("img");
-  
-    images.forEach((img) => {
-      img.onload = () => {
-        const originalWidth = img.naturalWidth;
-        const originalHeight = img.naturalHeight;
-  
-        img.style.width = `${originalWidth * scaleFactor}px`;
-        img.style.height = `${originalHeight * scaleFactor}px`;
-      };
-    });
-  
-    return html`<p></p>`;
-  }
-  
-  
-  function _6(md){return(
-  md`#### Erstes Kapitel
+
+  <br>
+
+  - **Einleitung** [Einleitung](#einleitung)
+  </details>`
+  )
+}
+
+function _5(html) {
+  const scaleFactor = 0.5; // 50% der Originalgröße
+  const images = document.querySelectorAll("img");
+
+  images.forEach((img) => {
+    img.onload = () => {
+      const originalWidth = img.naturalWidth;
+      const originalHeight = img.naturalHeight;
+
+      img.style.width = `${originalWidth * scaleFactor}px`;
+      img.style.height = `${originalHeight * scaleFactor}px`;
+    };
+  });
+
+  return html`<p></p>`;
+}
+
+
+function _6(md) {
+  return (
+    md`#### Erstes Kapitel
   ## Der Raum und das Hauptgesetz der Raumharmonik`
-  )}
-  
-  function _7(md){return(
-  md`#### Der Raum
+  )
+}
+
+function _7(md) {
+  return (
+    md`#### Der Raum
   Unter *Raum* verstehen wir die Art, in der wir die
   Außenwelt erleben. Sehen wir von allen besonderen Inhalten ab, die uns
   in Gestalt von Farben, Tönen, Temperaturen, Druckempfindungen usw. zum
@@ -163,10 +192,12 @@ function _1(md){return(
   Gesamtraum, in dem wir die Außenwelt auffassen; wir nennen diesen Anteil
   seine *Gestalt* oder *Form*, wobei einer solchen Form oder Gestalt alle
   Stufen der Bestimmtheit oder Unbestimmtheit zukommen können.`
-  )}
-  
-  function _8(md){return(
-  md`#### Die drei Arten des Raumes  
+  )
+}
+
+function _8(md) {
+  return (
+    md`#### Die drei Arten des Raumes  
   Der Raum ist entweder *körperhaft* oder
   ist *flächenhaft* oder endlich *linienhaft (linear)*. Im ersten Falle
   ist er *drei*faltig, im zweiten *zwei*faltig, im letzten *ein*faltig.
@@ -184,10 +215,12 @@ function _1(md){return(
   den Flächen die Zweifaltigkeit so stark vorwiegen, daß die vorhandenen
   Abweichungen nicht ins Gewicht fallen, d. h. die zu untersuchenden
   Erscheinungen nicht wesentlich verändern.`
-  )}
-  
-  function _9(md){return(
-  md`#### Teilung des Raumes
+  )
+}
+
+function _9(md) {
+  return (
+    md`#### Teilung des Raumes
   Der allgemeine Raum ist unbegrenzt; Grenzen
   entstehen, wenn wir verschiedene Gegenstände im Raume unterscheiden
   können, an diesen. Achten wir auf die derart entstehende Zerlegung des
@@ -199,10 +232,12 @@ function _1(md){return(
   auch die räumliche Umgebung in solchem Sinne körperlich ist); die Linien
   erscheinen als Grenzen der Flächen. Als Grenzen der Linien erscheinen *Punkte*. Diesen kommt im Sinne der Geometrie keinerlei Ausdehnung zu.
   Für uns sind die Punkte kleine Flächenstücke von endlicher Größe.`
-  )}
-  
-  function _10(md){return(
-  md`#### Die Gleichartigkeit des Raumes
+  )
+}
+
+function _10(md) {
+  return (
+    md`#### Die Gleichartigkeit des Raumes
   Wenn wir einen starren Körper durch
   den Raum bewegen, so sehen wir ihn im allgemeinen verschieden. Durch
   einen nicht ganz einfachen Abstraktionsvorgang kommen wir aber zu der
@@ -217,10 +252,12 @@ function _1(md){return(
   dieses Verfahren überall im Raum auf gleiche Weise widerspruchslos
   durchgeführt werden kann und schreiben dem Raum daher Gleichartigkeit
   (Homogenität) zu. `
-  )}
-  
-  function _11(md){return(
-  md`#### Geometrische und zeichnerische Linien und Punkte
+  )
+}
+
+function _11(md) {
+  return (
+    md`#### Geometrische und zeichnerische Linien und Punkte
   Eine geometrische
   Linie, welche nach der Definition keine Breite hat, ist unsichtbar, da
   zur Sichtbarkeit eine Breite von ungefähr 0,0001 des Sehwinkels (also
@@ -230,10 +267,12 @@ function _1(md){return(
   Ebenso sind geometrische Punkte, die einzige mögliche
   Unterschiedlichkeit auf einer geometrischen Linie, unsichtbar und müssen
   durch kleine Flächen ersetzt werden, wenn sie sichtbar sein sollen. `
-  )}
-  
-  function _12(md){return(
-  md`#### Der Hauptsatz der Raumharmonik
+  )
+}
+
+function _12(md) {
+  return (
+    md`#### Der Hauptsatz der Raumharmonik
   Wird ein Punkt durch eine *willkürlich* gestaltete kleine Fläche, Fig. 1 dargestellt, so sind wir
   unzufrieden. Wir fragen den Darsteller, weshalb gerade diese zufällige
   Form gewählt ist und geben uns nur dann zufrieden, wenn eine genügende
@@ -243,27 +282,35 @@ function _1(md){return(
   schief steht wie Fig. 3; in diesem Falle fragen wir nach einer
   Rechtfertigung dieser Willkür, während wir bei gerader Stellung, ob
   liegend oder übereck stehend, Fig. 4, einverstanden sind.`
-  )}
-  
-  function _13(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/1-4.svg" alt="Figure 1-4" style="width: auto; height: auto;">`
-  )}
-  
-  function _14(md){return(
-  md`Ebenso sind wir einverstanden, wenn eine Linie oder ein Streifen
+  )
+}
+
+function _13(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/1-4.svg" alt="Figure 1-4" style="width: auto; height: auto;">`
+  )
+}
+
+function _14(md) {
+  return (
+    md`Ebenso sind wir einverstanden, wenn eine Linie oder ein Streifen
   gleichabständig geteilt ist, Fig. 5. Ist dagegen die Teilung willkürlich
   in ungleichen Abständen ausgeführt, Fig. 6, so lehnen wir sie ab. Sie
   hat nicht den zwar kleinen aber doch deutlich vorhandenen positiven
   Schönheitswert der gleichförmigen Teilung, sondern einen negativen; sie
   wirkt unschön.`
-  )}
-  
-  function _15(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/5-7.svg" alt="Figure 5-7" style="width: auto; height: auto;">`
-  )}
-  
-  function _16(md){return(
-  md`Doch ist keineswegs jede ungleiche Teilung unschön. Gibt man den
+  )
+}
+
+function _15(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/5-7.svg" alt="Figure 5-7" style="width: auto; height: auto;">`
+  )
+}
+
+function _16(md) {
+  return (
+    md`Doch ist keineswegs jede ungleiche Teilung unschön. Gibt man den
   Teilstrichen solche Abstände, wie sie z. B. auf dem logarithmischen
   Rechenschieber für gleichabständige Zahlen, 1, 2, 3, 4 usw., vorhanden
   sind, Fig. 7, so entsteht wieder ein positiver Schönheitswert. Diese
@@ -297,15 +344,19 @@ function _1(md){return(
     
   Wir nennen daher dieses allgemeine Kunstgesetz, von dem die Farb- und
   Formharmonik nur einzelne Anwendungen bilden, das *Goethesche Gesetz.*`
-  )}
-  
-  function _17(md){return(
-  md`#### Zweites Kapitel  
+  )
+}
+
+function _17(md) {
+  return (
+    md`#### Zweites Kapitel  
   ## Linien`
-  )}
-  
-  function _18(md){return(
-  md`#### Arten der Linien
+  )
+}
+
+function _18(md) {
+  return (
+    md`#### Arten der Linien
   Das einfachste Gebilde, das es hier gibt, ist die
   ununterbrochene, gleich starke Linie, wie sie mit der Reißfeder, dem
   Bleistift, der Feder gezogen wird. Sie kann *gerade*, *krumm* oder aus
@@ -320,10 +371,12 @@ function _1(md){return(
   die Grenze durch eine besondere Linie (im zeichnerischen Sinne) hervor.
   Auch hat mann in der Linie ein Mittel, eine in sich noch nicht
   verschiedene Fläche zu *teilen*, was eine sehr wichtige Aufgabe ist.`
-  )}
-  
-  function _19(md){return(
-  md`#### Stärke der Linien  
+  )
+}
+
+function _19(md) {
+  return (
+    md`#### Stärke der Linien  
   Die erste Anforderung, welche an eine Linie
   gestellt werden muß, ist die *Deutlichkeit*. Es war oben schon angegeben
   worden, daß die Erkennbarkeit einer Linie aufhört, wenn ihre Breite
@@ -332,10 +385,12 @@ function _1(md){return(
   unteren Wert kann man etwa den zehnfachen Betrag, 1⁄1000, annehmen. Bei
   einer Flächengröße des Gegenstandes von 50 cm nach der kleinsten Breite
   soll also die Linie für unsere Zwecke nicht schmäler als 1/2 mm sein.  `
-  )}
-  
-  function _20(md){return(
-  md`#### Rand oder Kontur
+  )
+}
+
+function _20(md) {
+  return (
+    md`#### Rand oder Kontur
   Als Kennzeichnung der Grenze hat die Linie dieser
   zu folgen. Im einfachsten Falle liegt sie in der Grenze selbst. Doch
   kommen zahlreiche Fälle vor, in denen sie die Grenze in bestimmtem
@@ -349,14 +404,18 @@ function _1(md){return(
   begleitende Linie nicht als *Rand* aufgefaßt werden. Sondern der Abstand
   wird überall gleich genommen, Fig. 9, wodurch das innere Rechteck
   verhältnismäßig schlanker wird als das äußere.  `
-  )}
-  
-  function _21(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/8-9.svg" alt="Figure 8-9" style="width: auto; height: auto;">`
-  )}
-  
-  function _22(md){return(
-  md`#### Mannigfaltigkeit
+  )
+}
+
+function _21(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/8-9.svg" alt="Figure 8-9" style="width: auto; height: auto;">`
+  )
+}
+
+function _22(md) {
+  return (
+    md`#### Mannigfaltigkeit
   Geht man über den unmittelbaren Zweck der
   Kennzeichnung hinaus, so kann man zu Schmuckzwecken den schlichten,
   gleichförmigen Linienzug vermannigfachen. Dies kann auf folgende Weise
@@ -375,10 +434,12 @@ function _1(md){return(
   auftreten. Da jede von ihnen zwei Fälle (vorhanden oder nicht vorhanden)
   ergibt, so liegen insgesamt acht Gruppen vor, die eine sehr große Anzahl
   von Einzelfällen umfassen.  `
-  )}
-  
-  function _23(md){return(
-  md`#### Einzeluntersuchung  
+  )
+}
+
+function _23(md) {
+  return (
+    md`#### Einzeluntersuchung  
   Wir wenden uns zur gesonderten Betrachtung der
   soeben aufgestellten Fälle. Es sei hierbei bemerkt, daß es hernach nicht
   möglich sein wird, in gleich eingehender Weise all die zahlreichen
@@ -393,10 +454,12 @@ function _1(md){return(
   um die gegenseitigen Abgrenzungen von Flächen, die gleichfalls Linien
   sind. Nur wird man sich im letzten Falle bezüglich der Ausgestaltung der
   Linie in dem hier beschriebenen Sinne zurückhaltend benehmen.`
-  )}
-  
-  function _24(md){return(
-  md`#### Unstetige Linien
+  )
+}
+
+function _24(md) {
+  return (
+    md`#### Unstetige Linien
   Die Auflösung der schlichten Linie kann in *Punkte* und *Striche* erfolgen. Demgemäß gibt es unstetige Linien, die
   allein aus Punkten, allein aus Strichen und endliche aus Punkten neben
   Strichen bestehen.  
@@ -416,14 +479,18 @@ function _1(md){return(
   Setzt man Punkte und Striche zusammen, so ist die Abwechslung beider *p*
   *s* *p* *s* *p* *s* ... oder abgekürzt *p* *s* der einfachste Fall,
   Fig. 10 c.`
-  )}
-  
-  function _25(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/10.svg" alt="Figure 10" style="width: auto; height: auto;">`
-  )}
-  
-  function _26(md){return(
-  md`Verwickeltere Fälle, wie *p p s*, *p p s s*, *p p p s* usw. kommen
+  )
+}
+
+function _25(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/10.svg" alt="Figure 10" style="width: auto; height: auto;">`
+  )
+}
+
+function _26(md) {
+  return (
+    md`Verwickeltere Fälle, wie *p p s*, *p p s s*, *p p p s* usw. kommen
   seltener vor und werden zuletzt unübersichtlich.  
   Für alle betrachteten Fälle gilt das Gesetz, daß Größen und Abstände der
   Teilstücke durch den ganzen Linienzug gleichbleiben. Eine ungesetzliche
@@ -434,10 +501,12 @@ function _1(md){return(
   Abstände getrennt werden.  
   Das ergibt eine verwickeltere Gleichheit, aber immer noch eine
   Gesetzlichkeit.`
-  )}
-  
-  function _27(md){return(
-  md`#### Ungleiche Stärke
+  )
+}
+
+function _27(md) {
+  return (
+    md`#### Ungleiche Stärke
   Die Einrichtung der Schreibfeder mit zwei
   federnden Spitzen, die sich je nach dem Druck öffnen, ergibt selbsttätig
   diesen Fall, der bei einer Schrift von allgemeinster Anwendung ist.
@@ -450,10 +519,12 @@ function _1(md){return(
   ein Zusammenhang mit handschriftlicher Arbeit betont werden soll. Die
   Mannigfaltigkeit ist etwa die des vorigen Falles, indem an die Stelle
   der Unterbrechungen der Linie deren Schwächungen treten.`
-  )}
-  
-  function _28(md){return(
-  md`#### Bewegte Linien
+  )
+}
+
+function _28(md) {
+  return (
+    md`#### Bewegte Linien
   Als Buchschmuck finden sich Linien vor, die kleine
   Unregelmäßigkeiten zeigen, als wenn sie aus freier Hand gezogen wären.
   Sie sind ein Ausfluß einer schiefen Sentimentalität, welche der
@@ -466,10 +537,12 @@ function _1(md){return(
   Wiederholung kann man jedem freien Zug die Willkür nehmen und ihm den
   einfachen Schönheitswert verleihen, der in der anschaulichen
   Gesetzlichkeit liegt.`
-  )}
-  
-  function _29(md){return(
-  md`#### Schiebung
+  )
+}
+
+function _29(md) {
+  return (
+    md`#### Schiebung
   Die Wiederholung erfolgt in der Richtung der Gesamtlinie,
   indem die gewählte Form nach einem bestimmten, gleichbleibenden Abstand
   wiederholt, also gleichsam verschoben wird. Man nennt diesen Vorgang
@@ -486,10 +559,12 @@ function _1(md){return(
   läßt. Wir werden sie daher auch weiterhin sehr oft anzuwenden haben.  
   Die Schiebung läßt sich unbestimmt viele Male wiederholen und ergibt
   daher Linien von jeder beliebigen Länge.`
-  )}
-  
-  function _30(md){return(
-  md`#### Reihen und Wellen
+  )
+}
+
+function _30(md) {
+  return (
+    md`#### Reihen und Wellen
   Die durch Schiebung wiederholte Linie soll
   zunächst ganz willkürlich sein. Insbesondere machen wir nicht die
   Voraussetzung, daß Anfang und Ende der durch Schiebung erzeugten
@@ -497,27 +572,35 @@ function _1(md){return(
   der entstehenden Gesamtform, die wir eine *Reihe* nennen wollen, allein
   vorhanden ist, beschränkt sich auf die bare Wiederholung. Fig. 11 zeigt
   eine Reihe.`
-  )}
-  
-  function _31(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/11.svg" alt="Figure 11" style="width: auto; height: auto;">`
-  )}
-  
-  function _32(md){return(
-  md`Ist die Form so beschaffen, daß der Anfang sich bei der Wiederholung an
+  )
+}
+
+function _31(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/11.svg" alt="Figure 11" style="width: auto; height: auto;">`
+  )
+}
+
+function _32(md) {
+  return (
+    md`Ist die Form so beschaffen, daß der Anfang sich bei der Wiederholung an
   das Ende schließt, so daß eine einzige Linie entsteht, welche
   ununterbrochen so weit verläuft, als man die Langform entwickelt, so
   nennt man das entstehende Gebilde eine *Welle*.  
   Wir machen zunächst keine andere Gesetzlichkeit für die Welle geltend,
   als daß die Linie ununterbrochen verläuft, Fig. 12. `
-  )}
-  
-  function _33(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/12.svg" alt="Figure 12" style="width: auto; height: auto;">`
-  )}
-  
-  function _34(md){return(
-  md`Die Größe der Schiebung irgendeiner Form zur Erzeugung von Wellen nennt
+  )
+}
+
+function _33(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/12.svg" alt="Figure 12" style="width: auto; height: auto;">`
+  )
+}
+
+function _34(md) {
+  return (
+    md`Die Größe der Schiebung irgendeiner Form zur Erzeugung von Wellen nennt
   man die *Wellenlänge*. Da nach der Beschreibung der Schiebung (S. 13)
   alle Abstände zwischen entsprechenden Punkten gleich sind, so findet man
   dieselbe Wellenlänge, von welchem Punkt man sie bis zum entsprechenden
@@ -529,10 +612,12 @@ function _1(md){return(
   und durch den niedrigsten Punkt der Welle je eine Gerade in der Richtung
   der Welle; der Abstand zwischen beiden ist die Wellenhöhe. Sie bedingt
   die Breite des von der Welle gedeckten Streifens.`
-  )}
-  
-  function _35(md){return(
-  md`#### Stetigkeit
+  )
+}
+
+function _35(md) {
+  return (
+    md`#### Stetigkeit
   Den gesetzlichen Zusammenhang einer Linie in sich nennen
   wir ihre *Stetigkeit*. Diese bezieht sich auf drei verschiedene
   Eigenschaften: Stetigkeit des *Verlaufs*, der *Richtung* und der *Krümmung*.  
@@ -544,34 +629,44 @@ function _1(md){return(
   plötzlich seine *Richtung* ändert oder einen *Knick* hat, während die
   Richtungsänderungen, die auch in a vorhanden sind, nicht plötzlich,
   sondern stetig erfolgen.`
-  )}
-  
-  function _36(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/13.svg" alt="Figure 13" style="width: auto; height: auto;">`
-  )}
-  
-  function _37(md){return(
-  md`Schon ein geübteres Auge ist erforderlich, um zu erkennen, daß auch 14 a
+  )
+}
+
+function _36(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/13.svg" alt="Figure 13" style="width: auto; height: auto;">`
+  )
+}
+
+function _37(md) {
+  return (
+    md`Schon ein geübteres Auge ist erforderlich, um zu erkennen, daß auch 14 a
   stetiger ist als 14 b. Dies beruht darauf, daß b an mehreren (mit ×
   bezeichneten) Stellen seine *Krümmung* plötzlich ändert, während a
   überall stetig gekrümmt ist. Wir nennen eine unstetige Richtungsänderung
   einen *Stoß*. `
-  )}
-  
-  function _38(md){return(
-  md`#### Richtung
+  )
+}
+
+function _38(md) {
+  return (
+    md`#### Richtung
   Der Begriff der Richtung ist bei der geraden Linie
   unmittelbar anschaulich, da diese eben dadurch gekennzeichnet ist, daß
   sie nur *eine* Richtung besitzt. Man bedient sich deshalb einer Geraden,
   wenn man eine bestimmte Richtung darstellen will.`
-  )}
-  
-  function _39(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/14.svg" alt="Figure 14" style="width: auto; height: auto;">`
-  )}
-  
-  function _40(md){return(
-  md`Eine krumme Linie oder *Krumme* ist dadurch gekennzeichnet, daß sie
+  )
+}
+
+function _39(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/14.svg" alt="Figure 14" style="width: auto; height: auto;">`
+  )
+}
+
+function _40(md) {
+  return (
+    md`Eine krumme Linie oder *Krumme* ist dadurch gekennzeichnet, daß sie
   viele Richtungen besitzt, in jedem Punkte eine andere. Um ihre Richtung
   in einem gegebenen Punkt anzugeben, zieht man dort eine gerade
   Berührungslinie (Tangente), die *Richtlinie*. In Fig. 14 a, einer *stetigen* Krummen, hat jeder Punkt nur eine Richtlinie, und die längs
@@ -580,23 +675,29 @@ function _1(md){return(
   Hat die Krumme dagegen einen Knick, so hat sie im Knickpunkt zwei
   verschiedene Richtlinien, *a* und *b*, die einen Winkel miteinander
   bilden, Fig. 15. Dies ist die Unstetigkeit zweiter Art.`
-  )}
-  
-  function _41(md){return(
-  md`#### Krümmung
+  )
+}
+
+function _41(md) {
+  return (
+    md`#### Krümmung
   Eine Linie von überall gleicher Krümmung ist der Kreis; er
   ist die einzige solche Linie. Je größer er ist, um so geringer ist seine
   Krümmung. Der Halbmesser *r* des Kreises ist also ein Maß der Krümmung,
   aber im umgekehrten Sinne; diese wird nicht durch *r*, sondern durch
   ¹⁄*r* gemessen.`
-  )}
-  
-  function _42(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/15-17.svg" alt="Figure 15-17" style="width: auto; height: auto;">`
-  )}
-  
-  function _43(md){return(
-  md`Eine beliebige Krumme, die kein Kreis ist, hat an jedem Punkte eine
+  )
+}
+
+function _42(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/15-17.svg" alt="Figure 15-17" style="width: auto; height: auto;">`
+  )
+}
+
+function _43(md) {
+  return (
+    md`Eine beliebige Krumme, die kein Kreis ist, hat an jedem Punkte eine
   andere Krümmung. Um für diese ein Maß zu finden, benutzt man die
   Tatsache, daß es für jeden Punkt einer beliebigen stetigen Krummen einen
   Kreis gibt, der sich dort ihrem Verlauf genauer anschließt als jeder
@@ -613,10 +714,12 @@ function _1(md){return(
   der eine Kreis hat seinen Mittelpunkt in *b*, der andere in *c*. der
   Punkt *a* hat also zwei Krümmungsmittelpunkte die Krümmung ist daher
   dort unstetig.`
-  )}
-  
-  function _44(md){return(
-  md`#### Gesetzlichkeit der Linien
+  )
+}
+
+function _44(md) {
+  return (
+    md`#### Gesetzlichkeit der Linien
   Wir haben somit folgende Reihe von
   zunehmend weniger gesetzlichen Linien:
   
@@ -658,10 +761,12 @@ function _1(md){return(
   weit abführt und eine strenge gedankliche Arbeit verlangt, mit
   besinnungsloser Leidenschaft widersetzen, wenn das zunächst gehandhabte
   Totschweigen nicht mehr ausreichen will.`
-  )}
-  
-  function _45(md){return(
-  md`#### Mathematische Definitionen
+  )
+}
+
+function _45(md) {
+  return (
+    md`#### Mathematische Definitionen
   Nach den Regeln der analytischen
   Geometrie kann man die Reihen und Wellen zunächst auf eine Abzissenachse
   beziehen, die etwa unterhalb der Formen in ihrer Richtung verläuft.
@@ -678,10 +783,12 @@ function _1(md){return(
   sind.  
   Die höheren Differentialquotienten können stetig oder unstetig sein,
   ohne daß diese Verschiedenheiten empfunden werden.`
-  )}
-  
-  function _46(md){return(
-  md`#### Wellen
+  )
+}
+
+function _46(md) {
+  return (
+    md`#### Wellen
   Auf Grund der eben durchgeführten Untersuchung können wir
   die verschiedenen Arten der Wellen übersehen. Die Anwesenheit von *Sprüngen* ist durch die Begriffsbestimmung ausgeschlossen. Dagegen
   können die Linien, aus denen die Wellen durch Schiebung gebildet
@@ -694,10 +801,12 @@ function _1(md){return(
   entstehen. Sind solche dagegen in der Urform enthalten, so können sie
   auch an den Unschlüssen zugelassen werden. Doch müssen sie, um schön zu
   sein, durch irgendeine andere Gesetzlichkeit begründet werden.`
-  )}
-  
-  function _47(md){return(
-  md`#### Anschluß 
+  )
+}
+
+function _47(md) {
+  return (
+    md`#### Anschluß 
   Um den Anschluß (Rapport) beim Entwerfen von Wellen mit
   Sicherheit zu erreichen, verfährt man derart, daß man zunächst die
   Richtung angibt, nach welcher die Welle insgesamt verlaufen soll. Auf
@@ -708,10 +817,12 @@ function _1(md){return(
   Urform so vollenden, daß der Zug stetig in den bereits dastehenden
   Anfang der Wiederholung übergeht und hat damit die Aufgabe des
   Anschlusses gelöst.`
-  )}
-  
-  function _48(md){return(
-  md`#### Sinuswellen
+  )
+}
+
+function _48(md) {
+  return (
+    md`#### Sinuswellen
   Bisher haben wir außer der Stetigkeit keine
   Voraussetzung über die Gestalt der Wellenlinie gemacht; ihre Freiheit
   ist außerdem nur durch die Forderung der gleichen Wiederkehr und des
@@ -737,14 +848,18 @@ function _1(md){return(
   Gewinne dieser grundsätzlichen Untersuchung bezeichnet werden, daß sie
   auf die vernachlässigte Grundform aller Wellen die Aufmerksamkeit
   lenkt.`
-  )}
-  
-  function _49(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/18.svg" alt="Figure 18" style="width: auto; height: auto;">`
-  )}
-  
-  function _50(md){return(
-  md`Die mathematische Untersuchung der Sinuslinie bestätigt das Urteil des
+  )
+}
+
+function _49(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/18.svg" alt="Figure 18" style="width: auto; height: auto;">`
+  )
+}
+
+function _50(md) {
+  return (
+    md`Die mathematische Untersuchung der Sinuslinie bestätigt das Urteil des
   Auges bezüglich ihrer vollendeten Stetigkeit. Nicht nur der erste wie
   der zweite Differentialquotient sind stetig, sondern auch alle
   folgenden. Dazu kommt, daß die Funktionen, welche die Abhängigkeit
@@ -755,10 +870,12 @@ function _1(md){return(
   Summierung von Sinuslinien dargestellt werden, deren Längen sich wie
   1⁄1, 1/2, 1/3, 1/4 usw. verhalten und deren Anfangspunkte und Höhen
   durch die darzustellende Wellenlinie bedingt sind.`
-  )}
-  
-  function _51(md){return(
-  md`#### Der Ersatz-Sinus
+  )
+}
+
+function _51(md) {
+  return (
+    md`#### Der Ersatz-Sinus
   Da es kein einfaches technisches Mittel gibt,
   Sinuslinien mechanisch zu ziehen, so pflegt man sie in der Kunst durch
   zwei abwechselnd aneinandergefügte Halbkreise zu ersetzen, die man mit
@@ -772,14 +889,18 @@ function _1(md){return(
   Fügestellen der Halbkreise *Stöße* aufweist, weil dort die
   Krümmungsmittelpunkte um je eine halbe Wellenlänge springen, also
   unstetig sind.`
-  )}
-  
-  function _52(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/19.svg" alt="Figure 19" style="width: auto; height: auto;">`
-  )}
-  
-  function _53(md){return(
-  md`#### Spiegelung und Drehung
+  )
+}
+
+function _52(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/19.svg" alt="Figure 19" style="width: auto; height: auto;">`
+  )
+}
+
+function _53(md) {
+  return (
+    md`#### Spiegelung und Drehung
   Vergleicht man die geringe Gesetzlichkeit
   eines willkürlichen Wellenzuges mit der vollendeten Gesetzlichkeit einer
   Sinuslinie, so erkennt man die Einschränkungen, welche deren Freiheit
@@ -798,35 +919,45 @@ function _1(md){return(
   und umgekehrt läßt sich jeder ruhende Wellenzug in spiegelgleiche
   Elemente zerlegen. Eine vorhandene Einseitigkeit wird hierdurch nicht
   gestört.`
-  )}
-  
-  function _54(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/20.svg" alt="Figure 20" style="width: auto; height: auto;">`
-  )}
-  
-  function _55(md){return(
-  md`Ferner kann man dieselbe freie Form *a* *b*, Fig. 21, um ihren Endpunkt
+  )
+}
+
+function _54(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/20.svg" alt="Figure 20" style="width: auto; height: auto;">`
+  )
+}
+
+function _55(md) {
+  return (
+    md`Ferner kann man dieselbe freie Form *a* *b*, Fig. 21, um ihren Endpunkt
   *b* um zwei rechte Winkel drehen, bis sie auf der anderen Seite der
   Linie liegt. Dann entsteht eine Welle *a b c*, welche beim
   Vervielfältigen durch Schiebung einen Zug gibt, der sich beim Betrachten
   als *beidseitig* erweist.`
-  )}
-  
-  function _56(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/21.svg" alt="Figure 21" style="width: auto; height: auto;">`
-  )}
-  
-  function _57(md){return(
-  md`Eine vorhandene laufende Beschaffenheit wird hierdurch nicht gestört.  
+  )
+}
+
+function _56(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/21.svg" alt="Figure 21" style="width: auto; height: auto;">`
+  )
+}
+
+function _57(md) {
+  return (
+    md`Eine vorhandene laufende Beschaffenheit wird hierdurch nicht gestört.  
   Durch Spiegelung beseitigt man also das Laufen, durch Drehung die
   Einseitigkeit. Ist die Form von vornherein so beschaffen, daß sie sich
   in spiegelgleiche Stücke und solche, die durch Drehung ineinander
   übergehen, zerlegen läßt, so ist sie weder laufend noch einseitig. Dies
   trifft bei der Sinuslinie zu.`
-  )}
-  
-  function _58(md){return(
-  md`#### Schiebung, Drehung und Spiegelung
+  )
+}
+
+function _58(md) {
+  return (
+    md`#### Schiebung, Drehung und Spiegelung
   *Schiebung, Drehung und Spiegelung* sind die drei Grundwerke, durch
   welche wir gesetzlich bewegte Linien erzeugen. Doch ist zu beachten, daß
   Spiegelung und Drehung beide nur endliche oder geschlossene Gebilde
@@ -836,10 +967,12 @@ function _1(md){return(
   deshalb hier die allgemeine Lehre von der Drehung und Spiegelung
   dargelegt, nachdem oben (S. 13) die Schiebung bereits beschrieben worden
   ist.`
-  )}
-  
-  function _59(md){return(
-  md`#### Die Lehre von der Spiegelung
+  )
+}
+
+function _59(md) {
+  return (
+    md`#### Die Lehre von der Spiegelung
   Unter Spiegelung verstehen wir
   allgemein eine besondere Art der Wiederholung, die folgendermaßen
   zustande kommt. Es sei irgendeine Form *a b*, Fig. 22, gegeben, und dazu
@@ -850,14 +983,18 @@ function _1(md){return(
   und bilden aus diesen Punkten die neue oder Spiegelform a' b'. Diese
   enthölt alle Eigenschaften der Urform, nur in entgegengesetzter oder
   spiegelgleicher Anordnung, wie z. B. die rechte und die linke Hand.`
-  )}
-  
-  function _60(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/22.svg" alt="Figure 22" style="width: auto; height: auto;">`
-  )}
-  
-  function _61(md){return(
-  md`Liegt die gegebene Form in einer Ebene und soll ihr Spiegelbild auch in
+  )
+}
+
+function _60(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/22.svg" alt="Figure 22" style="width: auto; height: auto;">`
+  )
+}
+
+function _61(md) {
+  return (
+    md`Liegt die gegebene Form in einer Ebene und soll ihr Spiegelbild auch in
   der Ebene bleiben, so muß der Spiegel senkrecht zu jener stehen, und es
   kommt von ihm nur der in der Ebene liegende Teil, die* Spiegellinie*,
   zur Wirkung. Wir werden es also zunächst nur mit Spiegellinien zu tun
@@ -881,10 +1018,12 @@ function _1(md){return(
   Spiegelebene bar zur Spiegelebene, so erfolgt nur eine reine Schiebung
   ohne Drehung.  
   `
-  )}
-  
-  function _62(md){return(
-  md`#### Anwendung
+  )
+}
+
+function _62(md) {
+  return (
+    md`#### Anwendung
   Von dieser allgemeinen Spiegellehre brauchen wir zunächst
   nur wenig für den vorliegenden Zweck. Die Spiegelung erfolgt bei den
   Wellen zunächst nur in einer Spiegellinie, welche senkrecht auf der
@@ -901,10 +1040,12 @@ function _1(md){return(
   Zum zweiten Fall ist nur zu bemerken, daß die Schiebung auch durch eine
   Anzahl Spiegelungen ersetzt werden kann, da jeder Spiegeling hierbei
   unverändert bleibt.`
-  )}
-  
-  function _63(md){return(
-  md`#### Die Lehre von der Drehung
+  )
+}
+
+function _63(md) {
+  return (
+    md`#### Die Lehre von der Drehung
   Eine Drehung erfolgt, wenn man zu der
   gegebenen Form *a b*, Fig. 23, eine Gerade, die Achse *c*, annimmt und
   jeden ihrer Punkte in einem Kreise, dessen Ebene senkrecht zur Achse
@@ -914,21 +1055,27 @@ function _1(md){return(
   von der Form entfernt angenommen wird. Bei unendlich großem Abstande der
   Achse geht die Drehung in eine Schiebung über, denn die baren
   Kreislinien werden bare Gerade.`
-  )}
-  
-  function _64(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/23.svg" alt="Figure 23" style="width: auto; height: auto;">`
-  )}
-  
-  function _65(md){return(
-  md`Kennzeichnend für die Drehung ist also die Lage der Achs- und der
+  )
+}
+
+function _64(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/23.svg" alt="Figure 23" style="width: auto; height: auto;">`
+  )
+}
+
+function _65(md) {
+  return (
+    md`Kennzeichnend für die Drehung ist also die Lage der Achs- und der
   Drehwinkel.  
   In der Ebene geht die Achse in einen Punkt, den* Drehpunkt*, über. Der
   Drehwinkel behält seine Bedeutung.`
-  )}
-  
-  function _66(md){return(
-  md`#### Mehrfache Drehung
+  )
+}
+
+function _66(md) {
+  return (
+    md`#### Mehrfache Drehung
   Wiederholt man die Drehung um den gleichen
   Winkel, so entsteht eine dritte übereinstimmende Form und so fort.
   Hierbei macht es einen wesentlichen Unterschied, ob der Drehwinkel ein
@@ -937,14 +1084,18 @@ function _1(md){return(
   übereinanderlagern. Im ersten ist die Gesamtzahl endlich, nämlich *n*,
   mit Einschluß des Urbildes, da das nach dem *n*-ten folgende Bild mit
   dem Urbild zusammenfällt.`
-  )}
-  
-  function _67(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/24.svg" alt="Figure 24" style="width: auto; height: auto;">`
-  )}
-  
-  function _68(md){return(
-  md`Ein Gebilde, welches aus* n *durch gleiche Drehung wiederholten Formen
+  )
+}
+
+function _67(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/24.svg" alt="Figure 24" style="width: auto; height: auto;">`
+  )
+}
+
+function _68(md) {
+  return (
+    md`Ein Gebilde, welches aus* n *durch gleiche Drehung wiederholten Formen
   besteht, heißt ein n-zähliger* Drehling*. Man darf die hierbei
   auftretende Gesetzlichkeit nicht mit der Spiegelung oder Symmetrie
   verwechseln, von der sie grundsätzlich verschieden ist. Wohl aber können
@@ -956,10 +1107,12 @@ function _1(md){return(
   Ruck, doch im allgemeinen mit einem Stoss fort. Soll auch dieser
   vermieden werden, so muss die Linie am Drehpunkt* gerade* sein oder
   einen unendlich grossen Krümmungshalbmesser haben.`
-  )}
-  
-  function _69(md){return(
-  md`#### Anwendung
+  )
+}
+
+function _69(md) {
+  return (
+    md`#### Anwendung
   Für den vorliegenden Fall kommt nur die Drehung um den
   halben Vollwinkel (zwei Rechte) in Frage. Sie ergibt ähnlich wie die
   Spiegelung zusammen mit der Urform eine Gesamtform, welche laufend
@@ -972,22 +1125,28 @@ function _1(md){return(
   daß unser eigener Körper eine Spiegelform hat, aber nirgend eine
   Wiederholung durch Drehung aufweist. Es fehlt uns daher auch an einer
   geläufigen Wortbildung, welche die Drehbeziehungen darstellt.`
-  )}
-  
-  function _70(md){return(
-  md`#### Wasserwellen
+  )
+}
+
+function _70(md) {
+  return (
+    md`#### Wasserwellen
   Die überall zu beobachtende Bewegung des Wassers,
   welche der ganzen Formgesamtheit, die hier behandelt wird, den Namen
   gegeben hat, ist das Vorbild einiger ausgiebigst als Schmuckform
   verwendeter Wellenformen.`
-  )}
-  
-  function _71(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/25-26.svg" alt="Figure 25-26" style="width: auto; height: auto;">`
-  )}
-  
-  function _72(md){return(
-  md`Insbesondere sieht man am Ufer immer wieder, wie eine herankommende
+  )
+}
+
+function _71(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/25-26.svg" alt="Figure 25-26" style="width: auto; height: auto;">`
+  )
+}
+
+function _72(md) {
+  return (
+    md`Insbesondere sieht man am Ufer immer wieder, wie eine herankommende
   Wellenkante sich überneigt und schließlich brandet. Dieser ewige Vorgang
   stellt sich zunächst in einer laufenden einseitigen Gestalt mit einem
   Ruck wie Fig. 25 dar, die einen vielgebrauchten Wellenzug ergibt. Soll
@@ -995,28 +1154,36 @@ function _1(md){return(
   entsteht Fig. 26. Treibt man das überneigen noch weiter, so entsteht
   Fig. 27, die Urform des* Mäanders*, jenes von den Griechen mit
   ermüdender Vorliebe benutzten Wellenzuges.`
-  )}
-  
-  function _73(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/27.svg" alt="Figure 27" style="width: auto; height: auto;">`
-  )}
-  
-  function _74(md){return(
-  md`#### Gebrochene Wellen
+  )
+}
+
+function _73(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/27.svg" alt="Figure 27" style="width: auto; height: auto;">`
+  )
+}
+
+function _74(md) {
+  return (
+    md`#### Gebrochene Wellen
   Viele technische Verfahren legen die Anwendung
   gerader Linien auch für die Nachbildung gekrümmter Formen nahe. Es ist
   daher seit jeher gebräuchlich, in der Kunst das Verfahren deutlich und
   anschaulich anzuwenden, welches in der Wissenschaft sich ins unendlich
   Kleine flüchtet, nämlich der Ersatz gekrümmter Linien durch gebrochene,
   aus geraden bestehende Stücken bestehende.`
-  )}
-  
-  function _75(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/28.svg" alt="Figure 28" style="width: auto; height: auto;">`
-  )}
-  
-  function _76(md){return(
-  md`Die Willkür bezüglich der Winkel, unter denen diese aneinanderstoßen,
+  )
+}
+
+function _75(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/28.svg" alt="Figure 28" style="width: auto; height: auto;">`
+  )
+}
+
+function _76(md) {
+  return (
+    md`Die Willkür bezüglich der Winkel, unter denen diese aneinanderstoßen,
   wird durch die Regel beseitigt, nach welcher nur gewisse Lagen
   zugelassen werden. So bedingt die Weberei nur wage- und senkrechte
   Linien, entsprechend Kette und Einschlag. Andere Techniken mögen noch
@@ -1030,26 +1197,36 @@ function _1(md){return(
   Fig. 30, je nachdem die Geraden schräg oder senkrecht stehen. Sind beide
   Richtungen zugestanden, so entstehen Formen wie Fig. 31 und 32, von
   denen die eine die flache, die andere die hohe Sinuslinie nachbildet.`
-  )}
-  
-  function _77(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/29.svg" alt="Figure 29" style="width: auto; height: auto;">`
-  )}
-  
-  function _78(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/30.svg" alt="Figure 30" style="width: auto; height: auto;">`
-  )}
-  
-  function _79(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/31.svg" alt="Figure 31" style="width: auto; height: auto;">`
-  )}
-  
-  function _80(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/32.svg" alt="Figure 32" style="width: auto; height: auto;">`
-  )}
-  
-  function _81(md){return(
-  md`#### Überschneidende Wellen
+  )
+}
+
+function _77(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/29.svg" alt="Figure 29" style="width: auto; height: auto;">`
+  )
+}
+
+function _78(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/30.svg" alt="Figure 30" style="width: auto; height: auto;">`
+  )
+}
+
+function _79(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/31.svg" alt="Figure 31" style="width: auto; height: auto;">`
+  )
+}
+
+function _80(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/32.svg" alt="Figure 32" style="width: auto; height: auto;">`
+  )
+}
+
+function _81(md) {
+  return (
+    md`#### Überschneidende Wellen
   Die Wellenlinien sind bisher so gewählt
   worden, daß sie in ihrem Verlaufe keine Überkreuzungen oder
   Durchschneidungen aufzeigen. Dies geschah der Einfachheit zuliebe, damit
@@ -1057,22 +1234,28 @@ function _1(md){return(
   waren. Aber es liegt durchaus im Sinn der Ordnung, auch verwickeltere
   Grundformen zu Wellen zu gestalten, insbesondere solche, deren Linien
   sich selbst schneiden, Fig. 33.`
-  )}
-  
-  function _82(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/33.svg" alt="Figure 33" style="width: auto; height: auto;">`
-  )}
-  
-  function _83(md){return(
-  md`Es entsteht hierdurch ein sehr großer Kreis von Möglichkeiten, dessen
+  )
+}
+
+function _82(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/33.svg" alt="Figure 33" style="width: auto; height: auto;">`
+  )
+}
+
+function _83(md) {
+  return (
+    md`Es entsteht hierdurch ein sehr großer Kreis von Möglichkeiten, dessen
   mathetische Bearbeitung und Erschöpfung der Zukunft überlassen werden
   muß. Das gleiche ist bereits mehrfach stillschweigend geschehen, wo die
   Arbeit vor der Überzahl der übersehbaren Mannigfaltigkeiten vorläufig
   haltmachen mußte.`
-  )}
-  
-  function _84(md){return(
-  md`#### Freie Enden
+  )
+}
+
+function _84(md) {
+  return (
+    md`#### Freie Enden
   Wenn eine Linie organisch, d. h. in einer durch die
   Gesamtform bedingten oder gerechtfertigten Weise zu Ende geht oder
   ausläuft, so ist dies nur bei geraden Linien eine einfache Sache, indem
@@ -1080,14 +1263,18 @@ function _1(md){return(
   unterbrochen werden, denn in der Natur gibt es kein plötzliches,
   unvermitteltes Aufhören einer Bewegung. Bewegte Linien müssen*
   auslaufen*.`
-  )}
-  
-  function _85(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/34.svg" alt="Figure 34" style="width: auto; height: auto;">`
-  )}
-  
-  function _86(md){return(
-  md`Dies geschieht am sichersten, indem man die Wellen zunehmend flacher
+  )
+}
+
+function _85(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/34.svg" alt="Figure 34" style="width: auto; height: auto;">`
+  )
+}
+
+function _86(md) {
+  return (
+    md`Dies geschieht am sichersten, indem man die Wellen zunehmend flacher
   werden läßt, bis die Gerade (annähernd oder ganz) erreicht ist, die eine
   Beendigung gestattet, Fig. 34.  
   Das beste Gesetz, nach welchem man die Abnahme bewerkstelligen kann, ist
@@ -1102,15 +1289,19 @@ function _1(md){return(
   verhältnismäßig ihre Gestalt zu ändern; ein Abbrechen würde also ebenso
   unorganisch aussehen wie vorher. Für die Verlängerung spricht
   gleichfalls nichts; also lass man sie unverändert.`
-  )}
-  
-  function _87(md){return(
-  md`#### Drittes Kapitel
+  )
+}
+
+function _87(md) {
+  return (
+    md`#### Drittes Kapitel
   ## Flechten`
-  )}
-  
-  function _88(md){return(
-  md`#### Begriff
+  )
+}
+
+function _88(md) {
+  return (
+    md`#### Begriff
   Bisher ist nur von den einfachen Linien in ihrer
   Mannigfaltigkeit die Rede gewesen. Wir gehen nun zu dem verwickelteren
   Fall über, daß* mehrere* Linien sich zu einem linienhaften Ganzen
@@ -1127,10 +1318,12 @@ function _1(md){return(
   2. bare bewegte Linien;  
   3. verschobene Wellen oder Flechten im engeren Sinne.
     `
-  )}
-  
-  function _89(md){return(
-  md`#### Bare Gerade
+  )
+}
+
+function _89(md) {
+  return (
+    md`#### Bare Gerade
   Bare Linien von gleicher Stärke werden zunächst so
   verwendet, daß sie* gleiche Abstände* haben, etwa wie die Fünferlinien
   der Notenschrift. Dadurch, daß zwischen der Breite der Linien und der
@@ -1158,10 +1351,12 @@ function _1(md){return(
   breiter wirken als schwarze von gleicher Breite. Man wird den Abstand
   bei der Doppellinie durch die Forderung der Deutlichkeit bestimmen, bei
   der Liniengruppe durch die Tiefe der beabsichtigten Schattenwirkung.`
-  )}
-  
-  function _90(md){return(
-  md`#### Ungleiche Abstände
+  )
+}
+
+function _90(md) {
+  return (
+    md`#### Ungleiche Abstände
   Wird das Gesetz aufgehoben, daß die Abstände der
   Linien in der Gruppe gleich sein sollen, so tritt eine neue Freiheit
   oder Willkür ein, über die gesetzlich verfügt werden muß. Denn es ist
@@ -1169,14 +1364,18 @@ function _1(md){return(
   unverständliche Freiheit unschön wirkt und sich von der Bearbeitung
   ausschließt. Wir haben uns deshalb nach einem Gesetz umzusehen, das hier
   anwendbar ist, und zwar zunächst nach dem einfachsten.`
-  )}
-  
-  function _91(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/35.svg" alt="Figure 35" style="width: auto; height: auto;">`
-  )}
-  
-  function _92(md){return(
-  md`Als solches bietet sich die Regel an, daß die Abstände um* gleiche
+  )
+}
+
+function _91(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/35.svg" alt="Figure 35" style="width: auto; height: auto;">`
+  )
+}
+
+function _92(md) {
+  return (
+    md`Als solches bietet sich die Regel an, daß die Abstände um* gleiche
   Stufen* größer oder kleiner werden. Man nennt bekanntlich eine Reihe mit
   dieser Eigenschaft eine arithmetische Reihe. Führt man eine solche
   Liniengruppe aus, Fig. 35, so wirkt sie keineswegs überzeugend. An der
@@ -1185,10 +1384,12 @@ function _1(md){return(
   eines Gesetzes, das alle Empfindungen, somit auch die der
   Linienabstände, regelt, und das wir deshalb genauer kennenlernen
   müssen.`
-  )}
-  
-  function _93(md){return(
-  md`#### Das Fechnersche Gesetz
+  )
+}
+
+function _93(md) {
+  return (
+    md`#### Das Fechnersche Gesetz
   Da es sich in diesem ganzen Werke um*
   Empfindungen* handelt, so ist es natürlich, daß sich alsbald das Gesetz
   geltend macht, nach welchem die Empfindungen mit ihren äußeren Ursachen,
@@ -1197,14 +1398,18 @@ function _1(md){return(
   Empfindungen sich um gleiche Stufen (in arithmetischer Reihe) ändern,
   müssen sich die Reize nach gleichen Verhältnissen (in geometrischer
   Reihe) ändern.`
-  )}
-  
-  function _94(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/36.svg" alt="Figure 36" style="width: auto; height: auto;">`
-  )}
-  
-  function _95(md){return(
-  md`In einer Liniengruppe, deren Abstände gleich sind, bleibt auch die
+  )
+}
+
+function _94(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/36.svg" alt="Figure 36" style="width: auto; height: auto;">`
+  )
+}
+
+function _95(md) {
+  return (
+    md`In einer Liniengruppe, deren Abstände gleich sind, bleibt auch die
   Empfindung der Abstände gleich. Soll sich diese Empfindung in
   einfachster Weise, nämlich um gleiche Beträge, ändern, so müssen die
   Abstände, wie in Fig. 36 geschehen, in gleichem* Verhältnis* ab- oder
@@ -1219,10 +1424,12 @@ function _1(md){return(
   Bare Liniengruppen, deren Abstände nach einer geometrischen Reihe
   geregelt sind, wirken überzeugend und insofern schön. Fig. 36 ist nach
   einer geometrischen Reihe mit dem Verhältnis 0.7 abgestuft.`
-  )}
-  
-  function _96(md){return(
-  md`#### Ungleiche Stärke
+  )
+}
+
+function _96(md) {
+  return (
+    md`#### Ungleiche Stärke
   Ist die Stärke der baren Linien verschieden, so
   muß sie gesetzlich geordnet sein, falls es mehr als zwei sind. Man legt
   die stärkste Linie entweder an den Rand der Gruppe oder in die Mitte; in
@@ -1249,10 +1456,12 @@ function _1(md){return(
   wird; ein Erkennen des Gesetzes ist dazu nicht notwendig. Der größte
   Teil der Wirkungen der Kunst beruht auf der Betätigung solcher*
   „heimlicher Gesetze".*`
-  )}
-  
-  function _97(md){return(
-  md`#### Persönliche Bemerkung
+  )
+}
+
+function _97(md) {
+  return (
+    md`#### Persönliche Bemerkung
   Die grundsätzliche Bedeutung der
   Gesetzlichkeit für die schönheitliche Wirkung kam mir zum ersten Male in
   meinen Knabenjahren zum Bewußtsein bei einer geometrischen Zeichnung für
@@ -1266,10 +1475,12 @@ function _1(md){return(
   wurde vom Lehrer besonders gelobt. Dies ungewohnte Ereignis regte mein
   Nachdenken an, und ich betrachte jenen kleinen Versuch als den ersten
   Keim der vorliegenden Schrift.`
-  )}
-  
-  function _98(md){return(
-  md`#### Gruppen
+  )
+}
+
+function _98(md) {
+  return (
+    md`#### Gruppen
   Eine Gruppe barer Linien, welche durch eines der
   angegebenen Gesetze zusammengehalten wird, kann ihrerseits wieder wie
   eine einzige Linie behandelt werden. Wiederholt man z. B. einige
@@ -1283,10 +1494,12 @@ function _1(md){return(
   so behandelt werden können, als seien sie einfache Formelemente. Dies
   ist ein Grundsatz von sehr allgemeiner Anwendung, welcher die* Harmonien
   höherer Ordnung* ergibt.`
-  )}
-  
-  function _99(md){return(
-  md`#### Unterbrochene Linien
+  )
+}
+
+function _99(md) {
+  return (
+    md`#### Unterbrochene Linien
   Statt der bisher angenommenen stetigen Linien
   können für die beschriebenen Zusammenstellungen auch unterbrochene
   verwendet werden, wie sie S. 11 beschrieben worden sind. Da hierbei neue
@@ -1300,30 +1513,38 @@ function _1(md){return(
   bewußte, geistreiche Mannigfaltigkeit anzutreffen und sich ihrer zu
   erfreuen, daß es ratsam erscheint, hier schrittweise vorzugehen und den
   Reichtum der Abwandlungen nur stufenweise zu erschließen.`
-  )}
-  
-  function _100(md){return(
-  md`#### Bewegte Liniengruppen
+  )
+}
+
+function _100(md) {
+  return (
+    md`#### Bewegte Liniengruppen
   Eine neue Klasse von Abwandlungen ergibt
   sich, wenn man die bisherigen geraden Züge mit bewegten (in erster Linie
   Wellen) vertauscht. Da die Breite der entstehenden Streifen aus baren
   Wellen eine geringere Beweglichkeit verursacht, kommen nur einfachere
   Wellen, zunächst die flache Sinuslinie, in Betracht.`
-  )}
-  
-  function _101(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/37.svg" alt="Figure 37" style="width: auto; height: auto;">`
-  )}
-  
-  function _102(md){return(
-  md`Eine weitere Möglichkeit besteht darin, daß man die Linien nicht streng
+  )
+}
+
+function _101(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/37.svg" alt="Figure 37" style="width: auto; height: auto;">`
+  )
+}
+
+function _102(md) {
+  return (
+    md`Eine weitere Möglichkeit besteht darin, daß man die Linien nicht streng
   bar macht, sondern eine gesetzliche Abwandlung, zunächst der Wellenhöhe,
   eintreten läßt. Es entstehen dadurch Gebilde, die eigenartig von innerem
   Leben erfüllt sind, Fig. 37.`
-  )}
-  
-  function _103(md){return(
-  md`#### Die eigentliche Flechte
+  )
+}
+
+function _103(md) {
+  return (
+    md`#### Die eigentliche Flechte
   Läßt man mehrere Wellen längs derselben
   Geraden sich durch Schiebung vermehren, so durchschneiden sich ihre
   Linien in mannigfaltigster Weise. Die hierbei vorhandene Willkür wird
@@ -1341,39 +1562,51 @@ function _1(md){return(
   Flechten bietet sich die* Sinuslinie* an. Zieht man zu einer solchen
   eine zweite, die um eine halbe Welle verschoben ist, so entsteht die
   einfachste Form, die noch nicht an ein Geflecht erinnert, Fig. 38.`
-  )}
-  
-  function _104(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/38.svg" alt="Figure 38" style="width: auto; height: auto;">`
-  )}
-  
-  function _105(md){return(
-  md`Teilt man aber die Wellenlänge in drei gleiche Teile und schiebt drei
+  )
+}
+
+function _104(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/38.svg" alt="Figure 38" style="width: auto; height: auto;">`
+  )
+}
+
+function _105(md) {
+  return (
+    md`Teilt man aber die Wellenlänge in drei gleiche Teile und schiebt drei
   Sinuslinien übereinander, Fig. 39, so bildet sich bereits eine schöne
   Flechte, deren Kreuzungspunkte, wie bei allen unpaaren Teilungen, nicht
   in der Mittellinie liegen. Vier gleichabständige Sinuslinien ergeben
   eine dichtere Flechte mit Teilpunkten in der Mittellinie. Über fünf oder
   sechs wird man selten hinausgehen.`
-  )}
-  
-  function _106(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/39.svg" alt="Figure 39" style="width: auto; height: auto;">`
-  )}
-  
-  function _107(md){return(
-  md`Andere Flechten erhält man, wenn man die S. 28 beschriebenen
+  )
+}
+
+function _106(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/39.svg" alt="Figure 39" style="width: auto; height: auto;">`
+  )
+}
+
+function _107(md) {
+  return (
+    md`Andere Flechten erhält man, wenn man die S. 28 beschriebenen
   geradlinigen Stellvertreter der Sinuslinie nach dem Verschiebungsgesetz
   behandelt, z. B. Fig. 40, wobei jede einzelne Form sich nach
   Sondergesetzen, die sich aus ihren Eigenschaften ergeben, zu besonders
   glücklichen Flechten entwickeln läßt.`
-  )}
-  
-  function _108(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/40.svg" alt="Figure 40" style="width: auto; height: auto;">`
-  )}
-  
-  function _109(md){return(
-  md`Außer den Schiebungen in der Hauptrichtung sind noch solche in anderen
+  )
+}
+
+function _108(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/40.svg" alt="Figure 40" style="width: auto; height: auto;">`
+  )
+}
+
+function _109(md) {
+  return (
+    md`Außer den Schiebungen in der Hauptrichtung sind noch solche in anderen
   Richtungen möglich. Senkrecht zur Hauptrichtung ergeben sich die S. 30
   beschriebenen baren Liniengruppen. Schräge Schiebungen lassen sich in
   zwei Schiebungen auflösen, von denen je eine gleichgerichtet und die
@@ -1383,14 +1616,18 @@ function _1(md){return(
   schräge Schiebungen erhält man reizvolle Flechten in großer
   Mannigfaltigkeit, die sich weiterhin zu Flächendeckungen oder Geflechten
   entwickeln lassen.`
-  )}
-  
-  function _110(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/41.svg" alt="Figure 41" style="width: auto; height: auto;">`
-  )}
-  
-  function _111(md){return(
-  md`#### Freiere Flechten
+  )
+}
+
+function _110(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/41.svg" alt="Figure 41" style="width: auto; height: auto;">`
+  )
+}
+
+function _111(md) {
+  return (
+    md`#### Freiere Flechten
   Jede willkürliche Wellenform läßt sich durch
   ganzteilige Schiebung in eine Flechte entwickeln, welche die gleichen
   Kennzeichen bezüglich ruhend oder laufend, ein- oder beidseitig
@@ -1404,34 +1641,44 @@ function _1(md){return(
   Füllung des ganzen Gebietes durch das entstehende Liniennetz. Der Gang
   der Urform ist mit besonderer Rücksicht hierauf festzustellen. Man sehe
   hierüber den übernächsten Abschnitt nach.`
-  )}
-  
-  function _112(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/42.svg" alt="Figure 42" style="width: auto; height: auto;">`
-  )}
-  
-  function _113(md){return(
-  md`Außer der Schiebung in der Längsrichtung kann die schräge Schiebung
+  )
+}
+
+function _112(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/42.svg" alt="Figure 42" style="width: auto; height: auto;">`
+  )
+}
+
+function _113(md) {
+  return (
+    md`Außer der Schiebung in der Längsrichtung kann die schräge Schiebung
   (S. 37) natürlich auch bei freien Wellen verwendet werden. Durch sie
   ergibt jede jede Form, ob sie ruhend oder laufend ist, eine laufende
   Flechte.`
-  )}
-  
-  function _114(md){return(
-  md`#### Spiegelung
+  )
+}
+
+function _114(md) {
+  return (
+    md`#### Spiegelung
   Versucht man, die Sinuslinie durch rechtwinkelige
   Spiegelung oder Halbdrehung zu neuen Gebilden zu verwerten, so findet
   man, daß auf solche Weise nicht Neues erhalten werden kann. Die
   Sinuslinie ist nach rechts und links wie nach oben und unten
   spiegelgleich und daher unempfänglich für jene Abänderungen.`
-  )}
-  
-  function _115(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/43.svg" alt="Figure 43" style="width: auto; height: auto;">`
-  )}
-  
-  function _116(md){return(
-  md`Außer der senkrechten Spiegellinie kann aber noch eine in der Längslinie
+  )
+}
+
+function _115(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/43.svg" alt="Figure 43" style="width: auto; height: auto;">`
+  )
+}
+
+function _116(md) {
+  return (
+    md`Außer der senkrechten Spiegellinie kann aber noch eine in der Längslinie
   liegende verwendet werden. Diese ergibt bereits an der Sinuslinie eine
   einfache Flechte, nämlich eine Verdoppelung, die mit einer Schiebung um
   eine halbe Wellenlänge (Fig. 38, S. 36) gleichwertig ist. Jede andere
@@ -1441,34 +1688,44 @@ function _1(md){return(
   einigermaßen verwickelt sein, ohne daß das Verständnis der Doppelform
   sehr erschwert wird, so geläufig ist uns die Wiederholung durch
   Spiegelung.`
-  )}
-  
-  function _117(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/44.svg" alt="Figure 44" style="width: auto; height: auto;">`
-  )}
-  
-  function _118(md){return(
-  md`Die Lage der Längsspiegellinie braucht nicht notwendig die Mittellinie
+  )
+}
+
+function _117(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/44.svg" alt="Figure 44" style="width: auto; height: auto;">`
+  )
+}
+
+function _118(md) {
+  return (
+    md`Die Lage der Längsspiegellinie braucht nicht notwendig die Mittellinie
   zu sein, die ohnedies nur bei beidseitigen Formen vorhanden ist.
   Vielmehr ergibt jede Bare zu dieser eine entsprechende Flechte. Dies ist
   eine reich fließende Quelle gesetzlicher Abänderungen, Fig. 44.`
-  )}
-  
-  function _119(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/45.svg" alt="Figure 45" style="width: auto; height: auto;">`
-  )}
-  
-  function _120(md){return(
-  md`Ferner läßt sich gleichzeitig Längsspiegelung und Schiebung betätigen,
+  )
+}
+
+function _119(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/45.svg" alt="Figure 45" style="width: auto; height: auto;">`
+  )
+}
+
+function _120(md) {
+  return (
+    md`Ferner läßt sich gleichzeitig Längsspiegelung und Schiebung betätigen,
   indem das ganze Spiegelbild um einen bestimmten Bruchteil der
   Wellenlänge verschoben wird, Fig. 45. Das Verfahren läßt sich auf
   laufende wie auf ruhende, auf ein- wie beidseitige Grundformen anwenden.
   Dabei wird jedes Muster laufend, wenn die Verschiebung einen anderen
   Wert hat als eine halbe Wellenlänge.`
-  )}
-  
-  function _121(md){return(
-  md`#### Das Gesetz der gleichen Dichte
+  )
+}
+
+function _121(md) {
+  return (
+    md`#### Das Gesetz der gleichen Dichte
   Die aus verschiedenen Grundformen
   nach einem der angegebenen Gesetze erzeugten Geflechte haben ziemlich
   verschiedenen Kunstwert. Insbesondere wird man bei solchen, in denen an
@@ -1502,10 +1759,12 @@ function _1(md){return(
   Formen anklingen, als Füllung, so daß die richtige Bedeckung erreicht
   ist. Das zweite Verfahren ist willkürlicher und hat die entsprechenden
   Nach- und Vorteile.`
-  )}
-  
-  function _122(md){return(
-  md`#### Drehungen
+  )
+}
+
+function _122(md) {
+  return (
+    md`#### Drehungen
   Eine zweite Art der Verdoppelung einer gegebenen
   Wellenlinie besteht darin, daß man einen Wellenzug um einen passend
   gewählten Punkt um 1/2 dreht und diese neue Form durch Schiebung
@@ -1515,27 +1774,35 @@ function _1(md){return(
   Beschaffenheit, Fig. 46.  
   Durch Schiebung um 1/2, 1/3 usw. Wellenlänge gewinnt man verwickeltere
   Flechten, ohne Änderung des Laufens bzw. Ruhens.`
-  )}
-  
-  function _123(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/46.svg" alt="Figure 46" style="width: auto; height: auto;">`
-  )}
-  
-  function _124(md){return(
-  md`Da uns Drehformen viel weniger geläufig sind als Spiegelformen, wird man
+  )
+}
+
+function _123(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/46.svg" alt="Figure 46" style="width: auto; height: auto;">`
+  )
+}
+
+function _124(md) {
+  return (
+    md`Da uns Drehformen viel weniger geläufig sind als Spiegelformen, wird man
   sich dieser Flechten dort bedienen, wo man auf interessante und neuartig
   wirkende Gebilde ausgeht.  
   Drehung, Schiebung und Spiegelung lassen sich gemeinsam betätigen.
   Fig. 47 zeigt, wie aus einer höchst einfachen Linie durch Verbindung von
   Drehung, Spieglung und Schiebung etwas Neuartiges entsteht.`
-  )}
-  
-  function _125(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/47.svg" alt="Figure 47" style="width: auto; height: auto;">`
-  )}
-  
-  function _126(md){return(
-  md`#### Andere Abwandlungen
+  )
+}
+
+function _125(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/47.svg" alt="Figure 47" style="width: auto; height: auto;">`
+  )
+}
+
+function _126(md) {
+  return (
+    md`#### Andere Abwandlungen
   Schließlich kann man jede Flechte wie eine
   Einzellinie behandeln und mehrere gleiche oder verschiedene Flechten
   unter sich oder abwechselnd mit Linien zu baren Gruppen verbinden. Diese
@@ -1544,15 +1811,19 @@ function _1(md){return(
   vorhandenen Möglichkeit der Ordnung begnügen und erst dann in das Gebiet
   eindringen, wenn Aufgaben zu lösen sind, die eine ganz besonders reiche
   Liniengestaltung erfordern.`
-  )}
-  
-  function _127(md){return(
-  md`#### Viertes Kapitel
+  )
+}
+
+function _127(md) {
+  return (
+    md`#### Viertes Kapitel
   ## Bänder`
-  )}
-  
-  function _128(md){return(
-  md`#### Begriff
+  )
+}
+
+function _128(md) {
+  return (
+    md`#### Begriff
   Unter Bändern verstehen wir solche Formen, welche in einer
   Richtung lang entwickelt sind, dabei aber eine bestimmte Breite haben
   und mit* flächenhaften* Mustern (im Gegensatz zu den bisher betrachteten
@@ -1567,10 +1838,12 @@ function _1(md){return(
   der Linien* Flächen*teile abgegrenzt, die man als Gebilde für sich
   (z. B. durch die Farbe) behandeln kann, wodurch sie in Bänder
   übergehen.`
-  )}
-  
-  function _129(md){return(
-  md`#### Die freie Form  
+  )
+}
+
+function _129(md) {
+  return (
+    md`#### Die freie Form  
   Wie gehen von einer ganz willkürlichen Flächenform
   aus, an der keinerlei Gesetzlichkeit besteht, d. h. in welcher kein Teil
   dem anderen gleich oder ähnlich (im weiteren Sinne) ist. Ein Tintenklex
@@ -1581,10 +1854,12 @@ function _1(md){return(
   sorgt durch Aufdrücken dafür, daß er sich auf dem Gegenblatt wiederholt,
   so zeigt sich beim Aufmachen eine Spiegelform, die einen primitiv
   angenehmen Eindruck macht, Fig. 48.`
-  )}
-  
-  function _130(md){return(
-  md`#### Reine Formkunst
+  )
+}
+
+function _130(md) {
+  return (
+    md`#### Reine Formkunst
   Eine freie Form ohne Gesetzlichkeit hat an sich
   noch deinen Schönheitswert. Sie kann einen solchen dadurch erhalten, daß
   sie irgendeinen Gegenstand der Außenwelt abbildet, den wir aus
@@ -1596,14 +1871,18 @@ function _1(md){return(
   nach Drehung um 1/4 oder 1/2, womöglich bevor wir wissen, was sie
   darstellt, so läßt sie uns ebenso gleichgültig wie irgendein anderer
   Klecks.`
-  )}
-  
-  function _131(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/48.svg" alt="Figure 48" style="width: auto; height: auto;">`
-  )}
-  
-  function _132(md){return(
-  md`Von solchen Beziehungswerten wird in diesem Buche abgesehen, das
+  )
+}
+
+function _131(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/48.svg" alt="Figure 48" style="width: auto; height: auto;">`
+  )
+}
+
+function _132(md) {
+  return (
+    md`Von solchen Beziehungswerten wird in diesem Buche abgesehen, das
   ausschließlich der Untersuchung der reinen Formharmonik gewidmet ist.
   Daß eine Formkunst ohne solche zugeordneten Beziehungswerte möglich und
   sogar zu einer sehr hohen Stufe entwickelbar ist, zeigt uns die
@@ -1618,10 +1897,12 @@ function _1(md){return(
   der gleichen Zwecken dienenden „Harmonie der Farben") dazu dienen,
   Klarheit über die Grundlagen einer reinen Licht- oder Augenkunst zu
   schaffen.`
-  )}
-  
-  function _133(md){return(
-  md`#### Die Grundmittel der Formkunst
+  )
+}
+
+function _133(md) {
+  return (
+    md`#### Die Grundmittel der Formkunst
   Damit wir in einer Form Zusammenhang,
   Gesetzlichkeit und somit Schönheit erblicken, ist eine Beziehung der
   verschiedenen Teile dieser Form untereinander erforderlich.  
@@ -1652,10 +1933,12 @@ function _1(md){return(
   Vorausgeschickt sei, daß hier zunächst nur von Formen in der* Ebene* die
   Rede sein soll; auch die Wiederholung soll in derselben Ebene, die
   unbegrenzt gedacht wird, liegen.`
-  )}
-  
-  function _134(md){return(
-  md`#### Schiebung
+  )
+}
+
+function _134(md) {
+  return (
+    md`#### Schiebung
   Schiebung liegt vor, wenn zwischen den entsprechenden
   Punkten des Urbilds und des Abbilds überall gleicher Abstand besteht.
   Dann sind notwendig die Verbindungslinien solcher Punkte nicht nur
@@ -1670,14 +1953,18 @@ function _1(md){return(
   nämlich in der Gesamtform, liegen, zu der das Band gehört. Sie soll im
   allgemeinen einen kleinen Bruchteil, 1⁄5 oder weniger, der Bandlänge
   ausmachen.`
-  )}
-  
-  function _135(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/49.svg" alt="Figure 49" style="width: auto; height: auto;">`
-  )}
-  
-  function _136(md){return(
-  md`Die Ursache hierfür ist, daß im Bande die Schiebung nicht einmalig,
+  )
+}
+
+function _135(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/49.svg" alt="Figure 49" style="width: auto; height: auto;">`
+  )
+}
+
+function _136(md) {
+  return (
+    md`Die Ursache hierfür ist, daß im Bande die Schiebung nicht einmalig,
   sondern mehrmals im gleichen Abstand wiederholt sein muß, damit die
   Gesetzlichkeit sichtbar wird. Deshalb muß die Anzahl der Wiederholungen
   unbestimmt, d. h. nicht auf einen Blick, abzählbar sein.  
@@ -1691,10 +1978,12 @@ function _1(md){return(
   überall in den Anfängen der Schmuckkunst oder Ornamentik als allgemein
   angewendetes Verfahren, das sich zudem durch die Einfachheit seiner
   technischen Ausführung empfiehlt, Fig. 49.`
-  )}
-  
-  function _137(md){return(
-  md`#### Die Seitlichkeit der Bänder
+  )
+}
+
+function _137(md) {
+  return (
+    md`#### Die Seitlichkeit der Bänder
   Wird aus einer Form durch
   gleichabständige Schiebung ein Band erzeugt, so kann man in diesem
   rechts und links, oben und unten unterscheiden, wobei wir das Band von
@@ -1707,10 +1996,12 @@ function _1(md){return(
   in Fig. 49 vorhanden. Sie erzeugen besondere Wirkungsarten des Bandes
   auf das Gefühl, was bei der Anwendung zu Schönheitswerten sorgfältig zu
   bedenken ist.`
-  )}
-  
-  function _138(md){return(
-  md`#### Mehrere Abstände
+  )
+}
+
+function _138(md) {
+  return (
+    md`#### Mehrere Abstände
   Neben der gleichabständigen Schiebung ist der Fall
   mit gesetzlichem Wechsel der Abstände zu erwähnen. Ist *a* der Abstand,
   so ist *a a a a* ... oder kurz *a* das Symbol der Abstandsgleichheit.
@@ -1726,10 +2017,12 @@ function _1(md){return(
   auch formal gleich sein kann, ist bereits angewendet worden (S. 34) und
   wird noch häufig wiederkehren. Durch ihn werden aus Harmonien erster
   Ordnung solche zweiter und höherer Ordnung erzeugt.`
-  )}
-  
-  function _139(md){return(
-  md`#### Veränderliche Schiebung
+  )
+}
+
+function _139(md) {
+  return (
+    md`#### Veränderliche Schiebung
   Nach dem Hauptsatz der Formharmonik muß bei
   der Formgestaltung das maßgebende Gesetz sichtbar in die Erscheinung
   treten, wenn eine schöne Wirkung angestrebt wird.  
@@ -1749,10 +2042,12 @@ function _1(md){return(
   Es ist mir nicht bekannt, ob jemals eine solche Bandteilung praktisch
   versucht worden ist. Ihre Anwendung ist am Platze, wo ein Band beendet
   und dabei der Eindruck allmählichen Ausklingens erzielt werden soll.`
-  )}
-  
-  function _140(md){return(
-  md`#### Lose und zusammenhängende Formen
+  )
+}
+
+function _140(md) {
+  return (
+    md`#### Lose und zusammenhängende Formen
   Die Einzelform, die sich im Bande
   wiederholt, kann entweder in sich abgeschlossen sein, so daß kein
   Zusammenhang mit der folgenden Wiederholung besteht. Oder sie kann
@@ -1763,14 +2058,18 @@ function _1(md){return(
   Wiederholungen als Bestandteile einer einzigen zusammenhängenden Form,
   die beliebig lang ausgesponnen werden kann und die sich von jeder Stelle
   ab in gleiche Stücke teilen läßt.`
-  )}
-  
-  function _141(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/50.svg" alt="Figure 50" style="width: auto; height: auto;">`
-  )}
-  
-  function _142(md){return(
-  md`Aufmerksamkeit verdient ferner die Frage der* teilweisen Überdeckung*
+  )
+}
+
+function _141(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/50.svg" alt="Figure 50" style="width: auto; height: auto;">`
+  )
+}
+
+function _142(md) {
+  return (
+    md`Aufmerksamkeit verdient ferner die Frage der* teilweisen Überdeckung*
   der Form. Ist der Schiebungsabstand kleiner als die Länge der Grundform,
   so entsteht eine solche teilweise Überdeckung, durch welche die
   Gesamtform jedenfalls in stetigen Zusammenhang gebracht wird, Fig. 50.
@@ -1778,10 +2077,12 @@ function _1(md){return(
   liegt jede Einzelform getrennt. Bei gesetzlich ab- oder zunehmenden
   Abständen geht der eine Fall in den andern über, was gegebenenfalls
   einen besonderen Reiz ausmachen kann.`
-  )}
-  
-  function _143(md){return(
-  md`#### Anschluß
+  )
+}
+
+function _143(md) {
+  return (
+    md`#### Anschluß
   Um beim Entwerfen eines zusammenhängenden Musters den
   Anschluß (Rapport) einfach und richtig zu machen, verfährt man bei
   Flächenformen ebenso, wie dies für Linienformen beschrieben ist. Nachdem
@@ -1798,10 +2099,12 @@ function _1(md){return(
   Aufgabe dar. Aus besonderen Gründen kann man auf sie verzichten und die
   beim Anschluß entstehenden Knicke zu besonderen Wirkungen verwerten. Als
   nächstes Gesetz bietet sich hier der rechte Winkel an.`
-  )}
-  
-  function _144(md){return(
-  md`#### Drehung
+  )
+}
+
+function _144(md) {
+  return (
+    md`#### Drehung
   Reine Drehung erfährt eine Gestalt, wenn in ihrer Ebene ein
   fester Drehpunkt angenommen wird und alle ihre Punkte sich in Kreisen um
   diesen so bewegen, daß sie stetes gleiche Winkel durchmessen.  
@@ -1818,10 +2121,12 @@ function _1(md){return(
   regelmäßigen *n*-Ecks ist *n*–2/2*n*.  
   Für uns kommen allein* ganzteilige* Drehungen in Betracht, wo nach 2, 3,
   4 ...* n *Einzeldrehungen die Form in sich zurückkehrt.`
-  )}
-  
-  function _145(md){return(
-  md`#### Eigenschaften der Drehung
+  )
+}
+
+function _145(md) {
+  return (
+    md`#### Eigenschaften der Drehung
   Eine reine Drehung ist durch den
   Drehpunkt und den Drehwinkel gekennzeichnet. Liegt der erste innerhalb
   der Form, so entsteht ein zusammenhängendes, etwa kreissägenförmiges
@@ -1831,14 +2136,18 @@ function _1(md){return(
   oder nicht. (Im ersten Falle liegt natürlich stets Überdeckung vor.)
   Durch Verlegung des Drehpunktes inner- oder außerhalb der Form entstehen
   unzählig viele verschiedene Gesamtformen.`
-  )}
-  
-  function _146(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/51-52.svg" alt="Figure 51-52" style="width: auto; height: auto;">`
-  )}
-  
-  function _147(md){return(
-  md`Der Drehwinkel muß* ganzteilig* sein, da sich sonst keine endliche Figur
+  )
+}
+
+function _146(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/51-52.svg" alt="Figure 51-52" style="width: auto; height: auto;">`
+  )
+}
+
+function _147(md) {
+  return (
+    md`Der Drehwinkel muß* ganzteilig* sein, da sich sonst keine endliche Figur
   ergibt. Das heißt: durch eine endliche Anzahl Drehungen um den gleichen
   Winkel muß die Form wieder genau die Anfangslage erreichen. Der
   Drehungswinkel wird also durch die Formel 1/*n* dargestellt, wo *n* eine
@@ -1869,10 +2178,12 @@ function _1(md){return(
   entsteht die Gegenform nur durch Spiegelung, wobei es keinen Unterschied
   macht, ob man die Ausgangsform spiegelt und aus ihr den Drehling erzeugt
   oder ob man den ganzen Drehling erst erzeugt und dann spiegelt.`
-  )}
-  
-  function _148(md){return(
-  md`#### Spiegelung
+  )
+}
+
+function _148(md) {
+  return (
+    md`#### Spiegelung
   Der dritte Fall der gesetzmäßigen Wiederholung einer
   Flächenform ist die* Spiegelung*. Diese kommt folgendermaßen zustande.
   Man nimmt eine unbegrenzte Gerade in irgendeiner Lage zur gegebenen Form
@@ -1899,10 +2210,12 @@ function _1(md){return(
   ist. Das Spiegelbild des Spiegelbildes in derselben Spiegellinie fällt
   mit dem Urbild zusammen, und dadurch bilden beide eine geschlossene
   Zweiheit, über die hinaus es kein Mehr gibt.`
-  )}
-  
-  function _149(md){return(
-  md`#### Veränderliche
+  )
+}
+
+function _149(md) {
+  return (
+    md`#### Veränderliche
   Bei der Spiegelung sind wieder zwei Veränderliche
   vorhanden, nämlich die Lage des Spiegels zu der gegebenen freien Form,
   die durch den Winkel gekennzeichnet wird, welchen die Spiegelgerade
@@ -1915,10 +2228,12 @@ function _1(md){return(
   Oder der Spiegel liegt senkrecht zur Bandrichtung. Dann ergibt sich nur
   eine Spiegelform von doppelter Länge. In beiden Fällen entsteht kein
   unbegrenzte langes Band. Dazu ist jedenfalls Schiebung erforderlich.`
-  )}
-  
-  function _150(md){return(
-  md`#### Spiegelgleichheit
+  )
+}
+
+function _150(md) {
+  return (
+    md`#### Spiegelgleichheit
   Faßt man eine Gestalt und ihr Spiegelbild zu
   einer Gesamtform zusammen, so nennt man solche Spiegelinge spiegelgleich
   (symmetrisch). Die Spiegelgerade, welcher eine besondere Bedeutung in
@@ -1932,10 +2247,12 @@ function _1(md){return(
   Spiegelung* unverändert* wiederholen (S. 51). Bei ihnen kann also das
   Ergebnis der Spiegelung auch durch Schiebung und Drehung erreicht
   werden.`
-  )}
-  
-  function _151(md){return(
-  md`#### Schiebung und Drehung
+  )
+}
+
+function _151(md) {
+  return (
+    md`#### Schiebung und Drehung
   Wir kommen nun zu den Formharmonien höherer
   Stufe, die sich aus der Anwendung zweier Wiederholungsarten ergeben. Da
   deren drei vorhanden sind, nämlich Schiebung, Drehung, Spiegelung, so
@@ -1963,10 +2280,12 @@ function _1(md){return(
   Eine Veranschaulichung dieser Fälle ist entbehrlich, da das Wesentliche
   aus den entsprechenden Liniengebilden (S. 36) entnommen werden kann.
   Gleiches gilt für die nächstfolgenden Abschnitte.`
-  )}
-  
-  function _152(md){return(
-  md`#### Ungleiche Drehung und Schiebung
+  )
+}
+
+function _152(md) {
+  return (
+    md`#### Ungleiche Drehung und Schiebung
   Eine weitere Mannigfaltigkeit
   entsteht, wenn man die Abstände nach dem Gesetz *a b*, *a a b*,* a a a
   b* usw., wechseln läßt. Man gewinnt eine zweite Gesetzlichkeit dazu,
@@ -1975,10 +2294,12 @@ function _1(md){return(
   ist eine gleichzeitige Drehung der Grundform nicht leicht verständlich,
   außer allenfalls der zweizähligen. Solche Fälle sind daher mit großer
   Vorsicht zu behandeln.`
-  )}
-  
-  function _153(md){return(
-  md`#### Schiebung und Spiegelung
+  )
+}
+
+function _153(md) {
+  return (
+    md`#### Schiebung und Spiegelung
   Bei einem Bande kann die Spiegellinie
   entweder in der Längs- oder in der Querrichtung liegen.  
   Liegt der Spiegel senkrecht zur Bandrichtung, so entsteht eine
@@ -1994,10 +2315,12 @@ function _1(md){return(
   Urform vereinigen.  
   In allen Fällen sind auch gesetzliche Verschiedenheiten der Abstände
   anwendbar.`
-  )}
-  
-  function _154(md){return(
-  md`#### Barspiegel
+  )
+}
+
+function _154(md) {
+  return (
+    md`#### Barspiegel
   Bringt man bar zum ersten Spiegel einen zweiten an, so
   wird außer dem Urbild das erste Spiegelbild gespiegelt. Diese Formen
   spiegeln sich wieder im ersten Spiegel und so fort. Als Ergebnis
@@ -2008,10 +2331,12 @@ function _1(md){return(
   also durch seine Spiegelgleichheit; seine Form ist ruhend. Es entsteht
   mit anderen Worten dasselbe Muster wie bei der Verbindung von Schiebung
   und Spiegelung in der Bandrichtung.`
-  )}
-  
-  function _155(md){return(
-  md`#### Drehung und Spiegelung
+  )
+}
+
+function _155(md) {
+  return (
+    md`#### Drehung und Spiegelung
   Hat man die gegebene freie Form durch
   Spiegelung in einen Spiegeling übergeführt, so kann man diese durch
   ganzteilige Drehung in einen Drehling verwandeln. Hierbei entstehen
@@ -2038,19 +2363,25 @@ function _1(md){return(
   Rosen, die durchaus vergleichbar den drei-, vier- bis zwölfteiligen
   sind. Fig. 53 zeigt eine zwei-, eine drei- und eine fünfteilige Rose aus
   der gleichen einfachen Urform.`
-  )}
-  
-  function _156(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/53.svg" alt="Figure 53" style="width: auto; height: auto;">`
-  )}
-  
-  function _157(md){return(
-  md`Drehung und Spiegelung ergeben nur Rosen aber kein Band; dazu gehört
+  )
+}
+
+function _156(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/53.svg" alt="Figure 53" style="width: auto; height: auto;">`
+  )
+}
+
+function _157(md) {
+  return (
+    md`Drehung und Spiegelung ergeben nur Rosen aber kein Band; dazu gehört
   jedenfalls die Schiebung.`
-  )}
-  
-  function _158(md){return(
-  md`#### Winkelspiegel
+  )
+}
+
+function _158(md) {
+  return (
+    md`#### Winkelspiegel
   Musterzeichner und Kunstgewerbler benutzen vielfach
   den Winkelspiegel, um zentral geordnete Muster herzustellen. Es ist
   bekannt, daß man dabei den Spiegelwinkel nicht nur ganzteilig, sondern
@@ -2065,10 +2396,12 @@ function _1(md){return(
   Es entsteht bei einem Spiegelwinkel von 1/2 *n* ein *n*-zähliger
   Drehling aus *n* spiegelgleichen Blättern deren Hauptlinien alle durch
   denselben Drehpunkt gehen. Das ist aber die Definition der Rose.`
-  )}
-  
-  function _159(md){return(
-  md`#### Spiegelung einer laufenden Drehform
+  )
+}
+
+function _159(md) {
+  return (
+    md`#### Spiegelung einer laufenden Drehform
   Das Spiegelbild eines laufenden
   Drehlings ist ein sonst gleicher, aber gegenläufiger Drehling. Die
   Zusammenstellung dieser beiden Formen drückt das einfache Gesetz aus,
@@ -2080,10 +2413,12 @@ function _1(md){return(
   Man erhält die gleiche Gegenform, wenn man, satt den ganzen Drehling zu
   spiegeln, nur die Grundform in ihr Spiegelbild verwandelt und aus diesem
   nach gleichem Gesetz einen Drehling bildet.`
-  )}
-  
-  function _160(md){return(
-  md`#### Schiebung, Drehung und Spiegelung
+  )
+}
+
+function _160(md) {
+  return (
+    md`#### Schiebung, Drehung und Spiegelung
   Die Verbindung dieser drei
   Bildungsgesetze ergibt Bänder aus einer Reihe von Rosen. Ein solches
   Band zeigt bei paarer Drehzahl weder nach rechts und links, noch nach
@@ -2094,10 +2429,12 @@ function _1(md){return(
   erfordert ein solches Rosenband einen erhöhten Aufwand an zeichnerischem
   oder farbigem Reiz, wenn es die Aufmerksamkeit hinreichend fesseln
   soll.`
-  )}
-  
-  function _161(md){return(
-  md`#### Rand und Mitte
+  )
+}
+
+function _161(md) {
+  return (
+    md`#### Rand und Mitte
   Es besteht bei Bandmustern fast immer das Bedürfnis,
   die Ränder und das Mittelgebiet verschieden zu behandeln. Entstehen doch
   schon bei der technischen Herstellung der Bänder, z. B. durch Weben, an
@@ -2115,10 +2452,12 @@ function _1(md){return(
   sie entweder bei allen gleich ist oder in einem einfachen Verhältnis 1 :
   2, 1 : 3 usw. steht. Die kleineren Teilstücke gehören an den Rand, weil
   sie viel unbedeutender wirken als große.`
-  )}
-  
-  function _162(md){return(
-  md`#### Verbindung mehrerer Formen
+  )
+}
+
+function _162(md) {
+  return (
+    md`#### Verbindung mehrerer Formen
   Wenn bei der Ausfüllung des Bandes mit
   Flächenformen das Gesetz der gleichen Dichte (S. 39) betätigt werden
   soll, entsteht sehr oft die Notwendigkeit, leere Räume, die von der
@@ -2133,10 +2472,12 @@ function _1(md){return(
   allgemeinen Gesetze bleiben dieselben. Meist werden zwei Formen
   verbunden; mehr als drei sind wegen Mangel an Übersichtlichkeit nicht
   zweckmäßig.`
-  )}
-  
-  function _163(md){return(
-  md`#### Gelockerte Formen
+  )
+}
+
+function _163(md) {
+  return (
+    md`#### Gelockerte Formen
   Die bisher beschriebenen Formen haben bei
   genauerer, z. B. maschinenmäßiger, Ausführung leicht etwas Starres und
   Lebloses. Dies rührt daher, daß in der Natur zwar zahllose
@@ -2185,10 +2526,12 @@ function _1(md){return(
   Handwerksentimentalität der Grundsatz der Werkehrlichkeit bewußt
   verletzt. Und jeder Kenner dieser Bewegung weiß, daß dies nicht der
   einzige derartige Fall war.`
-  )}
-  
-  function _164(md){return(
-  md`#### Stufen der Lockerung
+  )
+}
+
+function _164(md) {
+  return (
+    md`#### Stufen der Lockerung
   Die Lockerung der starren Form kann in
   mehreren Stufen erfolgen.  
   Zunächst läßt man den durch die Grundteilung gegebenen Rahmen genau
@@ -2203,10 +2546,12 @@ function _1(md){return(
   gesetzliche Austeilung.  
   Alle diese Mittel sind vom Kunstgewerbe zu verschiedenen Zeiten und in
   verschiedener Weise verwendet worden.`
-  )}
-  
-  function _165(md){return(
-  md`#### Beibehaltung des Rahmens
+  )
+}
+
+function _165(md) {
+  return (
+    md`#### Beibehaltung des Rahmens
   Eine weitere Freiheit besteht in
   folgendem: Die rechteckigen (oder auch schiefwinkligen) Abschnitte, in
   welche das Band durch gleichabständige Querlinien zerlegt wird, werden
@@ -2221,10 +2566,12 @@ function _1(md){return(
   Gesetzmäßigkeit ausdrücken. Die immer wieder benutzte Symbolik der vier
   Jahreszeiten ist ein bekanntes Beispiel dafür; sachgemäßer aber wirken
   gesetzmäßige Abwandlungen eines reinen Form- und Farbgedankens.`
-  )}
-  
-  function _166(md){return(
-  md`#### Gleichabständige Punkte
+  )
+}
+
+function _166(md) {
+  return (
+    md`#### Gleichabständige Punkte
   Größer ist die Lockerung, wenn man im
   Bandmuster nur gleichabständige wiederkehrende Stellen mit einer
   kennzeichnenden Form (Stern, Vieleck, Kreuz, Kreis usw.) ausstattet und
@@ -2236,10 +2583,12 @@ function _1(md){return(
   stärker wirken zu lassen also die gesetzlich wiederholten, da sonst der
   Beschauer einen Wiederspruch gegen das Gesetz und damit eine Disharmonie
   empfinden würde.`
-  )}
-  
-  function _167(md){return(
-  md`#### Gleichabständige freie Gebiete
+  )
+}
+
+function _167(md) {
+  return (
+    md`#### Gleichabständige freie Gebiete
   Mann kann auch auf die eben
   beschriebenen wiederkehrenden Formteile verzichten und die gleichartige
   Wiederkehr darauf beschränken, daß man nur die allgemeine Behandlung des
@@ -2247,10 +2596,12 @@ function _1(md){return(
   dichtere Anordnung wechselnder Formbestandteile regelmäßig abwechseln
   lassen; das gleiche kann mit einem Wechsel der vorwaltenden Richtung der
   vorhandenen Linien oder der vorwaltenden Farbe geschehen usw.`
-  )}
-  
-  function _168(md){return(
-  md`#### Gleichförmige Belegung
+  )
+}
+
+function _168(md) {
+  return (
+    md`#### Gleichförmige Belegung
   Fast der kleinste Grad von Gesetzlichkeit,
   der noch zu Schönheitswirkungen führen kann, ist die durchschnittlich*
   gleichförmige Belegung* der Fläche mit einem im übrigen freien Muster.
@@ -2275,15 +2626,19 @@ function _1(md){return(
   gewährt aber dann auch einen besonderen Reiz.  
   Damit ist das geringste Maß an Gesetzlichkeit erreicht, das bei Bändern
   möglich ist.`
-  )}
-  
-  function _169(md){return(
-  md`#### Fünftes Kapitel
+  )
+}
+
+function _169(md) {
+  return (
+    md`#### Fünftes Kapitel
   ## Unbegrenzte Flächen`
-  )}
-  
-  function _170(md){return(
-  md`#### Unbegrenzte und begrenzte Flächen
+  )
+}
+
+function _170(md) {
+  return (
+    md`#### Unbegrenzte und begrenzte Flächen
   Die nachfolgenden Untersuchungen
   betreffen die Gesetzlichkeit der Formen oder Gestalten in der* Ebene*.
   Daß anders gestaltete Flächen nicht in Betracht gezogen werden, ist
@@ -2306,10 +2661,12 @@ function _1(md){return(
   alsbald mit einem unbegrenzten Muster aus.  
   Da die unbegrenzten Muster eine einfachere theoretische Behandlung
   gestatten, so sollen sie zunächst betrachtet werden.`
-  )}
-  
-  function _171(md){return(
-  md`#### Ableitung unbegrenzter Flächenmuster aus den Bändern
+  )
+}
+
+function _171(md) {
+  return (
+    md`#### Ableitung unbegrenzter Flächenmuster aus den Bändern
   Während die
   bisher betrachteten Linien, Flechten und Bänder nach* einer* Richtung
   ausgedehnt sind, besitzt die Ebene zwei Abmessungen (Dimensionen). Legen
@@ -2339,10 +2696,12 @@ function _1(md){return(
   entsprechenden Mannigfaltigkeiten für unbegrenzte Ebenen ergeben,
   sondern ihren Einfluß nur auf die geschlossenen Formen ausüben, aus
   denen sich das unbegrenzte Muster durch Wiederholung zusammensetzt.`
-  )}
-  
-  function _172(md){return(
-  md`#### Das Streifenmuster
+  )
+}
+
+function _172(md) {
+  return (
+    md`#### Das Streifenmuster
   Wendet man das eben beschriebene Verfahren
   methodisch an, so ergibt sich als erster, einfachster Fall die Gerade,
   welche in einer Querrichtung um gleiche Beträge bar zu sich selbst
@@ -2357,28 +2716,36 @@ function _1(md){return(
   können Verschiedenheiten der* Farbe* sein und sind es meist. Aber auch
   andere Verschiedenheiten sind anwendbar, z. B. die Fadenlage bei
   Geweben.`
-  )}
-  
-  function _173(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/54.svg" alt="Figure 54" style="width: auto; height: auto;">`
-  )}
-  
-  function _174(md){return(
-  md`Schon dies einfachste Muster gestattet vielfältige Abwandlungen,
+  )
+}
+
+function _173(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/54.svg" alt="Figure 54" style="width: auto; height: auto;">`
+  )
+}
+
+function _174(md) {
+  return (
+    md`Schon dies einfachste Muster gestattet vielfältige Abwandlungen,
   zunächst der Streifen*breite*. Deren Grenzen nach oben und unten sind
   durch das Herstellungsverfahren und die Verwendung gegeben; dazwischen
   pflegt ein großer Spielraum zu sein. Dann aber kann die* Richtung* der
   Streifen zu irgendeiner ausgezeichneten Richtung (z. B. der Senkrechten
   bei Wandschmuck, Kleidung, Möbeln usw.) auf verschiedene Weise
   eingestellt werden: gleichlaufend, quer, schräg.`
-  )}
-  
-  function _175(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/55.svg" alt="Figure 55" style="width: auto; height: auto;">`
-  )}
-  
-  function _176(md){return(
-  md`Hierbei wird zunächst vorausgesetzt, daß eine* gleiche* Streifenbreite
+  )
+}
+
+function _175(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/55.svg" alt="Figure 55" style="width: auto; height: auto;">`
+  )
+}
+
+function _176(md) {
+  return (
+    md`Hierbei wird zunächst vorausgesetzt, daß eine* gleiche* Streifenbreite
   verwendet wird. Es besteht aber kein Hindernis, mehrere Abstände zu
   nehmen und diese gesetzlich nach *ab*, *abc*, *abac* usw. wechseln zu
   lassen. Hierdurch vervielfältigen sich die früheren Fälle
@@ -2392,37 +2759,47 @@ function _1(md){return(
   Richtung der Schiebung vervielfältigt werden. Dazu kommen noch die
   Möglichkeiten in der Struktur der Linien (schwach, stark, gepunktet,
   gestrichelt usw.).`
-  )}
-  
-  function _177(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/56.svg" alt="Figure 56" style="width: auto; height: auto;">`
-  )}
-  
-  function _178(md){return(
-  md`Um an einem einfachsten Beispiel einige dieser Mannigfaltigkeiten zu
+  )
+}
+
+function _177(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/56.svg" alt="Figure 56" style="width: auto; height: auto;">`
+  )
+}
+
+function _178(md) {
+  return (
+    md`Um an einem einfachsten Beispiel einige dieser Mannigfaltigkeiten zu
   veranschaulichen, ist in Fig. 54 bis 57 eine Sinuslinie um gleiche
   Breiten nach unten verschoben worden; die Unterschiede beruhen nur auf
   Verschiedenheiten der Richtung. In Fig. 54 ist die Schiebung senkrecht
   zum Lauf der Sinuslinie. In Fig. 55 ist sie schräg, nämlich jedesmal
   1/12 Wellenlänge nach rechts, in Fig. 56 je 1/4, und in Fig. 57 je 1/2
   Wellenlänge.`
-  )}
-  
-  function _179(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/57.svg" alt="Figure 57" style="width: auto; height: auto;">`
-  )}
-  
-  function _180(md){return(
-  md`Die Kennzeichnung der Streifen für das Auge erfolgt nicht nur durch die
+  )
+}
+
+function _179(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/57.svg" alt="Figure 57" style="width: auto; height: auto;">`
+  )
+}
+
+function _180(md) {
+  return (
+    md`Die Kennzeichnung der Streifen für das Auge erfolgt nicht nur durch die
   Herstellung der Linien. Ein sehr gebräuchliches und dankbares Verfahren
   besteht darin, die Streifen mit verschiedenen Farben auszustatten, die
   man gesetzlich abwechseln läßt. Die Linien erscheinen dann als Grenzen
   zwischen den Farben, die gegebenenfalls noch besonders (durch Gold,
   Schwarz, Weiß) hervorgehoben werden können.`
-  )}
-  
-  function _181(md){return(
-  md`#### Das Flechtmuster
+  )
+}
+
+function _181(md) {
+  return (
+    md`#### Das Flechtmuster
   Die eben angestellten Betrachtungen gelten
   zunächst für einfache Linien. Sie lassen sich aber auch sachgemäß auf
   Flechten übertragen. Legt man auf die Ebene eine Flechte von
@@ -2437,10 +2814,12 @@ function _1(md){return(
   Fall ergibt. Sie kann aber auch in gesetzlichem Wechsel betätigt werden,
   mit dem Erfolg einer viel größeren Mannigfaltigkeit. Fig. 56 und 57
   zeigen solche Überkreuzungen.`
-  )}
-  
-  function _182(md){return(
-  md`#### Das Bandmuster
+  )
+}
+
+function _182(md) {
+  return (
+    md`#### Das Bandmuster
   In regelmäßiger Fortführung des Gedankenganges hat
   man nun zu der Füllung der Ebene mit* Bändern* durch Querschiebung
   überzugehen. Ein Band besteht aber in der einfaltigen Wiederholung einer
@@ -2451,10 +2830,12 @@ function _1(md){return(
   Ebene gesetzlich füllen.  
   Hierdurch werden wir von der Betrachtung der Bänder zu der allgemeineren
   Frage nach der gesetzlichen Füllung der Ebene geführt.`
-  )}
-  
-  function _183(md){return(
-  md`#### Lockere und schlüssige Formen
+  )
+}
+
+function _183(md) {
+  return (
+    md`#### Lockere und schlüssige Formen
   Faßt man das bisher Gesagte zusammen,
   so ergibt sich folgender allgemeine Weg für die gesetzliche Belegung
   einer unbegrenzten Ebene. Durch Schiebung einer beliebigen Form nach
@@ -2493,10 +2874,12 @@ function _1(md){return(
   auffassen. Ihre gesonderte Behandlung war zweckmäßig, weil sie durch
   ihre Einfachheit das Verständnis der verwickelteren Verhältnisse
   erleichtern.`
-  )}
-  
-  function _184(md){return(
-  md`#### Netze
+  )
+}
+
+function _184(md) {
+  return (
+    md`#### Netze
   Als Grundlage weiterer Untersuchungen dienen* Netze*, die man
   folgendermaßen erhält. Man belegt die Ebene mit einer Schar
   gleichabständiger barer Geraden, und unter einem Winkel dazu legt man
@@ -2512,10 +2895,12 @@ function _1(md){return(
   Quadrat* ist. Alle diese Netze enthalten schlüssige Formen, und es ist
   allgemein zu ermitteln, welche Abänderungen an diesen möglich sind, ohne
   den Schluß aufzuheben.`
-  )}
-  
-  function _185(md){return(
-  md`#### Das allgemeinste Netz
+  )
+}
+
+function _185(md) {
+  return (
+    md`#### Das allgemeinste Netz
   Wenn man in dem Schiefeck des allgemeinsten
   Netzes eine Seite durch einen irgendwie gestalteten Zug ersetzt, bei
   welchem nur die Endpunkte festgehalten werden, so müssen alle
@@ -2523,14 +2908,18 @@ function _1(md){return(
   den gleichen Zug ersetzt werden. Die entsprechenden Seiten liegen alle
   bar zu der ersetzten Seite. Die Geraden gehen also in Wellen über, deren
   Längen durch die Länge der ersetzten Seite bestimmt sind, Fig. 58.`
-  )}
-  
-  function _186(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/58.svg" alt="Figure 58" style="width: auto; height: auto;">`
-  )}
-  
-  function _187(md){return(
-  md`Es entstehen so Formen, die noch zwei gerade Gegenseiten der Masche
+  )
+}
+
+function _186(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/58.svg" alt="Figure 58" style="width: auto; height: auto;">`
+  )
+}
+
+function _187(md) {
+  return (
+    md`Es entstehen so Formen, die noch zwei gerade Gegenseiten der Masche
   enthalten, während die beiden anderen durch den gewählten freien Zug
   ersetzt sind. Diese Formen sind auch schlüssig. Man kann sie auch
   entstanden denken, indem man eine Schar gleicher und barer Wellen durch
@@ -2544,23 +2933,29 @@ function _1(md){return(
   durch freie Züge ersetzt sind, Fig. 59. Diese sind aber nicht alle vier
   frei, sondern nur an zwei anstoßenden Seiten; die beiden anderen sind
   bare Wiederholungen der ersten. Diese Form ist gleichfalls schlüssig.`
-  )}
-  
-  function _188(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/59.svg" alt="Figure 59" style="width: auto; height: auto;">`
-  )}
-  
-  function _189(md){return(
-  md`Dies ist die allgemeinste Masche, mit welcher man die ganze Ebene
+  )
+}
+
+function _188(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/59.svg" alt="Figure 59" style="width: auto; height: auto;">`
+  )
+}
+
+function _189(md) {
+  return (
+    md`Dies ist die allgemeinste Masche, mit welcher man die ganze Ebene
   restlos eindecken kann.  
   Man kann diese Teilung der Ebene auffassen als entstanden durch die
   gegenseitige Durchschneidung zweier gleichabständiger barer
   Wellenscharen, wobei die Abschnitte überall gleich den Wellenlängen
   gemacht sind.`
-  )}
-  
-  function _190(md){return(
-  md`#### Sechsmasche
+  )
+}
+
+function _190(md) {
+  return (
+    md`#### Sechsmasche
   Außer dem Viereck mit baren Gegenseiten hat noch das
   Sechseck mit baren und gleichen Gegenseiten die Eigenschaft der
   Schlüssigkeit. Man kann daher an einem solchen Netz in ganz derselben
@@ -2569,14 +2964,18 @@ function _1(md){return(
   festgehaltenen Eckpunkten ersetzen und erlangt dadurch eine neue Familie
   schlüssiger Formen, die bisher fast ganz unbekannt waren. Fig. 60 stellt
   ein derartiges aus einem schiefen Sechseck entstandenes Muster dar.`
-  )}
-  
-  function _191(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/60.svg" alt="Figure 60" style="width: auto; height: auto;">`
-  )}
-  
-  function _192(md){return(
-  md`#### Zeichen
+  )
+}
+
+function _191(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/60.svg" alt="Figure 60" style="width: auto; height: auto;">`
+  )
+}
+
+function _192(md) {
+  return (
+    md`#### Zeichen
   Um die Eigenschaften solcher Gebilde kennenzulernen,
   zeichnet man sich ein Netz barer Geraden in beliebigem Winkel und
   Seitenverhältnis auf glattes, dünnes Papier, am besten durchscheinendes
@@ -2601,10 +3000,12 @@ function _1(md){return(
   Die Ausführung solcher schlüssiger Teilungen mit einer Anzahl typischer
   Züge wirkt sehr belehrend und darf von niemand unterlassen werden, der
   sich in die Lehre von der Raumharmonie vertiefen will.`
-  )}
-  
-  function _193(md){return(
-  md`#### Gesetzlichere Netze
+  )
+}
+
+function _193(md) {
+  return (
+    md`#### Gesetzlichere Netze
   Von den möglichen Winkeln bildet der rechte
   oder 1/4 einen ausgezeichneten Fall, da alsdann alle Winkel gleich
   werden. Das Schiefeck geht in ein Rechteck über.  
@@ -2632,10 +3033,12 @@ function _1(md){return(
   Einheit der Masche ist, so kann man jedes ganze Vielfache davon nehmen
   und findet die entsprechenden Knotenpunkte vor. Die ungültig gewordenen
   inneren Punkte dienen dann als willkommener Anhalt beim Zeichen.`
-  )}
-  
-  function _194(md){return(
-  md`#### Der goldene Schnitt
+  )
+}
+
+function _194(md) {
+  return (
+    md`#### Der goldene Schnitt
   Vielfach glaubt man, daß das Rechteck, dessen
   Seitenverhältnis nach dem „Goldenen Schnitt" 8 : 13 oder 1 : 1.62
   geregelt ist, einen besonderen schönheitlichen Vorzug besitzt. Doch
@@ -2664,10 +3067,12 @@ function _1(md){return(
   dieselbe Strecke ganz verschieden lang einschätzt, je nachdem sie
   wagerecht oder senkrecht ist. Hierdurch tritt eine neue, psychologische
   Gesetzlichkeit ein, von der hier zunächst abgesehen werden soll.`
-  )}
-  
-  function _195(md){return(
-  md`#### Anwendung
+  )
+}
+
+function _195(md) {
+  return (
+    md`#### Anwendung
   Die beschriebene Raumteilung dient in ausgedehntestem
   Maße zur Schmückung von Flächen. Denn da die zwischen den Knoten
   verlaufenden Linien vollkommen frei sind, so kann man sie aus
@@ -2679,10 +3084,12 @@ function _1(md){return(
   Herstellung durch die Wiederholung außerordentlich erleichtert, ja in
   den meisten Fällen ermöglicht. Es liegt wieder einer der Fälle vor, wo
   die Notwendigkeit die Schönheit bedingt.`
-  )}
-  
-  function _196(md){return(
-  md`#### Anschluß
+  )
+}
+
+function _196(md) {
+  return (
+    md`#### Anschluß
   Die Herstellung solcher Muster beginnt deshalb mit der
   Feststellung der Masche nach Art und Größe. Je nachdem Gewicht darauf
   gelegt wird, daß die Gesetzlichkeit zur Geltung kommt oder in den
@@ -2705,10 +3112,12 @@ function _1(md){return(
   Neuanlegen und Wiederholen wird die ganze Zeichnung fertiggestellt. Sie
   erscheint als Gruppe von vier Wiederholungen des Musters mit vollem
   Anschluß, so daß man ein richtiges Bild der Gesamtwirkung erhält.`
-  )}
-  
-  function _197(md){return(
-  md`#### Lose Muster
+  )
+}
+
+function _197(md) {
+  return (
+    md`#### Lose Muster
   Wird der Zusammenschluß der Formen über die ganze
   Fläche nicht angestrebt, so vereinfacht sich das Verfahren in hohem
   Maße. Man braucht dann nur für gute Füllung einer Masche zu sorgen und
@@ -2721,10 +3130,12 @@ function _1(md){return(
   Da ein Interesse an dem Anschluß hier nicht befriedigt wird, muß Gewicht
   darauf gelegt werden, daß der Inhalt des Musters durch Formen- und
   Farbenreiz dafür entschädigt.`
-  )}
-  
-  function _198(md){return(
-  md`#### Drehung und Spiegelung
+  )
+}
+
+function _198(md) {
+  return (
+    md`#### Drehung und Spiegelung
   Die bisherigen Betrachtungen sind
   ausdrücklich auf den Fall beschränkt worden, daß die Wiederholung der
   Form nur durch Schiebung ausgeführt wurde. Neben der Schiebung gibt es
@@ -2739,10 +3150,12 @@ function _1(md){return(
   Ausdruck der möglichen Gesetzlichkeiten der Schiebung sind, und werden
   an den geometrischen Eigenschaften der Masche die Anwendbarkeit der
   anderen Operationen prüfen können.`
-  )}
-  
-  function _199(md){return(
-  md`#### Die schiefeckige Masche
+  )
+}
+
+function _199(md) {
+  return (
+    md`#### Die schiefeckige Masche
   Im allgemeinsten Falle, wo die beiden
   Abstände und die Winkel verschieden sind, entsteht als Masche ein
   Schiefeck (Parallelogramm). Ein solches hat keine Spiegellinie, wohl
@@ -2768,25 +3181,33 @@ function _1(md){return(
   Linie legen, die bar zu *a e f* ist, und nach *f b* eine Bare zu *h g
   d*. Damit ist die ganze Linie* a e f i b* festgestellt und ebenso alle
   anderen Schiefeckseiten, die bar zu *a b* liegen.`
-  )}
-  
-  function _200(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/61.svg" alt="Figure 61" style="width: auto; height: auto;">`
-  )}
-  
-  function _201(md){return(
-  md`Nun erweist sich die Linie *a e f i b* als ein Drehlung um *f*, ebenso
+  )
+}
+
+function _200(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/61.svg" alt="Figure 61" style="width: auto; height: auto;">`
+  )
+}
+
+function _201(md) {
+  return (
+    md`Nun erweist sich die Linie *a e f i b* als ein Drehlung um *f*, ebenso
   wie *c h g d* ein Drehling um *h* ist. Diese folgt daraus, daß *h g d*
   durch Drehung von *a e f* um *m* und *f i b* durch Schiebung von *h g d*
   entstanden war.`
-  )}
-  
-  function _202(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/62.svg" alt="Figure 62" style="width: auto; height: auto;">`
-  )}
-  
-  function _203(md){return(
-  md`Ganz dieselben Überlegungen kann man für die Seite *a v* und alle ihre
+  )
+}
+
+function _202(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/62.svg" alt="Figure 62" style="width: auto; height: auto;">`
+  )
+}
+
+function _203(md) {
+  return (
+    md`Ganz dieselben Überlegungen kann man für die Seite *a v* und alle ihre
   Baren anstellen.  
   Das Ergebnis ist: wenn an Stelle der ganz freien Linien zwischen den
   Knoten des Schiefecks Drehlinien angebracht werden, deren Drehpunkte in
@@ -2796,10 +3217,12 @@ function _1(md){return(
   kaum bekannt gewesenen Formen einen erhöhten Schönheitswert, der
   indessen nicht ganz leicht zu erassen ist, da, wie erwähnt, unser
   Verständnis für Drehlinge noch sehr der Entwicklung bedarf.`
-  )}
-  
-  function _204(md){return(
-  md`#### Teilung der Drehlinge
+  )
+}
+
+function _204(md) {
+  return (
+    md`#### Teilung der Drehlinge
   Ein zweizähliger Drehling hat die
   Eigenschaft, daß er durch jede Gerade, welche durch den Drehpunkt geht,
   in zwei deckgleiche Stücke zerschnitten wird, die um 1/2 gegeneinander
@@ -2811,22 +3234,28 @@ function _1(md){return(
   zum Drehpunkt und wiederholt diese Linie durch 1/2-Drehung um den
   Drehpunkt. Dann trifft sie die Gegenseite des Drehlings an der
   entsprechenden Stelle.`
-  )}
-  
-  function _205(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/63.svg" alt="Figure 63" style="width: auto; height: auto;">`
-  )}
-  
-  function _206(md){return(
-  md`Von allen derartigen Linien ist die gesetzlichste die bare Wiederholung
+  )
+}
+
+function _205(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/63.svg" alt="Figure 63" style="width: auto; height: auto;">`
+  )
+}
+
+function _206(md) {
+  return (
+    md`Von allen derartigen Linien ist die gesetzlichste die bare Wiederholung
   einer der beiden Seitenlinien. Es entsteht dann eine schlüssige Teilung
   der Ebene durch deckgleiche aber abwechselnd gelagerte (um 1/2 gedrehte)
   Formen, welche durch diesen Zusammenhang einen besonderen Reiz haben,
   Fig. 63.`
-  )}
-  
-  function _207(md){return(
-  md`#### Die rechteckige Masche
+  )
+}
+
+function _207(md) {
+  return (
+    md`#### Die rechteckige Masche
   Das Rechteck hat einen zweizähligen
   Drehpunkt in der Mitte und außerdem zwei Spiegellinien, die bar zu den
   Seiten, also senkrecht, zueinander durch die Mitte gehen.  
@@ -2839,34 +3268,46 @@ function _1(md){return(
   Knoten unterscheidet, Fig. 64.  
   Hierbei ist weder von Drehpunkt noch von den Spiegeln Gebrauch gemacht
   worden.`
-  )}
-  
-  function _208(md){return(
-  md`#### Rechteckige Drehlinge
+  )
+}
+
+function _208(md) {
+  return (
+    md`#### Rechteckige Drehlinge
   Will man die Eigenschaft des Rechtecks
   benutzen, daß es ein zweizähliger Drehling ist, so ersetzt man die
   beiden freien Züge durch zwei Drehlinien, wodurch zweizählige Drehlinge
   von rechtwinkliger Anordnung entstehen, Fig. 65.`
-  )}
-  
-  function _209(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/64.svg" alt="Figure 64" style="width: auto; height: auto;">`
-  )}
-  
-  function _210(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/65.svg" alt="Figure 65" style="width: auto; height: auto;">`
-  )}
-  
-  function _211(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/66.svg" alt="Figure 66" style="width: auto; height: auto;">`
-  )}
-  
-  function _212(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/67.svg" alt="Figure 67" style="width: auto; height: auto;">`
-  )}
-  
-  function _213(md){return(
-  md`Diese Drehlinge lassen sich wieder durch eine durch den Mittelpunkt
+  )
+}
+
+function _209(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/64.svg" alt="Figure 64" style="width: auto; height: auto;">`
+  )
+}
+
+function _210(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/65.svg" alt="Figure 65" style="width: auto; height: auto;">`
+  )
+}
+
+function _211(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/66.svg" alt="Figure 66" style="width: auto; height: auto;">`
+  )
+}
+
+function _212(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/67.svg" alt="Figure 67" style="width: auto; height: auto;">`
+  )
+}
+
+function _213(md) {
+  return (
+    md`Diese Drehlinge lassen sich wieder durch eine durch den Mittelpunkt
   gehende Gerade oder eine Drehlinie in zwei deckgleiche aber paarweise
   umgedreht gelagerte Formen teilen. Die gesetzlichen derartigen Formen
   entstehen durch Benutzung einer der beiden Grenzlinien, die man bar
@@ -2876,10 +3317,12 @@ function _1(md){return(
   Gesetzlichkeit dar, Fig. 66. Deren Reiz entfaltet sich deutlicher, wenn
   man das Innere der Teilflächen mit entsprechend gestellten
   Schmuckgebilden ausfüllt.`
-  )}
-  
-  function _214(md){return(
-  md`#### Rechteckige Spiegellinie
+  )
+}
+
+function _214(md) {
+  return (
+    md`#### Rechteckige Spiegellinie
   Wollte man eine beliebige Linie zwischen
   zwei benachbarten Knoten des rechteckigen Netzes durch Spiegelung
   wiederholen, so würde man mit dem Grundgesetz der Netzbildung in
@@ -2894,26 +3337,36 @@ function _1(md){return(
   verständlicher und ist deshalb unmittelbar wirksamer als die vorige,
   entsprechend dem allgemeinen Verhältnis zwischen Drehung und
   Spiegelung.`
-  )}
-  
-  function _215(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/68.svg" alt="Figure 68" style="width: auto; height: auto;">`
-  )}
-  
-  function _216(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/69.svg" alt="Figure 69" style="width: auto; height: auto;">`
-  )}
-  
-  function _217(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/70.svg" alt="Figure 70" style="width: auto; height: auto;">`
-  )}
-  
-  function _218(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/71.svg" alt="Figure 71" style="width: auto; height: auto;">`
-  )}
-  
-  function _219(md){return(
-  md`#### Das Rautennetz
+  )
+}
+
+function _215(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/68.svg" alt="Figure 68" style="width: auto; height: auto;">`
+  )
+}
+
+function _216(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/69.svg" alt="Figure 69" style="width: auto; height: auto;">`
+  )
+}
+
+function _217(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/70.svg" alt="Figure 70" style="width: auto; height: auto;">`
+  )
+}
+
+function _218(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/71.svg" alt="Figure 71" style="width: auto; height: auto;">`
+  )
+}
+
+function _219(md) {
+  return (
+    md`#### Das Rautennetz
   Die Raute hat vier bare Seiten, einen zweizähligen
   Drehpunkt und zwei senkrechte Spiegellinien, seine Queren. Hieraus
   ergeben sich folgende Abwandlungen des Rautennetzes.  
@@ -2949,26 +3402,36 @@ function _1(md){return(
   haben eine Spiegellinie.  
   Die schlüssige Rautenrose wird häufig benutzt und bildet die Grundlage
   zahlreicher gebräuchlicher Muster.`
-  )}
-  
-  function _220(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/72.svg" alt="Figure 72" style="width: auto; height: auto;">`
-  )}
-  
-  function _221(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/73.svg" alt="Figure 73" style="width: auto; height: auto;">`
-  )}
-  
-  function _222(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/74.svg" alt="Figure 74" style="width: auto; height: auto;">`
-  )}
-  
-  function _223(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/75.svg" alt="Figure 75" style="width: auto; height: auto;">`
-  )}
-  
-  function _224(md){return(
-  md`#### Das Quadratnetz
+  )
+}
+
+function _220(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/72.svg" alt="Figure 72" style="width: auto; height: auto;">`
+  )
+}
+
+function _221(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/73.svg" alt="Figure 73" style="width: auto; height: auto;">`
+  )
+}
+
+function _222(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/74.svg" alt="Figure 74" style="width: auto; height: auto;">`
+  )
+}
+
+function _223(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/75.svg" alt="Figure 75" style="width: auto; height: auto;">`
+  )
+}
+
+function _224(md) {
+  return (
+    md`#### Das Quadratnetz
   Im Quadrat gibt es einen vierzähligen Drehpunkt und
   vier Spiegellinien nach den Seiten zu den Queren, von denen je zwei
   senkrecht stehende zusammengehören. Durch den ersten wird jede
@@ -3016,30 +3479,42 @@ function _1(md){return(
   empfindet das Vorhandensein einer weitgehenden Gesetzlichkeit zwar
   sofort, hat aber einige Mühe, sich das Gesetz selbst völlig anschaulich
   zu machen. Darin liegt der besondere Reiz dieser Raumteilung.`
-  )}
-  
-  function _225(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/76.svg" alt="Figure 76" style="width: auto; height: auto;">`
-  )}
-  
-  function _226(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/77.svg" alt="Figure 77" style="width: auto; height: auto;">`
-  )}
-  
-  function _227(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/78.svg" alt="Figure 78" style="width: auto; height: auto;">`
-  )}
-  
-  function _228(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/79.svg" alt="Figure 79" style="width: auto; height: auto;">`
-  )}
-  
-  function _229(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/80.svg" alt="Figure 80" style="width: auto; height: auto;">`
-  )}
-  
-  function _230(md){return(
-  md`Ersetzt man endlich eine Seite des Quadrats durch eine Drehlinie, die
+  )
+}
+
+function _225(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/76.svg" alt="Figure 76" style="width: auto; height: auto;">`
+  )
+}
+
+function _226(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/77.svg" alt="Figure 77" style="width: auto; height: auto;">`
+  )
+}
+
+function _227(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/78.svg" alt="Figure 78" style="width: auto; height: auto;">`
+  )
+}
+
+function _228(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/79.svg" alt="Figure 79" style="width: auto; height: auto;">`
+  )
+}
+
+function _229(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/80.svg" alt="Figure 80" style="width: auto; height: auto;">`
+  )
+}
+
+function _230(md) {
+  return (
+    md`Ersetzt man endlich eine Seite des Quadrats durch eine Drehlinie, die
   andere durch deren Spiegelbild in der zwischenliegenden Quere und
   ergänzt durch bare Verschiebung, so erweisen sich alle Seiten als in
   Spiegellage zu ihren Nachbarn befindlich. Das Gebilde hat also zwei
@@ -3065,22 +3540,30 @@ function _1(md){return(
   senkrechte Spiegellinien. Bewirkt man die Teilung durch zwei Bare zu den
   Seiten, so entstehen gleichfalls vier deckgleiche, um je 1/4 gedrehte
   Teilstücke, die aber nur eine Spiegellinie haben, Fig. 81.`
-  )}
-  
-  function _231(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/81.svg" alt="Figure 81" style="width: auto; height: auto;">`
-  )}
-  
-  function _232(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/82.svg" alt="Figure 82" style="width: auto; height: auto;">`
-  )}
-  
-  function _233(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/83.svg" alt="Figure 83" style="width: auto; height: auto;">`
-  )}
-  
-  function _234(md){return(
-  md`Leitet man die zweite Seite durch Spiegelung aus der ersten ab, so
+  )
+}
+
+function _231(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/81.svg" alt="Figure 81" style="width: auto; height: auto;">`
+  )
+}
+
+function _232(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/82.svg" alt="Figure 82" style="width: auto; height: auto;">`
+  )
+}
+
+function _233(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/83.svg" alt="Figure 83" style="width: auto; height: auto;">`
+  )
+}
+
+function _234(md) {
+  return (
+    md`Leitet man die zweite Seite durch Spiegelung aus der ersten ab, so
   entsteht eine zweizählige Rose, deren Spiegellinien in den Queren
   liegen. Sie läßt sich durch zwei Bare zu den Seiten in vier deckgleiche
   Stücke teilen, die mit den letztbeschriebenen aus dem Drehling
@@ -3088,10 +3571,12 @@ function _1(md){return(
   Zerschneidet man sie durch zwei Spiegelbilder der Seiten, so entstehen
   nicht vier deckgleiche Formen, sondern zwei Paare verschiedener, die
   beide vierteilige Rosen sind, Fig. 83.`
-  )}
-  
-  function _235(md){return(
-  md`#### Das Dreiecknetz
+  )
+}
+
+function _235(md) {
+  return (
+    md`#### Das Dreiecknetz
   Es wurde bereits bemerkt, daß die Knoten den
   Rautennetzes mit dem Winkel 1⁄6 auch die Knoten eines Netzes sind,
   welches aus lauter gleichseitigen Dreiecken besteht. Denn wenn man zwei
@@ -3134,14 +3619,18 @@ function _1(md){return(
   Fläche des Dreiecks zugefügt oder genommen hat, in der anderen Hälfte
   genommen oder zugefügt wird. Dies gelingt allgemein durch eine
   Drehlinie.`
-  )}
-  
-  function _236(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/84.svg" alt="Figure 84" style="width: auto; height: auto;">`
-  )}
-  
-  function _237(md){return(
-  md`Die gleiche Linie wird durch Drehung auf die anderen Seiten übertragen.
+  )
+}
+
+function _236(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/84.svg" alt="Figure 84" style="width: auto; height: auto;">`
+  )
+}
+
+function _237(md) {
+  return (
+    md`Die gleiche Linie wird durch Drehung auf die anderen Seiten übertragen.
   So erhält man eine freiere Ausgestaltung der Dreiecke, ohne daß sie
   aufhören, schlüssig zu sein.  
   Die Gesamtform wird ein dreizähliger Drehling, Fig. 84, und zwar laufen
@@ -3153,28 +3642,36 @@ function _1(md){return(
   Jeder dreizählige Drehling wird durch jeden dreizähligen Drehstern,
   d. h. eine Gruppe von drei Linien, die durch Drehung um je 1/3 aus einer
   willkürlichen Linie gebildet ist, in drei deckgleiche Stücke geteilt.`
-  )}
-  
-  function _238(md){return(
-  md`#### Das Sechsecknetz
+  )
+}
+
+function _238(md) {
+  return (
+    md`#### Das Sechsecknetz
   Außer dem regelmäßigen Dreieck und dem Quadrat ist
   das regelmäßige Sechseck das einzige regelmäßige Vieleck, das die Ebene
   schlüssig füllt. Die Seiten bilden aber kein Netz mit durchgehenden
   Geraden, wie in jenen beiden Fällen, so daß die Auffassung der
   allgemeinen Formen, als durch die Kreuzung zweier oder dreier Wellenzüge
   entstanden, hier keine Anwendung findet.`
-  )}
-  
-  function _239(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/85.svg" alt="Figure 85" style="width: auto; height: auto;">`
-  )}
-  
-  function _240(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/86.svg" alt="Figure 86" style="width: auto; height: auto;">`
-  )}
-  
-  function _241(md){return(
-  md`Da die Gegenseiten bar sind und ihre Anzahl paar ist, so ist wieder der
+  )
+}
+
+function _239(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/85.svg" alt="Figure 85" style="width: auto; height: auto;">`
+  )
+}
+
+function _240(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/86.svg" alt="Figure 86" style="width: auto; height: auto;">`
+  )
+}
+
+function _241(md) {
+  return (
+    md`Da die Gegenseiten bar sind und ihre Anzahl paar ist, so ist wieder der
   Ersatz durch einen beliebigen Linienzug möglich, der abwechselnd nach
   außen und nach innen gelegt wird. Wegen des Zusammentreffens von je drei
   Linien in den Knoten muß man die freien Linien so anordnen, daß sie dort
@@ -3194,10 +3691,12 @@ function _1(md){return(
   Benutzt man die gleiche Drehlinie, die nach den Ecken geführt wird, wo
   entstehen dieselben dreizähligen Drehlinge wie beim Dreiecknetz
   (S. 87).`
-  )}
-  
-  function _242(md){return(
-  md`#### Geometrische Muster
+  )
+}
+
+function _242(md) {
+  return (
+    md`#### Geometrische Muster
   Die bisherigen Betrachtungen bezogen sich auf
   die Umfassung schlüssiger Felder und die dabei auftretenden
   Mannigfaltigkeiten. In der Praxis begnügt man sich nur selten mit diesen
@@ -3229,10 +3728,12 @@ function _1(md){return(
   so erhält man Liniengebilde, die sich regelmäßig kreuzen und oft höchst
   reizvolle Muster ergeben. Dies sind die „geometrischen Muster" im
   engeren Sinne.`
-  )}
-  
-  function _243(md){return(
-  md`#### Mannigfaltigkeiten
+  )
+}
+
+function _243(md) {
+  return (
+    md`#### Mannigfaltigkeiten
   In den vorstehenden Darlegungen sind die Worte
   „am einfachsten" häufig wiederholt worden. Jedesmal bedeuten sie, daß
   neben den angegebenen Möglichkeiten noch andere, weniger einfache
@@ -3285,10 +3786,12 @@ function _1(md){return(
   nicht behandelt worden sind, welche bei der Anwendung dieser Formen auf
   begrenzten Flächen entstehen. Sie werden weiter unten kurz berührt
   werden.`
-  )}
-  
-  function _244(md){return(
-  md`Um wenigstens in einem Falle die erstaunliche
+  )
+}
+
+function _244(md) {
+  return (
+    md`Um wenigstens in einem Falle die erstaunliche
   Mannigfaltigkeit und Schönheit solcher geometrischen Muster zu zeigen,
   sind in Fig. 87 bis 102 die Formen dargestellt, welche sich im
   Quadratnetz aus einem Quadrat von 3 2 = 9 Teilquadraten durch
@@ -3310,26 +3813,34 @@ function _1(md){return(
   Ordnung verbinden, wobei 120 neue Formen entstehen. Man kann sie leicht
   zeichnen, wenn man in das Quadratnetz zuerst das eine Muster einträgt
   und dann das andere darüberzeichnet.`
-  )}
-  
-  function _245(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/87-92.svg" alt="Figure 87-92" style="width: auto; height: auto;">`
-  )}
-  
-  function _246(md){return(
-  md`Zeichnet man je drei aufeinander, so gewinnt man Muster dritter Ordnung,
+  )
+}
+
+function _245(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/87-92.svg" alt="Figure 87-92" style="width: auto; height: auto;">`
+  )
+}
+
+function _246(md) {
+  return (
+    md`Zeichnet man je drei aufeinander, so gewinnt man Muster dritter Ordnung,
   deren Anzahl 560 ist.  
   Es ist beabsichtigt, eine methodische Sammlung aller (einfacheren)
   geometrischen Muster in einer Form herauszugeben, welche auch eine
   leichte Übersicht der Muster zweiter und höherer Ordnung ermöglicht.`
-  )}
-  
-  function _247(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/93-102.svg" alt="Figure 93-102" style="width: auto; height: auto;">`
-  )}
-  
-  function _248(md){return(
-  md`#### Krumme Linien
+  )
+}
+
+function _247(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/93-102.svg" alt="Figure 93-102" style="width: auto; height: auto;">`
+  )
+}
+
+function _248(md) {
+  return (
+    md`#### Krumme Linien
   Eine weitere, sehr ausgedehnte Gruppe geometrischer
   Muster entsteht, wenn man die bisher festgehaltene Beschränkung auf
   geradlinige Verbindungen zwischen den Knoten aufgibt und dafür krumme
@@ -3339,14 +3850,18 @@ function _1(md){return(
   Muster. Fig. 103 ist ein aus einem Dreiecknetz abgeleitetes Muster, aus
   welchem durch einfachste krumme Linien die neuartigen Formen Fig. 104,
   105, 106 entstehen.  `
-  )}
-  
-  function _249(htl){return(
-  htl.html`<img src="https://die-welt-der-formen.de/assets/103-106.svg" alt="Figure 103-106" style="width: auto; height: auto;">`
-  )}
-  
-  function _250(md){return(
-  md`Jede derartige Linie kann spiegelgleich verdoppelt werden. Zieht man
+  )
+}
+
+function _249(htl) {
+  return (
+    htl.html`<img src="https://die-welt-der-formen.de/assets/103-106.svg" alt="Figure 103-106" style="width: auto; height: auto;">`
+  )
+}
+
+function _250(md) {
+  return (
+    md`Jede derartige Linie kann spiegelgleich verdoppelt werden. Zieht man
   nämlich die fragliche krumme Linie und dazu die Verbindungsgerade
   zwischen beiden Knoten, so ist diese als Spiegellinie zu betrachten, die
   auf der anderen Seite eine Wiederholung der krummen Linie erzeugt.
@@ -3371,10 +3886,12 @@ function _1(md){return(
   vervielfältigen und erhält wiederum eine Fülle neuartiger Muster, die
   einen noch garn nicht verbrauchten Vorrat eigenartiger Formen
   aufweisen.`
-  )}
-  
-  function _251(md){return(
-  md`#### Verzerrungen
+  )
+}
+
+function _251(md) {
+  return (
+    md`#### Verzerrungen
   Alle auf gesetzlich geordnete Knotenpunkte bezogenen
   Muster gestatten eine ungemein mannigfaltige Umgestaltung durch das
   Verfahren der gesetzlichen* Verzerrung*. Betrachten wir der Einfachheit
@@ -3387,7 +3904,7 @@ function _1(md){return(
   verlieren; sie gewinnen vielmehr unter Umständen erheblich an Reiz.  
   Wird die eben angegebene Bedingung, daß die Maschen geradlinig bleiben,
   nicht eingehalten, so gehen auch die Geraden des Musters in Krumme
-  über.Das gesetzliche Aussehen bleibt aber selbst dann erhalten, und die
+  über. Das gesetzliche Aussehen bleibt aber selbst dann erhalten, und die
   unerwartete Gemeinsamkeit von Gesetz und Freiheit, die dabei zutage
   tritt, kann erhebliche Schönheitswirkung zeigen. Bedingung ist wieder,
   daß die vorhandene Freiheit anschaulich begründet erscheint.  
@@ -3397,10 +3914,12 @@ function _1(md){return(
   angewendet, wenn eine gegebene Fläche eine volle Anzahl Wiederholungen
   enthalten soll, während die Abmessungen des Musters und der Fläche ein
   solches Verhältnis nicht unmittelbar ergeben.`
-  )}
-  
-  function _252(md){return(
-  md`#### Nicht ebene Flächen
+  )
+}
+
+function _252(md) {
+  return (
+    md`#### Nicht ebene Flächen
   Die für Ebenen entwickelten Gesetze finden mit
   geringen Änderungen Anwendung auf andere, krumme Flächen. Die erste
   Aufgabe ist alsdann, ein Liniennetz auf der krummen Fläche so anzulegen,
@@ -3417,10 +3936,12 @@ function _1(md){return(
   werden deshalb auf geschlossene Rahmen beschränkt, die nur einen
   Bruchteil der ganzen Fläche bedecken und daher auch nur wenig gekrümmt
   sind.`
-  )}
-  
-  function _253(md){return(
-  md`#### Die zwei Quellen der Kunst
+  )
+}
+
+function _253(md) {
+  return (
+    md`#### Die zwei Quellen der Kunst
   Der Wunsch, freie und freieste Linien-
   und Flächenformen bildmäßig zu verwenden, stammt aus der Wirksamkeit der
   zweiten Quelle schönheitlichen Empfindens, die neben der auf
@@ -3450,10 +3971,12 @@ function _1(md){return(
   Lichtkunst eintreten wird, die der Tonkunst vergleichbar sein wird, auch
   in der Einbeziehung des großen Kunstmittels der* zeitlichen*
   Abwandlung.  `
-  )}
-  
-  function _254(md){return(
-  md`#### Freiere Formen
+  )
+}
+
+function _254(md) {
+  return (
+    md`#### Freiere Formen
   Will man von den streng gesetzlichen Wiederholungen
   der Form zu freierer Gestaltung übergehen, so hat man zunächst nach
   einer Begründung der größeren Freiheit zu fragen. Diese findet sich in
@@ -3481,10 +4004,12 @@ function _1(md){return(
   Daraus ergibt sich die Regel, daß die Form um so freier behandelt werden
   kann, je mehr sie sich der eines natürlichen Gebildes nähert, je
   „naturalistischer" sie dargestellt ist.`
-  )}
-  
-  function _255(md){return(
-  md`#### Erhaltung der Gesetzlichkeit
+  )
+}
+
+function _255(md) {
+  return (
+    md`#### Erhaltung der Gesetzlichkeit
   It is essential, however, thatWesentlich ist indessen, daß bei aller
   Freiheit doch der gesetzliche Untergrund genau eingehalten wird.
   Schmückt man einen Aufbau mit Kränzen und Girlanden aus natürlichen
@@ -3511,10 +4036,12 @@ function _1(md){return(
   reizvoll anerkennen. Fehlt aber ein solches, so werden sie entweder
   unmittelbar oder doch bald abgelehnt, weil sie den Hauptsatz der
   Formharmonik verletzen, der Gesetzlichkeit irgendwelcher Art verlangt.`
-  )}
-  
-  function _256(md){return(
-  md`#### Das Gesetz des gleichwertigen Ersatzes
+  )
+}
+
+function _256(md) {
+  return (
+    md`#### Das Gesetz des gleichwertigen Ersatzes
   Es ist oben gezeigt worden,
   wie die Starrheit der streng gesetzmäßigen Form stufenweise gelockert
   werden kann, indem man die vorgeschriebenen Formteile durch andere,
@@ -3537,15 +4064,19 @@ function _1(md){return(
   heimliches Gesetz erfüllt ist, besteht viel häufiger als die geistige
   Fähigkeit, dies Gefühl zu einer bewußten Erkenntnis zu erheben. Für die
   schönheitliche Wirkung aber genügt bereits das Gefühl.`
-  )}
-  
-  function _257(md){return(
-  md`#### Sechstes Kapitel
+  )
+}
+
+function _257(md) {
+  return (
+    md`#### Sechstes Kapitel
   ## Begrenzte Flächen`
-  )}
-  
-  function _258(md){return(
-  md`#### Allgemeines
+  )
+}
+
+function _258(md) {
+  return (
+    md`#### Allgemeines
   Jede Fläche, die geschmückt werden soll, ist notwendig
   begrenzt. Beim Entwerfen des Schmucks wird auf ihre Grenzen nicht
   Rücksicht genommen, wenn diese verwickelt, wandelbar, verdeckt oder
@@ -3562,10 +4093,12 @@ function _1(md){return(
   berücksichtigen, wie die Schildformen, die freilich früher wichtiger
   waren als heute. Es ist die allgemeine Frage zu beantworten: wie
   schmückt man begrenzte Flächen?`
-  )}
-  
-  function _259(md){return(
-  md`#### Anwendung unbegrenzter Muster
+  )
+}
+
+function _259(md) {
+  return (
+    md`#### Anwendung unbegrenzter Muster
   Der erste Gesichtspunkt für den Fall
   unbegrenzter Muster ist soeben ausgesprochen worden: die Hauptlinien der
   Gesamtform und des Musters sollen gesetzlich zueinander geordnet sein.
@@ -3594,10 +4127,12 @@ function _1(md){return(
   bewegt sich die Mustergröße zweckmäßig in der Nähe der unteren Grenze,
   damit Störungen in der Wirkung der aufgelegten Schmuckformen vermieden
   werden (s. w. u.).`
-  )}
-  
-  function _260(md){return(
-  md`#### Bearbeitung der Fläche — Das Mittelstück
+  )
+}
+
+function _260(md) {
+  return (
+    md`#### Bearbeitung der Fläche — Das Mittelstück
   Man wird die gegebene Form
   zunächst darauf ansehen, ob sie einen Mittelpunkt oder mehrere
   Hauptpunkte hat. Beispielsweise sind bei der Schmückung einer
@@ -3621,10 +4156,12 @@ function _1(md){return(
   auf vorhandene Mittelpunkte und Symmetrielinien zu wählen. Die Größe
   kann von Null bis zur Füllung der ganzen Fläche gehen. Meist bewegt sie
   sich um etwa 1/2 bis 1/4 der Gesamtfläche.`
-  )}
-  
-  function _261(md){return(
-  md`#### Rand und Zwickel
+  )
+}
+
+function _261(md) {
+  return (
+    md`#### Rand und Zwickel
   Ein zweites ausgezeichnetes Gebiet ist der* Rand*.
   Dieser wird durch Linien, Flechten oder Bänder geschmückt, welche in
   gleicher Breite um die ganze Form geführt zu werden pflegen.  
@@ -3639,10 +4176,12 @@ function _1(md){return(
   Zwickel ein bevorzugtes Gebiet. Sie bleiben dann ungeschmückt oder
   erhalten nur eine Andeutung. Anderenfalls können auch die Zwickel mit
   Rand und Mitte ausgestattet werden.`
-  )}
-  
-  function _262(md){return(
-  md`#### Mittelstück, Rand und Zwickel  
+  )
+}
+
+function _262(md) {
+  return (
+    md`#### Mittelstück, Rand und Zwickel  
   Mittelstück, Rand und Zwickel sind somit die Hauptteile, in welche
   die begrenzte Form zerlegt wird. Es ist keineswegs notwendig, daß alle
   drei gleich stark entwickelt sind. Der Rand kann sich von einer
@@ -3655,10 +4194,12 @@ function _1(md){return(
   dem Zwickel für sich, der als Restgebilde zwischen Mittelstück und Rand
   definiert ist, bleibt eine derartige ausschließende Entwicklung
   versagt.`
-  )}
-  
-  function _263(md){return(
-  md`#### Grund und aufgelegter Schmuck
+  )
+}
+
+function _263(md) {
+  return (
+    md`#### Grund und aufgelegter Schmuck
   Auf eine andere wesentliche
   Begriffsbildung ist bereits hingewiesen worden, nämlich den Unterschied
   zwischen Grund und Schmuck. Man kan die Fläche so behandeln, als wäre
@@ -3682,10 +4223,12 @@ function _1(md){return(
   entwickelten Gestaltung als das eines allgemeinen Hintergrundes. Es wird
   also besser sein, solche Lösungen unter dem nächsten Gesichtspunkt der
   Teilung und Schmückung gegebener Formen zu betrachten.`
-  )}
-  
-  function _264(md){return(
-  md`#### Teilung der Fläche
+  )
+}
+
+function _264(md) {
+  return (
+    md`#### Teilung der Fläche
   Bisher war angenommen, daß die gegebene Fläche
   als Ganzes bearbeitet werden soll. In vielen Fällen, namentlich wenn
   eine Richtung stark überwiegt, ist es aber besser, die Fläche zunächst
@@ -3722,10 +4265,12 @@ function _1(md){return(
   Gestaltung des Teilschmuckes verwenden. Es lassen sich hier Arbeitswege
   gehen, die an die kontrapunktische Verwertung gegebener Themen erinnern,
   welche in der Musik zu so hoher Vollendung entwickelt ist.`
-  )}
-  
-  function _265(md){return(
-  md`#### Einfluß der Schwerkraft
+  )
+}
+
+function _265(md) {
+  return (
+    md`#### Einfluß der Schwerkraft
   Ferner ist zu beachten, daß eine
   geometrisch vorhandene Spiegel- (Symmetrie-)linie durch andere Gründe
   diese Eigenschaft verlieren kann. So hat ein flachliegendes Rechteck
@@ -3739,10 +4284,12 @@ function _1(md){return(
   kennzeichnen will. Die Bedeutung der senkrechten Spiegel- oder
   Symmetrielinie, die in der Richtung der Schwerkraft liegt, wird um so
   größer.`
-  )}
-  
-  function _266(md){return(
-  md`#### Der goldene Schnitt
+  )
+}
+
+function _266(md) {
+  return (
+    md`#### Der goldene Schnitt
   Der in Rede stehende Fall gibt endlich eine
   Gelegenheit, wo der vielberufene Goldene Schnitt sachgemäß angewendet
   werden kann. Da die senkrechte Spiegellinie wegen ihrer Einseitigkeit
@@ -3755,15 +4302,19 @@ function _1(md){return(
   Daß der Goldene Schnitt hier Anwendung findet, beruht darauf, daß es
   sich um* gesetzlich verschiedene Teilung einer Geraden* handelt. Nur wo
   diese Voraussetzung zutrifft, ist er brauchbar.`
-  )}
-  
-  function _267(md){return(
-  md`#### Siebentes Kapitel
+  )
+}
+
+function _267(md) {
+  return (
+    md`#### Siebentes Kapitel
   ## Die Bildkunst`
-  )}
-  
-  function _268(md){return(
-  md`#### Freie Flächenordnung
+  )
+}
+
+function _268(md) {
+  return (
+    md`#### Freie Flächenordnung
   Vermeidet man die Betonung der Grenzen durch
   Linien oder Bänder und führt die Schmuckformen der verschiedenen Teile
   der Fläche ineinander über, so hat man die Urform einer
@@ -3791,10 +4342,12 @@ function _1(md){return(
   Betätigung der Organe und die Wiedererweckung genossener Freuden durch
   Steigerung der Erinnerung. Hieran schließen sich abergläubische
   Vorstellungen, die an Abbildungen geknüpft werden.`
-  )}
-  
-  function _269(md){return(
-  md`#### Rückständigkeit der Lichtkunst
+  )
+}
+
+function _269(md) {
+  return (
+    md`#### Rückständigkeit der Lichtkunst
   Während aber beispielsweise die
   Tonkunst durch die sehr frühe Entdeckung der Harmoniegesetze den geraden
   Weg zum Ziel einer hochentwickelten reinen Kunst gegangen ist, indem sie
@@ -3824,10 +4377,12 @@ function _1(md){return(
   gestalteten Aufstieg genommen. Eine freie Entwicklung ist aber dort
   wegen der Beschränktheit des beherrschten Farbgebiets nicht erreicht
   worden.`
-  )}
-  
-  function _270(md){return(
-  md`#### Die Malerei
+  )
+}
+
+function _270(md) {
+  return (
+    md`#### Die Malerei
   So sehen wir die Bildkunst den Seitenweg einschlagen,
   der sich gerade in unseren Tagen als Sackgasse auszuweisen scheint. Es
   ist die Verfolgung des gegenständlichen Interesses am Dargestellten,
@@ -3868,10 +4423,12 @@ function _1(md){return(
   die einfachsten Grundlagen in sehr unbestimmter und ungefährer
   Anwendung, wenn auch gerade jetzt eine starke Neigung zur Steigerung
   dieser Werte sowohl unterbewußt empfunden wie bewußt betätigt wird.`
-  )}
-  
-  function _271(md){return(
-  md`#### Gesetzlichkeit freier Formen
+  )
+}
+
+function _271(md) {
+  return (
+    md`#### Gesetzlichkeit freier Formen
   Unsere bisherige, durchaus
   naturalistische Bildkunst ist im allgemeinen nicht in der Lage, einfache
   räumliche Rhythmen in ihren Werken restlos durchzuführen, weil die
@@ -3915,10 +4472,12 @@ function _1(md){return(
   genauere Abgrenzung handelt.  
   Innerhalb der durch den dargestellten Gegenstand bedingten Freiheit
   lassen sich im einzelnen folgende Gesetzlichkeiten betätigen.`
-  )}
-  
-  function _272(md){return(
-  md`#### Gleiche Dichte
+  )
+}
+
+function _272(md) {
+  return (
+    md`#### Gleiche Dichte
   Die einfachste Formgesetzlichkeit, welche hier zur
   Geltung kommen kann, ist die* Gleichförmigkeit der Flächenbedeckung*. Es
   soll im Bilde keine „leeren" Stellen geben. Der Wunsch, dieser Forderung
@@ -3932,10 +4491,12 @@ function _1(md){return(
   starren Rhythmus widersetzen. Die scheinbar willkürliche, aber diesem
   Gesetz genügende Anordnung der Formelemente ist z. B. eines der
   wirksamsten Mittel in der gut entwickelten Schmuckkunst der Japaner.`
-  )}
-  
-  function _273(md){return(
-  md`#### Die Mittellinie
+  )
+}
+
+function _273(md) {
+  return (
+    md`#### Die Mittellinie
   Eine andere sehr naheliegende Flächenordnung ist
   die Betonung des Mittelstücks. Die wichtigste Stelle des Bildes wird in
   die Mitte gelegt, oder, da die Einseitigkeit der Schwerkraft hier ihre
@@ -3948,10 +4509,12 @@ function _1(md){return(
   „pyramidalen" Aufbau, der zahllosen Bildordnungen zugrunde liegt. Dabei
   macht sich im Laufe der Zeit eine zunehmende Lockerung der geradlinigen
   Seiten zugunsten einer reicheren Bewegung der Grenzlinie geltend.`
-  )}
-  
-  function _274(md){return(
-  md`#### Zusammengesetztes Gleichgewicht
+  )
+}
+
+function _274(md) {
+  return (
+    md`#### Zusammengesetztes Gleichgewicht
   Hier ist es, wo die Ordnung des
   zusammengesetzten Gleichgewichts (S. 101) ihre Stelle findet. Wird eine
   Seite lockerer als die andere behandelt, so muß sie dafür eine größere
@@ -3964,10 +4527,12 @@ function _1(md){return(
   schließlich alle Ausdrucksmittel des Bildes zu einem solchen
   gegenseitigen Gleichgewicht herangezogen werden könne und bedingt das
   „Künstlerische" in höherem Sinne.`
-  )}
-  
-  function _275(md){return(
-  md`#### Andere spiegelgleiche Formen
+  )
+}
+
+function _275(md) {
+  return (
+    md`#### Andere spiegelgleiche Formen
   Außer den Kompositionen nach dem
   Mittelstück oder der Pyramide gibt es noch viele andere nach anderen
   einfachen geometrischen Formen, welche im weiteren Sinne des
@@ -3979,10 +4544,12 @@ function _1(md){return(
   wichtigen Formwert, wie den Horizont, gegeben ist, denn die Schwerkraft
   hebt, wie erwähnt, die Gleichwertigkeit zwischen oben und unten auf,
   während sie die von rechts und links ungestört läßt.`
-  )}
-  
-  function _276(md){return(
-  md`#### Einseitiges Übergewicht
+  )
+}
+
+function _276(md) {
+  return (
+    md`#### Einseitiges Übergewicht
   Die Harmonie der Form besteht nicht in
   ihrer Gleichförmigkeit oder ihrem Gleichgewicht allein, sondern in ihrer
   Gesetzlichkeit überhaupt. Es kann also auch jedes andere Gesetz in der
@@ -4006,15 +4573,19 @@ function _1(md){return(
   Bildschwerpunkts oder Eingangstor des Bildgegenstandes sein. Alles dies
   ist wirksam, vorausgesetzt, daß der Raumgedanke gut begründet und ohne
   Unsicherheit durchgeführt wird.`
-  )}
-  
-  function _277(md){return(
-  md`#### Achtes Kapitel
+  )
+}
+
+function _277(md) {
+  return (
+    md`#### Achtes Kapitel
   ## Körperformen`
-  )}
-  
-  function _278(md){return(
-  md`#### Verweisung auf die Zukunft
+  )
+}
+
+function _278(md) {
+  return (
+    md`#### Verweisung auf die Zukunft
   Die Überschrift dieses Kapitels gibt an,
   daß ein Werk über die Harmonie der Form nach der Behandlung der*
   Punkte*,* Linien* und* Flächen* eine entsprechende Untersuchung über die
@@ -4053,288 +4624,288 @@ function _1(md){return(
   Gesichtspunkten einer neuen Systematik. Und viele andere Felder sind
   kaum gekannt, geschweige erforscht.  
   Sie alle stehen der freien Bearbeitung offen.`
-  )}
-  
-  export default function define(runtime, observer) {
-    const main = runtime.module();
-    main.variable(observer()).define(["md"], _1);
-    main.variable(observer()).define(["md"], _2);
-    main.variable(observer()).define(["md"], _3);
-    main.variable(observer()).define(["md"], _4);
-    main.variable(observer()).define(["html"], _5);
-    main.variable(observer()).define(["md"], _6);
-    main.variable(observer()).define(["md"], _7);
-    main.variable(observer()).define(["md"], _8);
-    main.variable(observer()).define(["md"], _9);
-    main.variable(observer()).define(["md"], _10);
-    main.variable(observer()).define(["md"], _11);
-    main.variable(observer()).define(["md"], _12);
-    main.variable(observer()).define(["htl"], _13);
-    main.variable(observer()).define(["md"], _14);
-    main.variable(observer()).define(["htl"], _15);
-    main.variable(observer()).define(["md"], _16);
-    main.variable(observer()).define(["md"], _17);
-    main.variable(observer()).define(["md"], _18);
-    main.variable(observer()).define(["md"], _19);
-    main.variable(observer()).define(["md"], _20);
-    main.variable(observer()).define(["htl"], _21);
-    main.variable(observer()).define(["md"], _22);
-    main.variable(observer()).define(["md"], _23);
-    main.variable(observer()).define(["md"], _24);
-    main.variable(observer()).define(["htl"], _25);
-    main.variable(observer()).define(["md"], _26);
-    main.variable(observer()).define(["md"], _27);
-    main.variable(observer()).define(["md"], _28);
-    main.variable(observer()).define(["md"], _29);
-    main.variable(observer()).define(["md"], _30);
-    main.variable(observer()).define(["htl"], _31);
-    main.variable(observer()).define(["md"], _32);
-    main.variable(observer()).define(["htl"], _33);
-    main.variable(observer()).define(["md"], _34);
-    main.variable(observer()).define(["md"], _35);
-    main.variable(observer()).define(["htl"], _36);
-    main.variable(observer()).define(["md"], _37);
-    main.variable(observer()).define(["md"], _38);
-    main.variable(observer()).define(["htl"], _39);
-    main.variable(observer()).define(["md"], _40);
-    main.variable(observer()).define(["md"], _41);
-    main.variable(observer()).define(["htl"], _42);
-    main.variable(observer()).define(["md"], _43);
-    main.variable(observer()).define(["md"], _44);
-    main.variable(observer()).define(["md"], _45);
-    main.variable(observer()).define(["md"], _46);
-    main.variable(observer()).define(["md"], _47);
-    main.variable(observer()).define(["md"], _48);
-    main.variable(observer()).define(["htl"], _49);
-    main.variable(observer()).define(["md"], _50);
-    main.variable(observer()).define(["md"], _51);
-    main.variable(observer()).define(["htl"], _52);
-    main.variable(observer()).define(["md"], _53);
-    main.variable(observer()).define(["htl"], _54);
-    main.variable(observer()).define(["md"], _55);
-    main.variable(observer()).define(["htl"], _56);
-    main.variable(observer()).define(["md"], _57);
-    main.variable(observer()).define(["md"], _58);
-    main.variable(observer()).define(["md"], _59);
-    main.variable(observer()).define(["htl"], _60);
-    main.variable(observer()).define(["md"], _61);
-    main.variable(observer()).define(["md"], _62);
-    main.variable(observer()).define(["md"], _63);
-    main.variable(observer()).define(["htl"], _64);
-    main.variable(observer()).define(["md"], _65);
-    main.variable(observer()).define(["md"], _66);
-    main.variable(observer()).define(["htl"], _67);
-    main.variable(observer()).define(["md"], _68);
-    main.variable(observer()).define(["md"], _69);
-    main.variable(observer()).define(["md"], _70);
-    main.variable(observer()).define(["htl"], _71);
-    main.variable(observer()).define(["md"], _72);
-    main.variable(observer()).define(["htl"], _73);
-    main.variable(observer()).define(["md"], _74);
-    main.variable(observer()).define(["htl"], _75);
-    main.variable(observer()).define(["md"], _76);
-    main.variable(observer()).define(["htl"], _77);
-    main.variable(observer()).define(["htl"], _78);
-    main.variable(observer()).define(["htl"], _79);
-    main.variable(observer()).define(["htl"], _80);
-    main.variable(observer()).define(["md"], _81);
-    main.variable(observer()).define(["htl"], _82);
-    main.variable(observer()).define(["md"], _83);
-    main.variable(observer()).define(["md"], _84);
-    main.variable(observer()).define(["htl"], _85);
-    main.variable(observer()).define(["md"], _86);
-    main.variable(observer()).define(["md"], _87);
-    main.variable(observer()).define(["md"], _88);
-    main.variable(observer()).define(["md"], _89);
-    main.variable(observer()).define(["md"], _90);
-    main.variable(observer()).define(["htl"], _91);
-    main.variable(observer()).define(["md"], _92);
-    main.variable(observer()).define(["md"], _93);
-    main.variable(observer()).define(["htl"], _94);
-    main.variable(observer()).define(["md"], _95);
-    main.variable(observer()).define(["md"], _96);
-    main.variable(observer()).define(["md"], _97);
-    main.variable(observer()).define(["md"], _98);
-    main.variable(observer()).define(["md"], _99);
-    main.variable(observer()).define(["md"], _100);
-    main.variable(observer()).define(["htl"], _101);
-    main.variable(observer()).define(["md"], _102);
-    main.variable(observer()).define(["md"], _103);
-    main.variable(observer()).define(["htl"], _104);
-    main.variable(observer()).define(["md"], _105);
-    main.variable(observer()).define(["htl"], _106);
-    main.variable(observer()).define(["md"], _107);
-    main.variable(observer()).define(["htl"], _108);
-    main.variable(observer()).define(["md"], _109);
-    main.variable(observer()).define(["htl"], _110);
-    main.variable(observer()).define(["md"], _111);
-    main.variable(observer()).define(["htl"], _112);
-    main.variable(observer()).define(["md"], _113);
-    main.variable(observer()).define(["md"], _114);
-    main.variable(observer()).define(["htl"], _115);
-    main.variable(observer()).define(["md"], _116);
-    main.variable(observer()).define(["htl"], _117);
-    main.variable(observer()).define(["md"], _118);
-    main.variable(observer()).define(["htl"], _119);
-    main.variable(observer()).define(["md"], _120);
-    main.variable(observer()).define(["md"], _121);
-    main.variable(observer()).define(["md"], _122);
-    main.variable(observer()).define(["htl"], _123);
-    main.variable(observer()).define(["md"], _124);
-    main.variable(observer()).define(["htl"], _125);
-    main.variable(observer()).define(["md"], _126);
-    main.variable(observer()).define(["md"], _127);
-    main.variable(observer()).define(["md"], _128);
-    main.variable(observer()).define(["md"], _129);
-    main.variable(observer()).define(["md"], _130);
-    main.variable(observer()).define(["htl"], _131);
-    main.variable(observer()).define(["md"], _132);
-    main.variable(observer()).define(["md"], _133);
-    main.variable(observer()).define(["md"], _134);
-    main.variable(observer()).define(["htl"], _135);
-    main.variable(observer()).define(["md"], _136);
-    main.variable(observer()).define(["md"], _137);
-    main.variable(observer()).define(["md"], _138);
-    main.variable(observer()).define(["md"], _139);
-    main.variable(observer()).define(["md"], _140);
-    main.variable(observer()).define(["htl"], _141);
-    main.variable(observer()).define(["md"], _142);
-    main.variable(observer()).define(["md"], _143);
-    main.variable(observer()).define(["md"], _144);
-    main.variable(observer()).define(["md"], _145);
-    main.variable(observer()).define(["htl"], _146);
-    main.variable(observer()).define(["md"], _147);
-    main.variable(observer()).define(["md"], _148);
-    main.variable(observer()).define(["md"], _149);
-    main.variable(observer()).define(["md"], _150);
-    main.variable(observer()).define(["md"], _151);
-    main.variable(observer()).define(["md"], _152);
-    main.variable(observer()).define(["md"], _153);
-    main.variable(observer()).define(["md"], _154);
-    main.variable(observer()).define(["md"], _155);
-    main.variable(observer()).define(["htl"], _156);
-    main.variable(observer()).define(["md"], _157);
-    main.variable(observer()).define(["md"], _158);
-    main.variable(observer()).define(["md"], _159);
-    main.variable(observer()).define(["md"], _160);
-    main.variable(observer()).define(["md"], _161);
-    main.variable(observer()).define(["md"], _162);
-    main.variable(observer()).define(["md"], _163);
-    main.variable(observer()).define(["md"], _164);
-    main.variable(observer()).define(["md"], _165);
-    main.variable(observer()).define(["md"], _166);
-    main.variable(observer()).define(["md"], _167);
-    main.variable(observer()).define(["md"], _168);
-    main.variable(observer()).define(["md"], _169);
-    main.variable(observer()).define(["md"], _170);
-    main.variable(observer()).define(["md"], _171);
-    main.variable(observer()).define(["md"], _172);
-    main.variable(observer()).define(["htl"], _173);
-    main.variable(observer()).define(["md"], _174);
-    main.variable(observer()).define(["htl"], _175);
-    main.variable(observer()).define(["md"], _176);
-    main.variable(observer()).define(["htl"], _177);
-    main.variable(observer()).define(["md"], _178);
-    main.variable(observer()).define(["htl"], _179);
-    main.variable(observer()).define(["md"], _180);
-    main.variable(observer()).define(["md"], _181);
-    main.variable(observer()).define(["md"], _182);
-    main.variable(observer()).define(["md"], _183);
-    main.variable(observer()).define(["md"], _184);
-    main.variable(observer()).define(["md"], _185);
-    main.variable(observer()).define(["htl"], _186);
-    main.variable(observer()).define(["md"], _187);
-    main.variable(observer()).define(["htl"], _188);
-    main.variable(observer()).define(["md"], _189);
-    main.variable(observer()).define(["md"], _190);
-    main.variable(observer()).define(["htl"], _191);
-    main.variable(observer()).define(["md"], _192);
-    main.variable(observer()).define(["md"], _193);
-    main.variable(observer()).define(["md"], _194);
-    main.variable(observer()).define(["md"], _195);
-    main.variable(observer()).define(["md"], _196);
-    main.variable(observer()).define(["md"], _197);
-    main.variable(observer()).define(["md"], _198);
-    main.variable(observer()).define(["md"], _199);
-    main.variable(observer()).define(["htl"], _200);
-    main.variable(observer()).define(["md"], _201);
-    main.variable(observer()).define(["htl"], _202);
-    main.variable(observer()).define(["md"], _203);
-    main.variable(observer()).define(["md"], _204);
-    main.variable(observer()).define(["htl"], _205);
-    main.variable(observer()).define(["md"], _206);
-    main.variable(observer()).define(["md"], _207);
-    main.variable(observer()).define(["md"], _208);
-    main.variable(observer()).define(["htl"], _209);
-    main.variable(observer()).define(["htl"], _210);
-    main.variable(observer()).define(["htl"], _211);
-    main.variable(observer()).define(["htl"], _212);
-    main.variable(observer()).define(["md"], _213);
-    main.variable(observer()).define(["md"], _214);
-    main.variable(observer()).define(["htl"], _215);
-    main.variable(observer()).define(["htl"], _216);
-    main.variable(observer()).define(["htl"], _217);
-    main.variable(observer()).define(["htl"], _218);
-    main.variable(observer()).define(["md"], _219);
-    main.variable(observer()).define(["htl"], _220);
-    main.variable(observer()).define(["htl"], _221);
-    main.variable(observer()).define(["htl"], _222);
-    main.variable(observer()).define(["htl"], _223);
-    main.variable(observer()).define(["md"], _224);
-    main.variable(observer()).define(["htl"], _225);
-    main.variable(observer()).define(["htl"], _226);
-    main.variable(observer()).define(["htl"], _227);
-    main.variable(observer()).define(["htl"], _228);
-    main.variable(observer()).define(["htl"], _229);
-    main.variable(observer()).define(["md"], _230);
-    main.variable(observer()).define(["htl"], _231);
-    main.variable(observer()).define(["htl"], _232);
-    main.variable(observer()).define(["htl"], _233);
-    main.variable(observer()).define(["md"], _234);
-    main.variable(observer()).define(["md"], _235);
-    main.variable(observer()).define(["htl"], _236);
-    main.variable(observer()).define(["md"], _237);
-    main.variable(observer()).define(["md"], _238);
-    main.variable(observer()).define(["htl"], _239);
-    main.variable(observer()).define(["htl"], _240);
-    main.variable(observer()).define(["md"], _241);
-    main.variable(observer()).define(["md"], _242);
-    main.variable(observer()).define(["md"], _243);
-    main.variable(observer()).define(["md"], _244);
-    main.variable(observer()).define(["htl"], _245);
-    main.variable(observer()).define(["md"], _246);
-    main.variable(observer()).define(["htl"], _247);
-    main.variable(observer()).define(["md"], _248);
-    main.variable(observer()).define(["htl"], _249);
-    main.variable(observer()).define(["md"], _250);
-    main.variable(observer()).define(["md"], _251);
-    main.variable(observer()).define(["md"], _252);
-    main.variable(observer()).define(["md"], _253);
-    main.variable(observer()).define(["md"], _254);
-    main.variable(observer()).define(["md"], _255);
-    main.variable(observer()).define(["md"], _256);
-    main.variable(observer()).define(["md"], _257);
-    main.variable(observer()).define(["md"], _258);
-    main.variable(observer()).define(["md"], _259);
-    main.variable(observer()).define(["md"], _260);
-    main.variable(observer()).define(["md"], _261);
-    main.variable(observer()).define(["md"], _262);
-    main.variable(observer()).define(["md"], _263);
-    main.variable(observer()).define(["md"], _264);
-    main.variable(observer()).define(["md"], _265);
-    main.variable(observer()).define(["md"], _266);
-    main.variable(observer()).define(["md"], _267);
-    main.variable(observer()).define(["md"], _268);
-    main.variable(observer()).define(["md"], _269);
-    main.variable(observer()).define(["md"], _270);
-    main.variable(observer()).define(["md"], _271);
-    main.variable(observer()).define(["md"], _272);
-    main.variable(observer()).define(["md"], _273);
-    main.variable(observer()).define(["md"], _274);
-    main.variable(observer()).define(["md"], _275);
-    main.variable(observer()).define(["md"], _276);
-    main.variable(observer()).define(["md"], _277);
-    main.variable(observer()).define(["md"], _278);
-    return main;
-  }
-  
+  )
+}
+
+export default function define(runtime, observer) {
+  const main = runtime.module();
+  main.variable(observer()).define(["md"], _1);
+  main.variable(observer()).define(["md"], _2);
+  main.variable(observer()).define(["md"], _3);
+  main.variable(observer()).define(["md"], _4);
+  main.variable(observer()).define(["html"], _5);
+  main.variable(observer()).define(["md"], _6);
+  main.variable(observer()).define(["md"], _7);
+  main.variable(observer()).define(["md"], _8);
+  main.variable(observer()).define(["md"], _9);
+  main.variable(observer()).define(["md"], _10);
+  main.variable(observer()).define(["md"], _11);
+  main.variable(observer()).define(["md"], _12);
+  main.variable(observer()).define(["htl"], _13);
+  main.variable(observer()).define(["md"], _14);
+  main.variable(observer()).define(["htl"], _15);
+  main.variable(observer()).define(["md"], _16);
+  main.variable(observer()).define(["md"], _17);
+  main.variable(observer()).define(["md"], _18);
+  main.variable(observer()).define(["md"], _19);
+  main.variable(observer()).define(["md"], _20);
+  main.variable(observer()).define(["htl"], _21);
+  main.variable(observer()).define(["md"], _22);
+  main.variable(observer()).define(["md"], _23);
+  main.variable(observer()).define(["md"], _24);
+  main.variable(observer()).define(["htl"], _25);
+  main.variable(observer()).define(["md"], _26);
+  main.variable(observer()).define(["md"], _27);
+  main.variable(observer()).define(["md"], _28);
+  main.variable(observer()).define(["md"], _29);
+  main.variable(observer()).define(["md"], _30);
+  main.variable(observer()).define(["htl"], _31);
+  main.variable(observer()).define(["md"], _32);
+  main.variable(observer()).define(["htl"], _33);
+  main.variable(observer()).define(["md"], _34);
+  main.variable(observer()).define(["md"], _35);
+  main.variable(observer()).define(["htl"], _36);
+  main.variable(observer()).define(["md"], _37);
+  main.variable(observer()).define(["md"], _38);
+  main.variable(observer()).define(["htl"], _39);
+  main.variable(observer()).define(["md"], _40);
+  main.variable(observer()).define(["md"], _41);
+  main.variable(observer()).define(["htl"], _42);
+  main.variable(observer()).define(["md"], _43);
+  main.variable(observer()).define(["md"], _44);
+  main.variable(observer()).define(["md"], _45);
+  main.variable(observer()).define(["md"], _46);
+  main.variable(observer()).define(["md"], _47);
+  main.variable(observer()).define(["md"], _48);
+  main.variable(observer()).define(["htl"], _49);
+  main.variable(observer()).define(["md"], _50);
+  main.variable(observer()).define(["md"], _51);
+  main.variable(observer()).define(["htl"], _52);
+  main.variable(observer()).define(["md"], _53);
+  main.variable(observer()).define(["htl"], _54);
+  main.variable(observer()).define(["md"], _55);
+  main.variable(observer()).define(["htl"], _56);
+  main.variable(observer()).define(["md"], _57);
+  main.variable(observer()).define(["md"], _58);
+  main.variable(observer()).define(["md"], _59);
+  main.variable(observer()).define(["htl"], _60);
+  main.variable(observer()).define(["md"], _61);
+  main.variable(observer()).define(["md"], _62);
+  main.variable(observer()).define(["md"], _63);
+  main.variable(observer()).define(["htl"], _64);
+  main.variable(observer()).define(["md"], _65);
+  main.variable(observer()).define(["md"], _66);
+  main.variable(observer()).define(["htl"], _67);
+  main.variable(observer()).define(["md"], _68);
+  main.variable(observer()).define(["md"], _69);
+  main.variable(observer()).define(["md"], _70);
+  main.variable(observer()).define(["htl"], _71);
+  main.variable(observer()).define(["md"], _72);
+  main.variable(observer()).define(["htl"], _73);
+  main.variable(observer()).define(["md"], _74);
+  main.variable(observer()).define(["htl"], _75);
+  main.variable(observer()).define(["md"], _76);
+  main.variable(observer()).define(["htl"], _77);
+  main.variable(observer()).define(["htl"], _78);
+  main.variable(observer()).define(["htl"], _79);
+  main.variable(observer()).define(["htl"], _80);
+  main.variable(observer()).define(["md"], _81);
+  main.variable(observer()).define(["htl"], _82);
+  main.variable(observer()).define(["md"], _83);
+  main.variable(observer()).define(["md"], _84);
+  main.variable(observer()).define(["htl"], _85);
+  main.variable(observer()).define(["md"], _86);
+  main.variable(observer()).define(["md"], _87);
+  main.variable(observer()).define(["md"], _88);
+  main.variable(observer()).define(["md"], _89);
+  main.variable(observer()).define(["md"], _90);
+  main.variable(observer()).define(["htl"], _91);
+  main.variable(observer()).define(["md"], _92);
+  main.variable(observer()).define(["md"], _93);
+  main.variable(observer()).define(["htl"], _94);
+  main.variable(observer()).define(["md"], _95);
+  main.variable(observer()).define(["md"], _96);
+  main.variable(observer()).define(["md"], _97);
+  main.variable(observer()).define(["md"], _98);
+  main.variable(observer()).define(["md"], _99);
+  main.variable(observer()).define(["md"], _100);
+  main.variable(observer()).define(["htl"], _101);
+  main.variable(observer()).define(["md"], _102);
+  main.variable(observer()).define(["md"], _103);
+  main.variable(observer()).define(["htl"], _104);
+  main.variable(observer()).define(["md"], _105);
+  main.variable(observer()).define(["htl"], _106);
+  main.variable(observer()).define(["md"], _107);
+  main.variable(observer()).define(["htl"], _108);
+  main.variable(observer()).define(["md"], _109);
+  main.variable(observer()).define(["htl"], _110);
+  main.variable(observer()).define(["md"], _111);
+  main.variable(observer()).define(["htl"], _112);
+  main.variable(observer()).define(["md"], _113);
+  main.variable(observer()).define(["md"], _114);
+  main.variable(observer()).define(["htl"], _115);
+  main.variable(observer()).define(["md"], _116);
+  main.variable(observer()).define(["htl"], _117);
+  main.variable(observer()).define(["md"], _118);
+  main.variable(observer()).define(["htl"], _119);
+  main.variable(observer()).define(["md"], _120);
+  main.variable(observer()).define(["md"], _121);
+  main.variable(observer()).define(["md"], _122);
+  main.variable(observer()).define(["htl"], _123);
+  main.variable(observer()).define(["md"], _124);
+  main.variable(observer()).define(["htl"], _125);
+  main.variable(observer()).define(["md"], _126);
+  main.variable(observer()).define(["md"], _127);
+  main.variable(observer()).define(["md"], _128);
+  main.variable(observer()).define(["md"], _129);
+  main.variable(observer()).define(["md"], _130);
+  main.variable(observer()).define(["htl"], _131);
+  main.variable(observer()).define(["md"], _132);
+  main.variable(observer()).define(["md"], _133);
+  main.variable(observer()).define(["md"], _134);
+  main.variable(observer()).define(["htl"], _135);
+  main.variable(observer()).define(["md"], _136);
+  main.variable(observer()).define(["md"], _137);
+  main.variable(observer()).define(["md"], _138);
+  main.variable(observer()).define(["md"], _139);
+  main.variable(observer()).define(["md"], _140);
+  main.variable(observer()).define(["htl"], _141);
+  main.variable(observer()).define(["md"], _142);
+  main.variable(observer()).define(["md"], _143);
+  main.variable(observer()).define(["md"], _144);
+  main.variable(observer()).define(["md"], _145);
+  main.variable(observer()).define(["htl"], _146);
+  main.variable(observer()).define(["md"], _147);
+  main.variable(observer()).define(["md"], _148);
+  main.variable(observer()).define(["md"], _149);
+  main.variable(observer()).define(["md"], _150);
+  main.variable(observer()).define(["md"], _151);
+  main.variable(observer()).define(["md"], _152);
+  main.variable(observer()).define(["md"], _153);
+  main.variable(observer()).define(["md"], _154);
+  main.variable(observer()).define(["md"], _155);
+  main.variable(observer()).define(["htl"], _156);
+  main.variable(observer()).define(["md"], _157);
+  main.variable(observer()).define(["md"], _158);
+  main.variable(observer()).define(["md"], _159);
+  main.variable(observer()).define(["md"], _160);
+  main.variable(observer()).define(["md"], _161);
+  main.variable(observer()).define(["md"], _162);
+  main.variable(observer()).define(["md"], _163);
+  main.variable(observer()).define(["md"], _164);
+  main.variable(observer()).define(["md"], _165);
+  main.variable(observer()).define(["md"], _166);
+  main.variable(observer()).define(["md"], _167);
+  main.variable(observer()).define(["md"], _168);
+  main.variable(observer()).define(["md"], _169);
+  main.variable(observer()).define(["md"], _170);
+  main.variable(observer()).define(["md"], _171);
+  main.variable(observer()).define(["md"], _172);
+  main.variable(observer()).define(["htl"], _173);
+  main.variable(observer()).define(["md"], _174);
+  main.variable(observer()).define(["htl"], _175);
+  main.variable(observer()).define(["md"], _176);
+  main.variable(observer()).define(["htl"], _177);
+  main.variable(observer()).define(["md"], _178);
+  main.variable(observer()).define(["htl"], _179);
+  main.variable(observer()).define(["md"], _180);
+  main.variable(observer()).define(["md"], _181);
+  main.variable(observer()).define(["md"], _182);
+  main.variable(observer()).define(["md"], _183);
+  main.variable(observer()).define(["md"], _184);
+  main.variable(observer()).define(["md"], _185);
+  main.variable(observer()).define(["htl"], _186);
+  main.variable(observer()).define(["md"], _187);
+  main.variable(observer()).define(["htl"], _188);
+  main.variable(observer()).define(["md"], _189);
+  main.variable(observer()).define(["md"], _190);
+  main.variable(observer()).define(["htl"], _191);
+  main.variable(observer()).define(["md"], _192);
+  main.variable(observer()).define(["md"], _193);
+  main.variable(observer()).define(["md"], _194);
+  main.variable(observer()).define(["md"], _195);
+  main.variable(observer()).define(["md"], _196);
+  main.variable(observer()).define(["md"], _197);
+  main.variable(observer()).define(["md"], _198);
+  main.variable(observer()).define(["md"], _199);
+  main.variable(observer()).define(["htl"], _200);
+  main.variable(observer()).define(["md"], _201);
+  main.variable(observer()).define(["htl"], _202);
+  main.variable(observer()).define(["md"], _203);
+  main.variable(observer()).define(["md"], _204);
+  main.variable(observer()).define(["htl"], _205);
+  main.variable(observer()).define(["md"], _206);
+  main.variable(observer()).define(["md"], _207);
+  main.variable(observer()).define(["md"], _208);
+  main.variable(observer()).define(["htl"], _209);
+  main.variable(observer()).define(["htl"], _210);
+  main.variable(observer()).define(["htl"], _211);
+  main.variable(observer()).define(["htl"], _212);
+  main.variable(observer()).define(["md"], _213);
+  main.variable(observer()).define(["md"], _214);
+  main.variable(observer()).define(["htl"], _215);
+  main.variable(observer()).define(["htl"], _216);
+  main.variable(observer()).define(["htl"], _217);
+  main.variable(observer()).define(["htl"], _218);
+  main.variable(observer()).define(["md"], _219);
+  main.variable(observer()).define(["htl"], _220);
+  main.variable(observer()).define(["htl"], _221);
+  main.variable(observer()).define(["htl"], _222);
+  main.variable(observer()).define(["htl"], _223);
+  main.variable(observer()).define(["md"], _224);
+  main.variable(observer()).define(["htl"], _225);
+  main.variable(observer()).define(["htl"], _226);
+  main.variable(observer()).define(["htl"], _227);
+  main.variable(observer()).define(["htl"], _228);
+  main.variable(observer()).define(["htl"], _229);
+  main.variable(observer()).define(["md"], _230);
+  main.variable(observer()).define(["htl"], _231);
+  main.variable(observer()).define(["htl"], _232);
+  main.variable(observer()).define(["htl"], _233);
+  main.variable(observer()).define(["md"], _234);
+  main.variable(observer()).define(["md"], _235);
+  main.variable(observer()).define(["htl"], _236);
+  main.variable(observer()).define(["md"], _237);
+  main.variable(observer()).define(["md"], _238);
+  main.variable(observer()).define(["htl"], _239);
+  main.variable(observer()).define(["htl"], _240);
+  main.variable(observer()).define(["md"], _241);
+  main.variable(observer()).define(["md"], _242);
+  main.variable(observer()).define(["md"], _243);
+  main.variable(observer()).define(["md"], _244);
+  main.variable(observer()).define(["htl"], _245);
+  main.variable(observer()).define(["md"], _246);
+  main.variable(observer()).define(["htl"], _247);
+  main.variable(observer()).define(["md"], _248);
+  main.variable(observer()).define(["htl"], _249);
+  main.variable(observer()).define(["md"], _250);
+  main.variable(observer()).define(["md"], _251);
+  main.variable(observer()).define(["md"], _252);
+  main.variable(observer()).define(["md"], _253);
+  main.variable(observer()).define(["md"], _254);
+  main.variable(observer()).define(["md"], _255);
+  main.variable(observer()).define(["md"], _256);
+  main.variable(observer()).define(["md"], _257);
+  main.variable(observer()).define(["md"], _258);
+  main.variable(observer()).define(["md"], _259);
+  main.variable(observer()).define(["md"], _260);
+  main.variable(observer()).define(["md"], _261);
+  main.variable(observer()).define(["md"], _262);
+  main.variable(observer()).define(["md"], _263);
+  main.variable(observer()).define(["md"], _264);
+  main.variable(observer()).define(["md"], _265);
+  main.variable(observer()).define(["md"], _266);
+  main.variable(observer()).define(["md"], _267);
+  main.variable(observer()).define(["md"], _268);
+  main.variable(observer()).define(["md"], _269);
+  main.variable(observer()).define(["md"], _270);
+  main.variable(observer()).define(["md"], _271);
+  main.variable(observer()).define(["md"], _272);
+  main.variable(observer()).define(["md"], _273);
+  main.variable(observer()).define(["md"], _274);
+  main.variable(observer()).define(["md"], _275);
+  main.variable(observer()).define(["md"], _276);
+  main.variable(observer()).define(["md"], _277);
+  main.variable(observer()).define(["md"], _278);
+  return main;
+}
