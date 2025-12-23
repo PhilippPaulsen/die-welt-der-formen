@@ -34,8 +34,33 @@ body {
   padding: 0;
   background-color: #fff;
   color: #000;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+h1 {
+  font-size: 24px;
+  font-weight: bold;
+  margin-top: 2em;
+  margin-bottom: 1em;
+}
+
+h2 {
   font-size: 20px;
-  line-height: 1.4;
+  font-weight: bold;
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+}
+
+h3 {
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+p {
+  margin-bottom: 1em;
 }
 
 a {
@@ -68,7 +93,7 @@ a:active {
 .content {
   margin: 18px auto;
   padding: 20px;
-  max-width: 800px;
+  max-width: 600px;
   background-color: #fff;
   text-align: left;
   /* Ensures content is left-aligned */
@@ -288,7 +313,7 @@ a:active {
   gap: 10px;
   margin-top: 15px;
   width: 100%;
-  max-width: 640px;
+  max-width: 600px;
   /* Match default canvas size or logical max */
 }
 
