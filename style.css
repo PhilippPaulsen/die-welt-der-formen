@@ -73,7 +73,7 @@ a:active {
   /* Ensures content is left-aligned */
 }
 
-/* Navigation Bar */
+/* Standardized Header Typography */
 .top-bar {
   display: flex;
   justify-content: space-between;
@@ -84,21 +84,35 @@ a:active {
   position: sticky;
   top: 0;
   z-index: 1000;
+  font-size: 16px;
+  /* Unified header font size */
 }
 
+/* Page Title (Left) */
 .brand {
+  font-weight: normal;
+  /* Consistent weight */
+  font-size: 16px;
+  /* Match nav links */
   display: flex;
-  flex-direction: column;
+  align-items: center;
 }
 
 .brand strong {
-  font-weight: bold;
-  font-size: 14px;
+  font-weight: normal;
+  /* Remove bold override */
 }
 
 .brand span {
-  font-weight: normal;
-  font-size: 12px;
+  display: none;
+  /* Hide subtitle simplification */
+}
+
+/* Right Side Container (Nav + Lang) */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
 /* Dropdown Menu */
@@ -126,10 +140,33 @@ a:active {
 
 .dropdown-content a {
   color: black;
-  padding: 0 15px;
+  padding: 0 10px;
   text-decoration: none;
   font-size: 16px;
+  /* Match brand size */
   white-space: nowrap;
+}
+
+/* Language Switcher */
+.lang-switch {
+  display: flex;
+  gap: 5px;
+  font-size: 16px;
+}
+
+.lang-switch a {
+  text-decoration: none;
+  color: #999;
+  /* Inactive color */
+}
+
+.lang-switch a.active {
+  color: #000;
+  /* Active color */
+}
+
+.lang-switch span {
+  color: #ccc;
 }
 
 .dropdown-content a:hover {

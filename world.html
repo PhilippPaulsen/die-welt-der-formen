@@ -1,51 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The World of Forms</title>
-    <link rel="stylesheet" href="style.css">
-    <script type="module" src="https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The World of Forms</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js"></script>
 </head>
+
 <body>
-    <!-- Navigation Bar -->
-    <nav class="top-bar">
-        <div class="brand">
-          <strong>The World of Forms</strong>
-        </div>
-        <div class="dropdown">
-          <button class="dropbtn">
-            <!-- Hamburger-Menü -->
-            <div class="hamburger">
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
-          </button>
-          <div class="dropdown-content">
-            <a href="index.html">Main</a>
-            <a href="harmony_d.html">Die Harmonie der Formen</a>
-            <a href="harmony.html">The Harmony of Forms</a>
-            <a href="world_d.html">Die Welt der Formen</a>
-            <a href="world.html">The World of Forms</a>
-            <a href="about.html">About</a>
+  <!-- Navigation Bar -->
+  <nav class="top-bar">
+    <div class="brand">
+      <strong>The World of Forms</strong>
+    </div>
+
+    <div class="header-right">
+      <div class="dropdown">
+        <button class="dropbtn" aria-label="Toggle navigation menu">
+          <!-- Hamburger-Menü -->
+          <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
           </div>
+        </button>
+        <div class="dropdown-content">
+          <a href="index.html">Main</a>
+          <a href="harmony.html">Harmony</a>
+          <a href="world.html">World</a>
+          <a href="about.html">About</a>
         </div>
-      </nav>
-      
-    <!-- Divider -->
-    <hr class="divider">
+      </div>
 
-    <!-- Observable Notebook Container -->
-    <main id="notebook"></main>
+      <div class="lang-switch">
+        <a href="world.html" class="active">EN</a>
+        <span>|</span>
+        <a href="world_d.html">DE</a>
+      </div>
+    </div>
+  </nav>
 
-    <!-- Observable Notebook Integration -->
-    <script type="module">
-        import { Runtime, Inspector } from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js";
-        import define from "./notebooks/world.js"; // Replace with your desired notebook file
+  <!-- Divider -->
+  <hr class="divider">
 
-        const runtime = new Runtime();
-        runtime.module(define, Inspector.into(document.querySelector("#notebook")));
-    </script>
+  <!-- Observable Notebook Container -->
+  <main id="notebook"></main>
+
+  <!-- Observable Notebook Integration -->
+  <script type="module">
+    import { Runtime, Inspector } from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@4/dist/runtime.js";
+    import define from "./notebooks/world.js"; // Replace with your desired notebook file
+
+    const runtime = new Runtime();
+    runtime.module(define, Inspector.into(document.querySelector("#notebook")));
+  </script>
 </body>
+
 </html>
