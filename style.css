@@ -73,7 +73,7 @@ h3 {
 }
 
 p {
-  margin-bottom: 1em;
+  margin: 0;
 }
 
 a {
@@ -494,11 +494,15 @@ em, i {
 /* Absatzeinzüge statt Leerzeilen zwischen Absätzen */
 p + p {
   text-indent: 1.5em;
-  margin-top: 0;
 }
 
 /* Ausnahme: nach einer Liste keinen Einzug, sondern normalen Abstand */
 ol + p, ul + p {
   text-indent: 0;
   margin-top: 1em;
+}
+
+/* Abstand nach Überschriften zum folgenden Absatz */
+h1 + p, h2 + p, h3 + p, h4 + p, h5 + p, h6 + p {
+  margin-top: 0;
 }
