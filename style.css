@@ -1,28 +1,28 @@
 /* Einbindung der Suisse-Schrift */
 @font-face {
   font-family: "Suisse";
-  src: url("assets/suisse-book.woff2") format("woff2");
+  src: url("assets/SuisseIntl-Book.woff2") format("woff2");
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Suisse";
-  src: url("assets/suisse-bookIt.woff2") format("woff2");
+  src: url("assets/SuisseIntl-BookIt.woff2") format("woff2");
   font-weight: normal;
   font-style: italic;
 }
 
 @font-face {
   font-family: "Suisse";
-  src: url("assets/suisse-bold.woff2") format("woff2");
+  src: url("assets/SuisseIntl-Bold.woff2") format("woff2");
   font-weight: bold;
   font-style: normal;
 }
 
 @font-face {
   font-family: "Suisse";
-  src: url("assets/suisse-boldIt.woff2") format("woff2");
+  src: url("assets/SuisseIntl-BoldIt.woff2") format("woff2");
   font-weight: bold;
   font-style: italic;
 }
