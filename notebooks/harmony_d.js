@@ -18,6 +18,8 @@ function _3(md) {
   (Goethe an Schiller am 14. Aug. 1799)`
   )
 }
+/* Bewusster Absatzbruch mit Leerraum statt Einzug */
+<div class="section-break"></div>
 
 function _4(md) {
   return (
