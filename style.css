@@ -484,3 +484,21 @@ canvas+.p5-controls {
 .help-content button:hover {
   background: #333;
 }
+
+/* Kursivkorrektur: kleiner Abstand nach kursiven Wortteilen,
+   damit z. B. "drei|faltig" nicht verschmilzt */
+em, i {
+  margin-right: 0.05em;
+}
+
+/* Absatzeinzüge statt Leerzeilen zwischen Absätzen */
+p + p {
+  text-indent: 1.5em;
+  margin-top: 0;
+}
+
+/* Ausnahme: nach einer Liste keinen Einzug, sondern normalen Abstand */
+ol + p, ul + p {
+  text-indent: 0;
+  margin-top: 1em;
+}
