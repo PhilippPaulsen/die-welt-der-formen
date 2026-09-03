@@ -84,8 +84,15 @@ h4 + h2 {
   margin-top: 0.25em;
 }
 
+/* Grundsätzlich kein Einzug */
 p {
+  text-indent: 0;
   margin: 0;
+}
+
+/* Einzug NUR wenn der vorherige Nachbar ebenfalls ein Absatz ist */
+p + p {
+  text-indent: 1.5em;
 }
 
 a {
