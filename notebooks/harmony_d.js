@@ -340,7 +340,7 @@ function _18(md) {
 function _19(md) {
   return (
     md`#### Stärke der Linien
-  Die erste Anforderung, welche an eine Linie gestellt werden muss, ist die *Deutlichkeit*. Es war oben schon angegeben worden, dass die Erkennbarkeit einer Linie aufhört, wenn ihre Breite unter 1 ⁄ 10 000 der Augenentfernung liegt. In der Kunst werden solche Grenzwerte (außer zu Sonderzwecken) weit vermieden; als praktischen unteren Wert kann man etwa den zehnfachen Betrag, 1⁄1000, annehmen. Bei einer Flächengröße des Gegenstandes von 50 cm nach der kleinsten Breite soll also die Linie für unsere Zwecke nicht schmäler als 1⁄2 mm sein.`
+  Die erste Anforderung, welche an eine Linie gestellt werden muss, ist die *Deutlichkeit*. Es war oben schon angegeben worden, dass die Erkennbarkeit einer Linie aufhört, wenn ihre Breite unter 1  ⁄  10 000 der Augenentfernung liegt. In der Kunst werden solche Grenzwerte (außer zu Sonderzwecken) weit vermieden; als praktischen unteren Wert kann man etwa den zehnfachen Betrag, 1 ⁄ 1000, annehmen. Bei einer Flächengröße des Gegenstandes von 50 cm nach der kleinsten Breite soll also die Linie für unsere Zwecke nicht schmäler als 1 ⁄ 2 mm sein.`
   )
 }
 
@@ -526,7 +526,7 @@ function _40(md) {
 function _41(md) {
   return (
     md`#### Krümmung
-  Eine Linie von überall gleicher Krümmung ist der Kreis; er ist die einzige solche Linie. Je größer er ist, umso geringer ist seine Krümmung. Der Halbmesser *r* des Kreises ist also ein Maß der Krümmung, aber im umgekehrten Sinne; diese wird nicht durch *r*, sondern durch ¹⁄*r* gemessen.`
+  Eine Linie von überall gleicher Krümmung ist der Kreis; er ist die einzige solche Linie. Je größer er ist, umso geringer ist seine Krümmung. Der Halbmesser *r* des Kreises ist also ein Maß der Krümmung, aber im umgekehrten Sinne; diese wird nicht durch *r*, sondern durch ¹ ⁄ *r* gemessen.`
   )
 }
 
@@ -540,7 +540,7 @@ function _43(md) {
   return (
     md`Eine beliebige Krumme, die kein Kreis ist, hat an jedem Punkte eine andere Krümmung. Um für diese ein Maß zu finden, benutzt man die Tatsache, dass es für jeden Punkt einer beliebigen stetigen Krummen einen Kreis gibt, der sich dort ihrem Verlauf genauer anschließt als jeder andere Kreis, Fig. 16.
 
-  Dieser *Krümmungskreis* hat einen Halbmesser *r*, der in der Gestalt ¹⁄*r* das Maß der dort vorhandenen Krümmung ist. Ferner hat er einen Mittelpunkt *k*, den *Krümmungsmittelpunkt*, dessen Lage und Abstand die Krümmung eindeutig festlegen.
+  Dieser *Krümmungskreis* hat einen Halbmesser *r*, der in der Gestalt ¹ ⁄ *r* das Maß der dort vorhandenen Krümmung ist. Ferner hat er einen Mittelpunkt *k*, den *Krümmungsmittelpunkt*, dessen Lage und Abstand die Krümmung eindeutig festlegen.
 
   Mit *stetiger* Krümmung ist nun jede Krumme ausgestattet, die für jeden Punkt nur einen Krümmungsmittelpunkt hat. In Fig. 17 stoßen bei *a* zwei Kreise so zusammen, dass dort weder ein Sprung noch ein Knick entsteht, denn auch die Richtlinien sind gleich, da beide senkrecht auf der Geraden *abc* stehen. Wohl aber befindet sich in *a* ein *Stoß*, denn der eine Kreis hat seinen Mittelpunkt in *b*, der andere in *c*. Der Punkt *a* hat also zwei Krümmungsmittelpunkte; die Krümmung ist daher dort unstetig.`
   )
@@ -620,7 +620,7 @@ function _50(md) {
   return (
     md`Die mathematische Untersuchung der Sinuslinie bestätigt das Urteil des Auges bezüglich ihrer vollendeten Stetigkeit. Nicht nur der erste wie der zweite Differentialquotient sind stetig, sondern auch alle folgenden. Dazu kommt, dass die Funktionen, welche die Abhängigkeit dieser Größen von der Abszisse angeben, geometrisch wieder durch Sinuslinien dargestellt werden. Diese Linie beruht somit ganz und gar auf und in sich selbst und ist deshalb das Urbild der Welle.
 
-  Auch können alle anderen Wellen ohne Ausnahme vollständig durch die Summierung von Sinuslinien dargestellt werden, deren Längen sich wie 1⁄1, 1⁄2, 1⁄3, 1⁄4 usw. verhalten und deren Anfangspunkte und Höhen durch die darzustellende Wellenlinie bedingt sind.`
+  Auch können alle anderen Wellen ohne Ausnahme vollständig durch die Summierung von Sinuslinien dargestellt werden, deren Längen sich wie 1 ⁄ 1, 1 ⁄ 2, 1 ⁄ 3, 1 ⁄ 4 usw. verhalten und deren Anfangspunkte und Höhen durch die darzustellende Wellenlinie bedingt sind.`
   )
 }
 
@@ -741,7 +741,7 @@ function _65(md) {
 function _66(md) {
   return (
     md`#### Mehrfache Drehung
-  Wiederholt man die Drehung um den gleichen Winkel, so entsteht eine dritte übereinstimmende Form und so fort. Hierbei macht es einen wesentlichen Unterschied, ob der Drehwinkel ein einfacher Bruch 1⁄*n* des Vollwinkels ist oder nicht. Im zweiten Falle gibt es unendlich viele Wiederholungen der Form, die sich übereinanderlagern. Im ersten ist die Gesamtzahl endlich, nämlich *n*, mit Einschluss des Urbildes, da das nach dem *n*-ten folgende Bild mit dem Urbild zusammenfällt.`
+  Wiederholt man die Drehung um den gleichen Winkel, so entsteht eine dritte übereinstimmende Form und so fort. Hierbei macht es einen wesentlichen Unterschied, ob der Drehwinkel ein einfacher Bruch 1 ⁄ *n* des Vollwinkels ist oder nicht. Im zweiten Falle gibt es unendlich viele Wiederholungen der Form, die sich übereinanderlagern. Im ersten ist die Gesamtzahl endlich, nämlich *n*, mit Einschluss des Urbildes, da das nach dem *n*-ten folgende Bild mit dem Urbild zusammenfällt.`
   )
 }
 
@@ -917,7 +917,7 @@ function _89(md) {
 
   Hierbei sind drei Freiheiten vorhanden, nämlich die Zahl, die Stärke und der Abstand. Bezüglich der Zahl wurde bereits angegeben, dass man 5 oder mehr nimmt, wenn die Linien nicht mehr einzeln wirken sollen. Im anderen Falle ist 2, die Doppellinie, die bevorzugte Lösung, wohl weil sie am schnellsten aufzufassen ist, während die 3 als seltener den entsprechenden Reiz besitzt.
 
-  Die Stärke wird durch die Entfernung bestimmt, aus der die Linien gesehen werden; sie soll 1⁄1000 oder mehr des Augenabstandes betragen. Auch ist es gut, einen Anschluss an die Linienstärke des eingerahmten oder abgegrenzten Inhaltes zu suchen, falls dieser Linien enthält.
+  Die Stärke wird durch die Entfernung bestimmt, aus der die Linien gesehen werden; sie soll 1 ⁄ 1000 oder mehr des Augenabstandes betragen. Auch ist es gut, einen Anschluss an die Linienstärke des eingerahmten oder abgegrenzten Inhaltes zu suchen, falls dieser Linien enthält.
 
   Der Abstand lässt sich am freiesten wählen. Ein Gesetz, dass etwa die schwarzen und die weißen Anteile der Gruppe gleich sein sollen, würde kaum verstanden werden, da aus physiologischen Gründen weiße Linien viel breiter wirken als schwarze von gleicher Breite. Man wird den Abstand bei der Doppellinie durch die Forderung der Deutlichkeit bestimmen, bei der Liniengruppe durch die Tiefe der beabsichtigten Schattenwirkung.`
   )
@@ -957,7 +957,7 @@ function _94(htl) {
 
 function _95(md) {
   return (
-    md`In einer Liniengruppe, deren Abstände gleich sind, bleibt auch die Empfindung der Abstände gleich. Soll sich diese Empfindung in einfachster Weise, nämlich um gleiche Beträge, ändern, so müssen die Abstände, wie in Fig. 36 geschehen, in gleichem *Verhältnis* ab- oder zunehmen, und nicht etwa um gleiche Beträge. Mit anderen Worten, die Abstände müssen nach einer *geometrischen* Reihe geordnet werden und nicht nach einer *arithmetischen*. Die geometrischen Reihen, die hierfür gebraucht werden, sind durch das Verhältnis ihrer Änderung verschieden, das jeden beliebigen Wert annehmen kann. Ist das Verhältnis größer als eins, so steigt die Reihe, wie z. B. 1, 2, 4, 8, 16, wo das Verhältnis 2 ist. Ist es kleiner als eins, so fällt sie, wie z. B. 1, 1⁄3, 1⁄9, 1⁄27, 1⁄81, wo das Verhältnis 1⁄3 ist.
+    md`In einer Liniengruppe, deren Abstände gleich sind, bleibt auch die Empfindung der Abstände gleich. Soll sich diese Empfindung in einfachster Weise, nämlich um gleiche Beträge, ändern, so müssen die Abstände, wie in Fig. 36 geschehen, in gleichem *Verhältnis* ab- oder zunehmen, und nicht etwa um gleiche Beträge. Mit anderen Worten, die Abstände müssen nach einer *geometrischen* Reihe geordnet werden und nicht nach einer *arithmetischen*. Die geometrischen Reihen, die hierfür gebraucht werden, sind durch das Verhältnis ihrer Änderung verschieden, das jeden beliebigen Wert annehmen kann. Ist das Verhältnis größer als eins, so steigt die Reihe, wie z. B. 1, 2, 4, 8, 16, wo das Verhältnis 2 ist. Ist es kleiner als eins, so fällt sie, wie z. B. 1, 1 ⁄ 3, 1 ⁄ 9, 1 ⁄ 27, 1 ⁄ 81, wo das Verhältnis 1 ⁄ 3 ist.
 
   Bare Liniengruppen, deren Abstände nach einer geometrischen Reihe geregelt sind, wirken überzeugend und insofern schön. Fig. 36 ist nach einer geometrischen Reihe mit dem Verhältnis 0,7 abgestuft.`
   )
@@ -1072,7 +1072,7 @@ function _110(htl) {
 function _111(md) {
   return (
     md`#### Freiere Flechten
-  Jede willkürliche Wellenform lässt sich durch ganzteilige Schiebung in eine Flechte entwickeln, welche die gleichen Kennzeichen bezüglich ruhend oder laufend, ein- oder beidseitig beibehält, welche die Urform besitzt. Bei etwas reicher ausgestalteten Urformen erhält man schon durch Schiebung um 1⁄2 Wellenlänge ansehnliche Flechten, Fig. 42, die beim Übergang auf 1⁄3, 1⁄4, 1⁄5 schnell reicher und verwickelter werden. Gleichzeitig wirkt die zunehmende Gesetzlichkeit wie eine Rechtfertigung der in der Urform etwa betätigten Willkür und drängt die Frage nach ihrer Begründung zurück. Besonders erwünscht ist hierbei eine gleichförmige oder sonst einfach gesetzliche Füllung des ganzen Gebietes durch das entstehende Liniennetz. Der Gang der Urform ist mit besonderer Rücksicht hierauf festzustellen. Man sehe hierüber den übernächsten Abschnitt nach.`
+  Jede willkürliche Wellenform lässt sich durch ganzteilige Schiebung in eine Flechte entwickeln, welche die gleichen Kennzeichen bezüglich ruhend oder laufend, ein- oder beidseitig beibehält, welche die Urform besitzt. Bei etwas reicher ausgestalteten Urformen erhält man schon durch Schiebung um 1 ⁄ 2 Wellenlänge ansehnliche Flechten, Fig. 42, die beim Übergang auf 1 ⁄ 3, 1 ⁄ 4, 1 ⁄ 5 schnell reicher und verwickelter werden. Gleichzeitig wirkt die zunehmende Gesetzlichkeit wie eine Rechtfertigung der in der Urform etwa betätigten Willkür und drängt die Frage nach ihrer Begründung zurück. Besonders erwünscht ist hierbei eine gleichförmige oder sonst einfach gesetzliche Füllung des ganzen Gebietes durch das entstehende Liniennetz. Der Gang der Urform ist mit besonderer Rücksicht hierauf festzustellen. Man sehe hierüber den übernächsten Abschnitt nach.`
   )
 }
 
@@ -1149,9 +1149,9 @@ function _121(md) {
 function _122(md) {
   return (
     md`#### Drehungen
-  Eine zweite Art der Verdoppelung einer gegebenen Wellenlinie besteht darin, dass man einen Wellenzug um einen passend gewählten Punkt um 1⁄2 dreht und diese neue Form durch Schiebung verlängert. Mit der ursprünglichen Form zusammen entsteht so eine einfachste zweifädige Flechte. Diese ist beidseitig, wenn auch die Urform einseitig war, behält aber deren laufende oder ruhende Beschaffenheit, Fig. 46.
+  Eine zweite Art der Verdoppelung einer gegebenen Wellenlinie besteht darin, dass man einen Wellenzug um einen passend gewählten Punkt um 1 ⁄ 2 dreht und diese neue Form durch Schiebung verlängert. Mit der ursprünglichen Form zusammen entsteht so eine einfachste zweifädige Flechte. Diese ist beidseitig, wenn auch die Urform einseitig war, behält aber deren laufende oder ruhende Beschaffenheit, Fig. 46.
 
-  Durch Schiebung um 1⁄2, 1⁄3 usw. Wellenlänge gewinnt man verwickeltere Flechten, ohne Änderung des Laufens bzw. Ruhens.`
+  Durch Schiebung um 1 ⁄ 2, 1 ⁄ 3 usw. Wellenlänge gewinnt man verwickeltere Flechten, ohne Änderung des Laufens bzw. Ruhens.`
   )
 }
 
@@ -1208,7 +1208,7 @@ function _129(md) {
 function _130(md) {
   return (
     md`#### Reine Formkunst
-  Eine freie Form ohne Gesetzlichkeit hat an sich noch keinen Schönheitswert. Sie kann einen solchen dadurch erhalten, dass sie irgendeinen Gegenstand der Außenwelt abbildet, den wir aus bestimmten Gründen schön finden. Dies ist aber kein unmittelbarer Formwert, sondern ein mittelbarer, durch Zuordnung oder Erinnerung entstehender Beziehungswert. Als Beispiel kann das Schattenbild eines Frauenkopfes dienen, der, in normaler Stellung betrachtet, das Gefühl des Wohlgefallens auslöst. Betrachten wir aber die gleiche Form etwa nach Drehung um 1⁄4 oder 1⁄2, womöglich bevor wir wissen, was sie darstellt, so lässt sie uns ebenso gleichgültig wie irgendein anderer Klecks.`
+  Eine freie Form ohne Gesetzlichkeit hat an sich noch keinen Schönheitswert. Sie kann einen solchen dadurch erhalten, dass sie irgendeinen Gegenstand der Außenwelt abbildet, den wir aus bestimmten Gründen schön finden. Dies ist aber kein unmittelbarer Formwert, sondern ein mittelbarer, durch Zuordnung oder Erinnerung entstehender Beziehungswert. Als Beispiel kann das Schattenbild eines Frauenkopfes dienen, der, in normaler Stellung betrachtet, das Gefühl des Wohlgefallens auslöst. Betrachten wir aber die gleiche Form etwa nach Drehung um 1 ⁄ 4 oder 1 ⁄ 2, womöglich bevor wir wissen, was sie darstellt, so lässt sie uns ebenso gleichgültig wie irgendein anderer Klecks.`
   )
 }
 
@@ -1250,7 +1250,7 @@ function _134(md) {
 
   Gekennzeichnet wird eine Schiebung daher durch die Länge und die Richtung dieser Barlinien. Dies sind zwei Freiheiten, über die gesetzlich zu verfügen ist, damit der Schönheitsforderung Genüge geschieht.
 
-  Im Falle der Bänder, der hier behandelt wird, ist die Richtung der Schiebung durch die Längsrichtung des Bandes gegeben. Die Entfernung wird durch Bedingungen bestimmt, welche meist außerhalb des Bandes, nämlich in der Gesamtform, liegen, zu der das Band gehört. Sie soll im Allgemeinen einen kleinen Bruchteil, 1⁄5 oder weniger, der Bandlänge ausmachen.`
+  Im Falle der Bänder, der hier behandelt wird, ist die Richtung der Schiebung durch die Längsrichtung des Bandes gegeben. Die Entfernung wird durch Bedingungen bestimmt, welche meist außerhalb des Bandes, nämlich in der Gesamtform, liegen, zu der das Band gehört. Sie soll im Allgemeinen einen kleinen Bruchteil, 1 ⁄ 5 oder weniger, der Bandlänge ausmachen.`
   )
 }
 
@@ -1323,7 +1323,7 @@ function _142(md) {
 function _143(md) {
   return (
     md`#### Anschluss
-  Um beim Entwerfen eines zusammenhängenden Musters den Anschluss (Rapport) einfach und richtig zu machen, verfährt man bei Flächenformen ebenso, wie dies für Linienformen beschrieben ist. Nachdem man sich über die Form im Allgemeinen schlüssig geworden ist, beginnt man vom linken Rande ab zu zeichnen. Ist man etwa über 1⁄4 oder 1⁄3 des Feldes gelangt, so wiederholt man alsbald die begonnene Zeichnung im folgenden Felde. Dann ist es leicht, bei der Durchführung bis zum rechten Rande den Anschluss an die dort schon vorhandene zweite Zeichnung herzustellen. Hierbei gelten für die Grenzlinien der zusammenhängenden Flächenform dieselben Vorschriften, die oben ([S. 15]) für Linien aufgestellt wurden, nämlich, dass sie stetig ohne Knick und ohne Stoß ineinander übergehen.
+  Um beim Entwerfen eines zusammenhängenden Musters den Anschluss (Rapport) einfach und richtig zu machen, verfährt man bei Flächenformen ebenso, wie dies für Linienformen beschrieben ist. Nachdem man sich über die Form im Allgemeinen schlüssig geworden ist, beginnt man vom linken Rande ab zu zeichnen. Ist man etwa über 1 ⁄ 4 oder 1 ⁄ 3 des Feldes gelangt, so wiederholt man alsbald die begonnene Zeichnung im folgenden Felde. Dann ist es leicht, bei der Durchführung bis zum rechten Rande den Anschluss an die dort schon vorhandene zweite Zeichnung herzustellen. Hierbei gelten für die Grenzlinien der zusammenhängenden Flächenform dieselben Vorschriften, die oben ([S. 15]) für Linien aufgestellt wurden, nämlich, dass sie stetig ohne Knick und ohne Stoß ineinander übergehen.
 
   Diese Regel stellt aber nur die einfachste oder gesetzlichste Lösung der Aufgabe dar. Aus besonderen Gründen kann man auf sie verzichten und die beim Anschluss entstehenden Knicke zu besonderen Wirkungen verwerten. Als nächstes Gesetz bietet sich hier der rechte Winkel an.`
   )
@@ -1336,7 +1336,7 @@ function _144(md) {
 
   Wir haben also zwei Freiheiten: die Wahl des Drehpunktes und die des Drehwinkels. Wir betrachten zunächst den Winkel.
 
-  Dreht man die Gestalt so weit, bis sie wieder in ihre erste Lage zurückgekommen ist (was immer möglich ist), so haben alle ihre Punkte einen Vollkreis zurückgelegt, und der Winkel beträgt einen *Vollwinkel*, den wir als natürliche *Einheit* annehmen. Wir lassen uns also grundsätzlich auf die längst veraltete Messung der Winkel nach 360 Graden nicht ein. Ein rechter Winkel hat demnach den Wert 1⁄4, weil ihrer viere einen Vollwinkel ergeben. Der Winkel eines regelmäßigen Dreiecks ist 1⁄6, der eines regelmäßigen Sechsecks 1⁄3, der eines regelmäßigen *n*-Ecks ist (*n*–2)⁄2*n*.
+  Dreht man die Gestalt so weit, bis sie wieder in ihre erste Lage zurückgekommen ist (was immer möglich ist), so haben alle ihre Punkte einen Vollkreis zurückgelegt, und der Winkel beträgt einen *Vollwinkel*, den wir als natürliche *Einheit* annehmen. Wir lassen uns also grundsätzlich auf die längst veraltete Messung der Winkel nach 360 Graden nicht ein. Ein rechter Winkel hat demnach den Wert 1 ⁄ 4, weil ihrer viere einen Vollwinkel ergeben. Der Winkel eines regelmäßigen Dreiecks ist 1 ⁄ 6, der eines regelmäßigen Sechsecks 1 ⁄ 3, der eines regelmäßigen *n*-Ecks ist (*n*–2) ⁄ 2*n*.
 
   Für uns kommen allein *ganzteilige* Drehungen in Betracht, wo nach 2, 3, 4 ... *n* Einzeldrehungen die Form in sich zurückkehrt.`
   )
@@ -1357,9 +1357,9 @@ function _146(htl) {
 
 function _147(md) {
   return (
-    md`Der Drehwinkel muss *ganzteilig* sein, da sich sonst keine endliche Figur ergibt. Das heißt: durch eine endliche Anzahl Drehungen um den gleichen Winkel muss die Form wieder genau die Anfangslage erreichen. Der Drehungswinkel wird also durch die Formel 1⁄*n* dargestellt, wo *n* eine ganze Zahl ist. Für unsere Zwecke kommen die Zahlen *n* = 2, 3, 4, 5, 6, 7, 8, 9, 10, 12 in Betracht, unter denen 7 bei uns selten verwendet wird, häufig dagegen in der chinesischen Ornamentik. Höhere Zahlen sind nicht selten, werden aber nicht mehr mit einem Blick gezählt und besitzen deshalb keinen Sondercharakter.
+    md`Der Drehwinkel muss *ganzteilig* sein, da sich sonst keine endliche Figur ergibt. Das heißt: durch eine endliche Anzahl Drehungen um den gleichen Winkel muss die Form wieder genau die Anfangslage erreichen. Der Drehungswinkel wird also durch die Formel 1 ⁄ *n* dargestellt, wo *n* eine ganze Zahl ist. Für unsere Zwecke kommen die Zahlen *n* = 2, 3, 4, 5, 6, 7, 8, 9, 10, 12 in Betracht, unter denen 7 bei uns selten verwendet wird, häufig dagegen in der chinesischen Ornamentik. Höhere Zahlen sind nicht selten, werden aber nicht mehr mit einem Blick gezählt und besitzen deshalb keinen Sondercharakter.
 
-  Außer den Drehungen um gleiche Winkel kann man solche um verschiedene Winkel ausführen. Der einfachste gesetzmäßige Fall ist, dass man zwei verschiedene Drehungen, *a* und *b*, miteinander abwechseln lässt, wobei *a* + *b* zusammen eine zwei-, drei-, vier-, kurz ganzzählige Drehung ergeben; es muss mit anderen Worten *a + b* = 1⁄*n* sein.
+  Außer den Drehungen um gleiche Winkel kann man solche um verschiedene Winkel ausführen. Der einfachste gesetzmäßige Fall ist, dass man zwei verschiedene Drehungen, *a* und *b*, miteinander abwechseln lässt, wobei *a* + *b* zusammen eine zwei-, drei-, vier-, kurz ganzzählige Drehung ergeben; es muss mit anderen Worten *a + b* = 1 ⁄ *n* sein.
 
   Statt der einmaligen Abwechslung *a b* kann man verwickeltere anwenden, wie dies [S. 12] für die Teilungen dargelegt worden war. Stets muss aber der Winkel des zusammengesetzten Gliedes ganzteilig sein.
 
@@ -1403,15 +1403,15 @@ function _151(md) {
     md`#### Schiebung und Drehung
   Wir kommen nun zu den Formharmonien höherer Stufe, die sich aus der Anwendung zweier Wiederholungsarten ergeben. Da deren drei vorhanden sind, nämlich Schiebung, Drehung, Spiegelung, so gibt es auch drei Paare, nämlich Schiebung–Drehung, Schiebung–Spiegelung, Drehung–Spiegelung.
 
-  Der erste Fall verwirklicht sich am einfachsten, wenn der Drehpunkt im Endpunkt der Urform liegt, die Drehung 1⁄2 beträgt und die Schiebung gleich der Länge der Gesamtform ist. Dann wechseln die beiden Drehlagen regelmäßig miteinander ab.
+  Der erste Fall verwirklicht sich am einfachsten, wenn der Drehpunkt im Endpunkt der Urform liegt, die Drehung 1 ⁄ 2 beträgt und die Schiebung gleich der Länge der Gesamtform ist. Dann wechseln die beiden Drehlagen regelmäßig miteinander ab.
 
   Etwas mannigfaltiger gestaltet sich das Bild, wenn man aus dem Urbild und der um einen anderen Punkt gedrehten Wiederholung eine Doppelform erzeugt und diese dann durch Schiebung wiederholt. Je nach der Wahl des Drehpunkts und des Abstandes kann man aus der gegebenen Form viele abgeleitete entwickeln.
 
   Bei der Anwendung auf Bänder muss die Schiebung in der Bandrichtung erfolgen, und der Drehpunkt ist so zu wählen, dass keine allzu starken seitlichen Vorsprünge entstehen, also am sichersten irgendwo in der Mittellinie des Bandes.
 
-  Wird ein anderer Drehwinkel, 1⁄3, 1⁄4 usw. gewählt, so ist das Verständnis der entstehenden Formen schwieriger, was allerdings gegebenenfalls eine Steigerung des Reizes bedeuten kann.
+  Wird ein anderer Drehwinkel, 1 ⁄ 3, 1 ⁄ 4 usw. gewählt, so ist das Verständnis der entstehenden Formen schwieriger, was allerdings gegebenenfalls eine Steigerung des Reizes bedeuten kann.
 
-  Bei der Drehschiebung bleibt ein laufendes Muster laufend; ein einseitiges wird dagegen beidseitig, wenn die Drehung paarzählig ist, wie 1⁄2, 1⁄4, 1⁄6; im anderen Falle bleibt es einseitig.
+  Bei der Drehschiebung bleibt ein laufendes Muster laufend; ein einseitiges wird dagegen beidseitig, wenn die Drehung paarzählig ist, wie 1 ⁄ 2, 1 ⁄ 4, 1 ⁄ 6; im anderen Falle bleibt es einseitig.
 
   Eine Veranschaulichung dieser Fälle ist entbehrlich, da das Wesentliche aus den entsprechenden Liniengebilden ([S. 36]) entnommen werden kann. Gleiches gilt für die nächstfolgenden Abschnitte.`
   )
@@ -1480,11 +1480,11 @@ function _157(md) {
 function _158(md) {
   return (
     md`#### Winkelspiegel
-  Musterzeichner und Kunstgewerbler benutzen vielfach den Winkelspiegel, um zentral geordnete Muster herzustellen. Es ist bekannt, dass man dabei den Spiegelwinkel nicht nur ganzteilig, sondern auch mit paarer Drehzahl einstellen muss, also auf 1⁄2, 1⁄4, 1⁄6, 1⁄8, 1⁄10 usw., allgemein auf 1⁄2*n*, da man sonst keine geschlossenen Formen erhält.
+  Musterzeichner und Kunstgewerbler benutzen vielfach den Winkelspiegel, um zentral geordnete Muster herzustellen. Es ist bekannt, dass man dabei den Spiegelwinkel nicht nur ganzteilig, sondern auch mit paarer Drehzahl einstellen muss, also auf 1 ⁄ 2, 1 ⁄ 4, 1 ⁄ 6, 1 ⁄ 8, 1 ⁄ 10 usw., allgemein auf 1 ⁄ 2*n*, da man sonst keine geschlossenen Formen erhält.
 
   Untersucht man genauer, was dabei entsteht, so findet man, dass es durchweg *Rosen* sind. Die in den Spiegelwinkel gebrachte freie Form bildet mit ihrem Spiegelbilde einerseits einen Spiegeling, dessen Hauptlinie durch die Spiegelachse geht. Diese spiegelt sich im anderen Spiegel und weiterhin im ersten usw.
 
-  Es entsteht bei einem Spiegelwinkel von 1⁄2*n* ein *n*-zähliger Drehling aus *n* spiegelgleichen Blättern, deren Hauptlinien alle durch denselben Drehpunkt gehen. Das ist aber die Definition der Rose.`
+  Es entsteht bei einem Spiegelwinkel von 1 ⁄ 2*n* ein *n*-zähliger Drehling aus *n* spiegelgleichen Blättern, deren Hauptlinien alle durch denselben Drehpunkt gehen. Das ist aber die Definition der Rose.`
   )
 }
 
@@ -1664,7 +1664,7 @@ function _177(htl) {
 
 function _178(md) {
   return (
-    md`Um an einem einfachsten Beispiel einige dieser Mannigfaltigkeiten zu veranschaulichen, ist in Fig. 54 bis 57 eine Sinuslinie um gleiche Breiten nach unten verschoben worden; die Unterschiede beruhen nur auf Verschiedenheiten der Richtung. In Fig. 54 ist die Schiebung senkrecht zum Lauf der Sinuslinie. In Fig. 55 ist sie schräg, nämlich jedesmal 1⁄12 Wellenlänge nach rechts, in Fig. 56 je 1⁄4, und in Fig. 57 je 1⁄2 Wellenlänge.`
+    md`Um an einem einfachsten Beispiel einige dieser Mannigfaltigkeiten zu veranschaulichen, ist in Fig. 54 bis 57 eine Sinuslinie um gleiche Breiten nach unten verschoben worden; die Unterschiede beruhen nur auf Verschiedenheiten der Richtung. In Fig. 54 ist die Schiebung senkrecht zum Lauf der Sinuslinie. In Fig. 55 ist sie schräg, nämlich jedesmal 1 ⁄ 12 Wellenlänge nach rechts, in Fig. 56 je 1 ⁄ 4, und in Fig. 57 je 1 ⁄ 2 Wellenlänge.`
   )
 }
 
@@ -1786,13 +1786,13 @@ function _192(md) {
 function _193(md) {
   return (
     md`#### Gesetzliche Netze
-  Von den möglichen Winkeln bildet der rechte oder 1⁄4 einen ausgezeichneten Fall, da alsdann alle Winkel gleich werden. Das Schiefeck geht in ein Rechteck über.
+  Von den möglichen Winkeln bildet der rechte oder 1 ⁄ 4 einen ausgezeichneten Fall, da alsdann alle Winkel gleich werden. Das Schiefeck geht in ein Rechteck über.
 
   Von allen Seitenverhältnissen bildet das Verhältnis 1 oder die Gleichheit den ausgezeichneten Fall. Das Schiefeck geht in eine Raute (Rhombus) über.
 
   Liegt sowohl Gleichheit der Winkel wie der Seiten vor, so geht das Schiefeck in ein Quadrat über. Dies ist die gesetzlichste Teilung der Ebene.
 
-  Nächst dem Winkel 1⁄4 ist aus geometrischen Gründen der Winkel 1⁄6 (nicht 1⁄5) der gesetzlichste. Ein Rautennetz mit diesem Winkel ergibt nämlich bei allseitiger Verbindung der Knoten ein Netz aus lauter gleichseitigen Dreiecken, die aber nicht alle bar sind, sondern abwechselnd entgegengesetzt liegen. Das gleiche Netz ermöglicht die restlose Teilung der Ebene in regelmäßige Sechsecke.
+  Nächst dem Winkel 1 ⁄ 4 ist aus geometrischen Gründen der Winkel 1 ⁄ 6 (nicht 1 ⁄ 5) der gesetzlichste. Ein Rautennetz mit diesem Winkel ergibt nämlich bei allseitiger Verbindung der Knoten ein Netz aus lauter gleichseitigen Dreiecken, die aber nicht alle bar sind, sondern abwechselnd entgegengesetzt liegen. Das gleiche Netz ermöglicht die restlose Teilung der Ebene in regelmäßige Sechsecke.
 
   Ferner hat unter den Rechtecken eine hervorragende Bedeutung das mit dem Seitenverhältnis 1 : √2 oder 1 : 1,414, rund 7 : 10. Es ist das Verhältnis, welches zwischen der Seite und der Quere (Diagonale) des Quadrats besteht. Ein solches Rechteck hat die Eigenschaft, dass es beim Hälften ein geometrisch ähnliches Rechteck ergibt.
 
@@ -1848,7 +1848,7 @@ function _198(md) {
 function _199(md) {
   return (
     md`#### Die schiefeckige Masche
-  Im allgemeinsten Falle, wo die beiden Abstände und die Winkel verschieden sind, entsteht als Masche ein Schiefeck (Parallelogramm). Ein solches hat keine Spiegellinie, wohl aber einen zweizähligen Drehpunkt, welcher im Durchschnittspunkt der beiden Queren liegt. Das heißt, dass bei der Drehung 1⁄2 um diesen Mittelpunkt das Schiefeck in der neuen Lage genau nach Seiten und Ecken mit der Anfangslage zusammenfällt oder „in sich selbst übergeführt wird". Dies ist daran erkennbar, dass jede durch den Mittelpunkt gelegte Gerade beiderseits in gleichem Abstande durch die Begrenzung des Schiefecks abgeschnitten wird.
+  Im allgemeinsten Falle, wo die beiden Abstände und die Winkel verschieden sind, entsteht als Masche ein Schiefeck (Parallelogramm). Ein solches hat keine Spiegellinie, wohl aber einen zweizähligen Drehpunkt, welcher im Durchschnittspunkt der beiden Queren liegt. Das heißt, dass bei der Drehung 1 ⁄ 2 um diesen Mittelpunkt das Schiefeck in der neuen Lage genau nach Seiten und Ecken mit der Anfangslage zusammenfällt oder „in sich selbst übergeführt wird". Dies ist daran erkennbar, dass jede durch den Mittelpunkt gelegte Gerade beiderseits in gleichem Abstande durch die Begrenzung des Schiefecks abgeschnitten wird.
 
   Ersetzt man je ein Seitenpaar der Schiefecke durch eine beliebige Linie, so bleibt diese Eigenschaft im Allgemeinen nicht erhalten. Die raumschlüssigen Formen, welche derart ([S. 69]) entstehen, haben also keinen Drehpunkt und besitzen daher überhaupt keine Gesetzlichkeit außer der durch die Lage der Knoten gegebenen. Um den Drehpunkt zu erhalten, den das Schiefeck besitzt, müssen die freien Linien zwischen den Knoten einer Gesetzlichkeit unterworfen sein, die wir folgendermaßen finden.
 
@@ -1885,9 +1885,9 @@ function _203(md) {
 function _204(md) {
   return (
     md`#### Teilung der Drehlinge
-  Ein zweizähliger Drehling hat die Eigenschaft, dass er durch jede Gerade, welche durch den Drehpunkt geht, in zwei deckgleiche Stücke zerschnitten wird, die um 1⁄2 gegeneinander gedreht sind. Die beiden Hälften können, je nach der Lage der Geraden, sehr verschiedene Formen annehmen, Fig. 61.
+  Ein zweizähliger Drehling hat die Eigenschaft, dass er durch jede Gerade, welche durch den Drehpunkt geht, in zwei deckgleiche Stücke zerschnitten wird, die um 1 ⁄ 2 gegeneinander gedreht sind. Die beiden Hälften können, je nach der Lage der Geraden, sehr verschiedene Formen annehmen, Fig. 61.
 
-  Statt der Geraden kann man jede andere Linie mit der gleichen Wirkung ziehen, wenn sie nur selbst eine zweizählige Drehlinie ist. Das heißt: man zieht von einem beliebigen Punkte des Randes eine beliebige Linie zum Drehpunkt und wiederholt diese Linie durch 1⁄2-Drehung um den Drehpunkt. Dann trifft sie die Gegenseite des Drehlings an der entsprechenden Stelle.`
+  Statt der Geraden kann man jede andere Linie mit der gleichen Wirkung ziehen, wenn sie nur selbst eine zweizählige Drehlinie ist. Das heißt: man zieht von einem beliebigen Punkte des Randes eine beliebige Linie zum Drehpunkt und wiederholt diese Linie durch 1 ⁄ 2-Drehung um den Drehpunkt. Dann trifft sie die Gegenseite des Drehlings an der entsprechenden Stelle.`
   )
 }
 
@@ -1899,7 +1899,7 @@ function _205(htl) {
 
 function _206(md) {
   return (
-    md`Von allen derartigen Linien ist die gesetzlichste die bare Wiederholung einer der beiden Seitenlinien. Es entsteht dann eine schlüssige Teilung der Ebene durch deckgleiche, aber abwechselnd gelagerte (um 1⁄2 gedrehte) Formen, welche durch diesen Zusammenhang einen besonderen Reiz haben, Fig. 63.`
+    md`Von allen derartigen Linien ist die gesetzlichste die bare Wiederholung einer der beiden Seitenlinien. Es entsteht dann eine schlüssige Teilung der Ebene durch deckgleiche, aber abwechselnd gelagerte (um 1 ⁄ 2 gedrehte) Formen, welche durch diesen Zusammenhang einen besonderen Reiz haben, Fig. 63.`
   )
 }
 
@@ -2034,9 +2034,9 @@ function _224(md) {
 
   Ersetzt man eine Seite des Quadrats durch einen beliebigen Zug und die andere durch dessen Spiegelbild in der zwischenliegenden Quere, so erhält man nach barer Ergänzung der beiden anderen Seiten eine Form, welche um jene Quere spiegelgleich ist. Sie hat wesentlich dieselben Eigenschaften wie die entsprechende aus einer Raute entstandene Figur, Fig. 72.
 
-  Ersetzt man eine Seite des Quadrats durch eine Drehlinie und die zweite durch deren Drehung um einen Endpunkt, so ergibt die Vervollständigung der Figur einen *vierzähligen Drehling*, Fig. 73. Die bisher erhaltenen Drehlinge waren alle zweizählig. Legt man durch den Mittelpunkt zwei beliebige Drehlinien (oder auch Gerade), die aufeinander senkrecht stehen, so wird der Drehling in vier deckgleiche Stücke zerlegt, die gegeneinander um je 1⁄4 verdreht sind. Der gesetzlichste Fall ist wieder, dass die beiden Linien Baren zu den Seiten sind, Fig. 74. Anschaulicher ist der zweite Fall, dass beide Linien spiegelbildlich zu den Seiten gezogen werden, Fig. 75.
+  Ersetzt man eine Seite des Quadrats durch eine Drehlinie und die zweite durch deren Drehung um einen Endpunkt, so ergibt die Vervollständigung der Figur einen *vierzähligen Drehling*, Fig. 73. Die bisher erhaltenen Drehlinge waren alle zweizählig. Legt man durch den Mittelpunkt zwei beliebige Drehlinien (oder auch Gerade), die aufeinander senkrecht stehen, so wird der Drehling in vier deckgleiche Stücke zerlegt, die gegeneinander um je 1 ⁄ 4 verdreht sind. Der gesetzlichste Fall ist wieder, dass die beiden Linien Baren zu den Seiten sind, Fig. 74. Anschaulicher ist der zweite Fall, dass beide Linien spiegelbildlich zu den Seiten gezogen werden, Fig. 75.
 
-  Interessanter wird die Unterteilung, wenn man zum Zerschneiden zwar dieselbe Drehlinie benutzt, aus der die Seiten gebildet sind, diese aber mittels Spiegelung in den Queren um die Seitenmitten, bis sie durch den Mittelpunkt gehen, zum Zerschneiden der Hauptform benutzt. Es entstehen dann vier deckgleiche Teilformen in Lagen, die um je eine 1⁄4-Drehung um eine Seitenmitte auseinander entstehen, Fig. 76. Ein besonders eindringliches Muster, das von den Mauren vielfach angewendet wurde, entsteht, wenn man als willkürlichen Zug zwei Gerade benutzt, die miteinander einen rechten Winkel bilden. Fig. 77, die wieder als unbegrenzte Raumfüllung gezeichnet ist, gibt ein Beispiel hierfür. Man empfindet das Vorhandensein einer weitgehenden Gesetzlichkeit zwar sofort, hat aber einige Mühe, sich das Gesetz selbst völlig anschaulich zu machen. Darin liegt der besondere Reiz dieser Raumteilung.`
+  Interessanter wird die Unterteilung, wenn man zum Zerschneiden zwar dieselbe Drehlinie benutzt, aus der die Seiten gebildet sind, diese aber mittels Spiegelung in den Queren um die Seitenmitten, bis sie durch den Mittelpunkt gehen, zum Zerschneiden der Hauptform benutzt. Es entstehen dann vier deckgleiche Teilformen in Lagen, die um je eine 1 ⁄ 4-Drehung um eine Seitenmitte auseinander entstehen, Fig. 76. Ein besonders eindringliches Muster, das von den Mauren vielfach angewendet wurde, entsteht, wenn man als willkürlichen Zug zwei Gerade benutzt, die miteinander einen rechten Winkel bilden. Fig. 77, die wieder als unbegrenzte Raumfüllung gezeichnet ist, gibt ein Beispiel hierfür. Man empfindet das Vorhandensein einer weitgehenden Gesetzlichkeit zwar sofort, hat aber einige Mühe, sich das Gesetz selbst völlig anschaulich zu machen. Darin liegt der besondere Reiz dieser Raumteilung.`
   )
 }
 
@@ -2074,9 +2074,9 @@ function _230(md) {
   return (
     md`Ersetzt man endlich eine Seite des Quadrats durch eine Drehlinie, die andere durch deren Spiegelbild in der zwischenliegenden Quere und ergänzt durch bare Verschiebung, so erweisen sich alle Seiten als in Spiegellage zu ihren Nachbarn befindlich. Das Gebilde hat also zwei senkrechte Spiegellinien, die Queren der Masche, Fig. 78. Diese sind aber nicht gleichwertig, und das Gebilde ist daher nicht eine vierzählige, sondern eine zweizählige Rose. Zerschneidet man sie durch zwei Seitenbaren, die durch den Mittelpunkt gehen, so entstehen auch nicht vier gleiche Stücke, sondern zwei solche Paare, die sich gegenüberstehen.
 
-  Eine andere Gesetzlichkeit entsteht, wenn man zur Erzeugung der Drehlinie nicht einen beliebigen Zug benutzt, wie bisher, sondern einen spiegelgleichen. Man errichtet m. a. W. in 1⁄4 der Seitenlänge eine Senkrechte, führt vom Seitenende eine beliebige Linie zu einem Punkte der Senkrechten, spiegelt sie in dieser und dreht diese spiegelgleiche Linie um ihren Endpunkt, der in der Mitte der Quadratseite liegt. Es entsteht so eine beidseitige Welle, Fig. 79.
+  Eine andere Gesetzlichkeit entsteht, wenn man zur Erzeugung der Drehlinie nicht einen beliebigen Zug benutzt, wie bisher, sondern einen spiegelgleichen. Man errichtet m. a. W. in 1 ⁄ 4 der Seitenlänge eine Senkrechte, führt vom Seitenende eine beliebige Linie zu einem Punkte der Senkrechten, spiegelt sie in dieser und dreht diese spiegelgleiche Linie um ihren Endpunkt, der in der Mitte der Quadratseite liegt. Es entsteht so eine beidseitige Welle, Fig. 79.
 
-  Diese Linie kann man im Quadratnetz wieder in zwei Weisen verwenden. Entweder lässt man die zweite Seite aus der ersten durch Drehung oder durch Spiegelung entstehen. Im ersten Falle entsteht ein vierzähliger Drehling, Fig. 80, den man durch zwei Spiegelbilder der Seiten in vier deckgleiche Stücke zerschneiden kann, die wie früher durch 1⁄4-Drehung um die Seitenmitten ineinander übergehen. Diese Stücke haben zwei senkrechte Spiegellinien. Bewirkt man die Teilung durch zwei Bare zu den Seiten, so entstehen gleichfalls vier deckgleiche, um je 1⁄4 gedrehte Teilstücke, die aber nur eine Spiegellinie haben, Fig. 81.`
+  Diese Linie kann man im Quadratnetz wieder in zwei Weisen verwenden. Entweder lässt man die zweite Seite aus der ersten durch Drehung oder durch Spiegelung entstehen. Im ersten Falle entsteht ein vierzähliger Drehling, Fig. 80, den man durch zwei Spiegelbilder der Seiten in vier deckgleiche Stücke zerschneiden kann, die wie früher durch 1 ⁄ 4-Drehung um die Seitenmitten ineinander übergehen. Diese Stücke haben zwei senkrechte Spiegellinien. Bewirkt man die Teilung durch zwei Bare zu den Seiten, so entstehen gleichfalls vier deckgleiche, um je 1 ⁄ 4 gedrehte Teilstücke, die aber nur eine Spiegellinie haben, Fig. 81.`
   )
 }
 
@@ -2107,13 +2107,13 @@ function _234(md) {
 function _235(md) {
   return (
     md`#### Das Dreiecknetz
-  Es wurde bereits bemerkt, dass die Knoten des Rautennetzes mit dem Winkel 1⁄6 auch die Knoten eines Netzes sind, welches aus lauter gleichseitigen Dreiecken besteht. Denn wenn man zwei Scharen gleichabständiger Baren sich unter 1⁄6 schneiden lässt, so kann man eine dritte Schar so darüberlegen, dass sie die beiden anderen gleichfalls unter 1⁄6 schneidet und dabei durch die Durchschnittspunkte oder Knoten der beiden ersten Scharen geht. Es entsteht also ein Netz, das dem Quadratnetz insofern vergleichbar ist, als es ein regelmäßiges Vieleck, und zwar das einfachste, zur Masche hat. Es unterscheidet sich aber dadurch wesentlich vom Quadratnetz, dass nicht alle Dreiecke bar liegen, sondern nur je eine Hälfte, die Spiegelbilder voneinander sind.
+  Es wurde bereits bemerkt, dass die Knoten des Rautennetzes mit dem Winkel 1 ⁄ 6 auch die Knoten eines Netzes sind, welches aus lauter gleichseitigen Dreiecken besteht. Denn wenn man zwei Scharen gleichabständiger Baren sich unter 1 ⁄ 6 schneiden lässt, so kann man eine dritte Schar so darüberlegen, dass sie die beiden anderen gleichfalls unter 1 ⁄ 6 schneidet und dabei durch die Durchschnittspunkte oder Knoten der beiden ersten Scharen geht. Es entsteht also ein Netz, das dem Quadratnetz insofern vergleichbar ist, als es ein regelmäßiges Vieleck, und zwar das einfachste, zur Masche hat. Es unterscheidet sich aber dadurch wesentlich vom Quadratnetz, dass nicht alle Dreiecke bar liegen, sondern nur je eine Hälfte, die Spiegelbilder voneinander sind.
 
   Im Dreieck liegen drei Spiegellinien, welche die Winkel hälften. Außerdem ist das Dreieck ein dreizähliger Drehling. Ferner liegen im Netz um jeden Knoten sechs Dreiecke mit einer Spitze im Knoten, sodass jeder Knoten im Netz ein sechszähliger Drehpunkt ist. Dadurch ist das Dreiecknetz gleichzeitig ein Sechsecknetz. Dies ist insofern bemerkenswert, als neben dem Quadrat und dem regelmäßigen Dreieck das regelmäßige Sechseck das einzige schlüssige Vieleck ist, das existiert.
 
   Durch Zusammenfassung von zwei bzw. drei Sechsteldrehungen kann ein sechszähliger Drehpunkt auch als drei- bzw. zweizähliger betätigt werden. Dies ergibt eine große Mannigfaltigkeit der möglichen Formen, die man in diesem Netz entwickeln kann.
 
-  Versucht man, das Dreieck in derselben Weise umzubilden, wie das vorher bei den anderen Maschen geschehen war, indem man nämlich die Knoten durch freie Züge verbindet, so erkennt man, dass dies hier nicht allgemein möglich ist. Denn die Vervielfältigung der entstandenen Formen geschah dort durch Schiebung. Diese ist hier ausgeschlossen, weil die Dreiecke im Netz nicht bar liegen, sondern um 1⁄6 gedreht. Zu demselben Ergebnis gelangt man durch folgende Betrachtung. Bei jedem Ersatz einer Maschenseite durch einen freien Zug wird die Flächengröße der Masche geändert. Bei den vierseitigen Netzen ergibt sich diese Änderung als gleich groß, aber entgegengesetzt auf der baren Gegenseite; beide heben sich also auf. Beim Dreieck ist die Anzahl der Seiten unpaar; ein paarweiser Ausgleich ist also unmöglich.
+  Versucht man, das Dreieck in derselben Weise umzubilden, wie das vorher bei den anderen Maschen geschehen war, indem man nämlich die Knoten durch freie Züge verbindet, so erkennt man, dass dies hier nicht allgemein möglich ist. Denn die Vervielfältigung der entstandenen Formen geschah dort durch Schiebung. Diese ist hier ausgeschlossen, weil die Dreiecke im Netz nicht bar liegen, sondern um 1 ⁄ 6 gedreht. Zu demselben Ergebnis gelangt man durch folgende Betrachtung. Bei jedem Ersatz einer Maschenseite durch einen freien Zug wird die Flächengröße der Masche geändert. Bei den vierseitigen Netzen ergibt sich diese Änderung als gleich groß, aber entgegengesetzt auf der baren Gegenseite; beide heben sich also auf. Beim Dreieck ist die Anzahl der Seiten unpaar; ein paarweiser Ausgleich ist also unmöglich.
 
   Es muss also hier dasselbe Verfahren eintreten, welches bereits beschrieben worden ist ([S. 75]), dass man nämlich den Ausgleich in die freie Linie selbst legt, sodass das, was sie in der ersten Hälfte der Fläche des Dreiecks zugefügt oder genommen hat, in der anderen Hälfte genommen oder zugefügt wird. Dies gelingt allgemein durch eine Drehlinie.`
   )
@@ -2131,7 +2131,7 @@ function _237(md) {
 
   Die Gesamtform wird ein dreizähliger Drehling, Fig. 84, und zwar laufen alle Dreiecke des Netzes im gleichen Sinne. Es gibt also zu jeder derartigen Flächenteilung ein Spiegelbild mit gegenläufiger Drehung. Man kann sich solcher Paare bedienen, wenn es sich um symmetrisch zueinander gestellte Flächen handelt, die mit unbegrenzten Mustern gleichartig geschmückt werden sollen.
 
-  Jeder dreizählige Drehling wird durch jeden dreizähligen Drehstern, d. h. eine Gruppe von drei Linien, die durch Drehung um je 1⁄3 aus einer willkürlichen Linie gebildet ist, in drei deckgleiche Stücke geteilt.`
+  Jeder dreizählige Drehling wird durch jeden dreizähligen Drehstern, d. h. eine Gruppe von drei Linien, die durch Drehung um je 1 ⁄ 3 aus einer willkürlichen Linie gebildet ist, in drei deckgleiche Stücke geteilt.`
   )
 }
 
@@ -2333,7 +2333,7 @@ function _259(md) {
 
   Mit der Abgrenzung des Musters hat man sich dann nicht besonders zu befassen, außer dass man eine deutlich hervortretende Symmetrie der Hauptform nicht durch unsymmetrische Begrenzung des Musters auf beiden Seiten stören wird.
 
-  Ferner ist darauf zu achten, dass zwischen der Größe der Fläche und der der Mustereinheit ein richtiges Verhältnis besteht. Die Einheit soll sich in der kürzesten Richtung mindestens fünfmal wiederholen, damit die Empfindung der unbestimmten Vielheit entsteht. Dies begrenzt die Größe des Musters nach oben. Nach unten ist die Grenze viel unbestimmter und im Wesentlichen durch den Augenabstand gegeben, in dem die Fläche betrachtet zu werden pflegt. Für diesen Abstand soll das kleinste Element des Musters, das für sich wahrgenommen werden soll, nicht weniger als 1⁄1000 betragen (vgl. [S. 9]). Es kann aber je nach dem Zweck viel größer sein.
+  Ferner ist darauf zu achten, dass zwischen der Größe der Fläche und der der Mustereinheit ein richtiges Verhältnis besteht. Die Einheit soll sich in der kürzesten Richtung mindestens fünfmal wiederholen, damit die Empfindung der unbestimmten Vielheit entsteht. Dies begrenzt die Größe des Musters nach oben. Nach unten ist die Grenze viel unbestimmter und im Wesentlichen durch den Augenabstand gegeben, in dem die Fläche betrachtet zu werden pflegt. Für diesen Abstand soll das kleinste Element des Musters, das für sich wahrgenommen werden soll, nicht weniger als 1 ⁄ 1000 betragen (vgl. [S. 9]). Es kann aber je nach dem Zweck viel größer sein.
 
   Sehr oft wird ein unbegrenztes Muster mit der alsbald zu beschreibenden Sonderbearbeitung der begrenzten Fläche verbunden, indem es als *Untergrund* für die entsprechenden Schmuckformen dient. In diesem Falle bewegt sich die Mustergröße zweckmäßig in der Nähe der unteren Grenze, damit Störungen in der Wirkung der aufgelegten Schmuckformen vermieden werden (s. w. u.).`
   )
@@ -2350,7 +2350,7 @@ function _260(md) {
 
   Ellipsen haben einen Mittelpunkt und außerdem zwei Hauptpunkte, nämlich die Brennpunkte. Es ist mir nicht bekannt, ob diese jemals für Schmuckzwecke verwertet worden sind. Versuche, die ich angestellt habe, sind gut ausgefallen.
 
-  Hiernach ist also die Form und Begrenzung des Mittelstücks mit Rücksicht auf vorhandene Mittelpunkte und Symmetrielinien zu wählen. Die Größe kann von Null bis zur Füllung der ganzen Fläche gehen. Meist bewegt sie sich um etwa 1⁄2 bis 1⁄4 der Gesamtfläche.`
+  Hiernach ist also die Form und Begrenzung des Mittelstücks mit Rücksicht auf vorhandene Mittelpunkte und Symmetrielinien zu wählen. Die Größe kann von Null bis zur Füllung der ganzen Fläche gehen. Meist bewegt sie sich um etwa 1 ⁄ 2 bis 1 ⁄ 4 der Gesamtfläche.`
   )
 }
 
@@ -2359,7 +2359,7 @@ function _261(md) {
     md`#### Rand und Zwickel
   Ein zweites ausgezeichnetes Gebiet ist der *Rand*. Dieser wird durch Linien, Flechten oder Bänder geschmückt, welche in gleicher Breite um die ganze Form geführt zu werden pflegen.
 
-  Die Breite des Randes kann von der praktischen Grenze der Deutlichkeit (1⁄1000) ab sich so weit vergrößern, dass er mit dem Mittelfeld zusammentritt. Je nach dessen Form ist im letzten Falle die ganze Fläche gefüllt, oder es bleiben zwischen Rand und Mittelstück Restfelder nach, die *Zwickel* heißen sollen. Die Zwickel sind im Allgemeinen getrennt, können aber auch zusammenfließen, wenn Rand und Mittelfeld sich nicht berühren. Sie stellen das dritte ausgezeichnete Gebiet dar.
+  Die Breite des Randes kann von der praktischen Grenze der Deutlichkeit (1 ⁄ 1000) ab sich so weit vergrößern, dass er mit dem Mittelfeld zusammentritt. Je nach dessen Form ist im letzten Falle die ganze Fläche gefüllt, oder es bleiben zwischen Rand und Mittelstück Restfelder nach, die *Zwickel* heißen sollen. Die Zwickel sind im Allgemeinen getrennt, können aber auch zusammenfließen, wenn Rand und Mittelfeld sich nicht berühren. Sie stellen das dritte ausgezeichnete Gebiet dar.
 
   Ist ein Grundmuster vorhanden, das zur Geltung kommen soll, so sind die Zwickel ein bevorzugtes Gebiet. Sie bleiben dann ungeschmückt oder erhalten nur eine Andeutung. Anderenfalls können auch die Zwickel mit Rand und Mitte ausgestattet werden.`
   )
