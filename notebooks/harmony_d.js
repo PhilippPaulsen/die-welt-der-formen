@@ -16,8 +16,8 @@ function _2(md) {
 
 function _3(md) {
   return (
-    md`**Es ist doch im Grunde nichts wünschenswerter,
-    als eine große Masse zu organisieren.**
+    md`**Es ist doch im Grunde nichts wünschenswerter, <br>
+    als eine große Masse zu organisieren.** <br>
   (Goethe an Schiller am 14. Aug. 1799)
 
   <div class="section-break"></div>
