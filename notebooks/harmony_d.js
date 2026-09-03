@@ -299,13 +299,17 @@ function _16(md) {
 
   Aus diesen und unzähligen anderen Tatsachen entnehmen wir (in sehr weitgehender Verallgemeinerung) ein Gesetz, indem wir sagen:
 
+  <div class="section-break"></div>
   *Harmonisch wirken alle gesetzmäßigen Formen.*
+  <div class="section-break"></div>
 
   Unter harmonisch verstehen wir schön oder angenehm im weitesten Sinne.
 
   Dieser Satz, der *Hauptsatz der Raumharmonik*, hat die Natur eines Postulats, d. h. einer wahrscheinlichen Annahme, die uns zur ersten Ordnung der Tatsachen dient und deren Richtigkeit durch die Übereinstimmung mit der Erfahrung überall erst erprobt werden muss. Er ist gleichlautend mit dem Hauptsatz der Farbharmonik, hat eine ganz allgemeine Bedeutung für *alle* Kunst. Wir können ihn auch in der Gestalt einer Gleichung aussprechen:
 
+  <div class="section-break"></div>
   *Gesetzlichkeit = Harmonie.*
+  <div class="section-break"></div>
 
   *Goethe* hat sein ganzes künstlerisches Lebenswerk im Lichte dieser Einsicht durchgeführt und sie auch in bestimmter Form ausgesprochen in den Schlussworten seines Kunstsonetts:
 
