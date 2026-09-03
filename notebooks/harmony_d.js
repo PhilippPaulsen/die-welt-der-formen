@@ -9,16 +9,18 @@ function _2(md) {
     md`Von Wilhelm Ostwald, mit 106 Figuren im Text, Leipzig, 1922 Unesma
   Herausgegeben von Philipp Paulsen, Leipzig, 2027 Spector Books
   
+  <div class="section-break"></div>
   <div class="section-break"></div>`
   )
 }
 
 function _3(md) {
   return (
-    md`**Es ist doch im Grunde nichts wünschenswerter, 
+    md`**Es ist doch im Grunde nichts wünschenswerter,
     als eine große Masse zu organisieren.**
   (Goethe an Schiller am 14. Aug. 1799)
 
+  <div class="section-break"></div>
   <div class="section-break"></div>`
   )
 }
