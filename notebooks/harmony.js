@@ -7,14 +7,20 @@ function _1(md) {
 function _2(md) {
     return (
         md`By Wilhelm Ostwald, With 106 Figures in the Text, Leipzig, 1922 Unesma  
-Edited by Philipp Paulsen, Leipzig, 2025 Spector Books`
+Edited by Philipp Paulsen, Leipzig, 2025 Spector Books
+
+  <div class="section-break"></div>
+  <div class="section-break"></div>`
     )
 }
 
 function _3(md) {
     return (
         md`**In essence, nothing is more desirable than to organize a great mass.**  
-(Goethe to Schiller, August 14, 1799)`
+(Goethe to Schiller, August 14, 1799)
+
+  <div class="section-break"></div>
+  <div class="section-break"></div>`
     )
 }
 
