@@ -325,8 +325,10 @@ appears "more interesting" because it is much less frequently
 encountered than the latter.  
 From these and countless other observations, we derive(in a very broad
 generalization) a law, which states:  
-
+  
+<div class="section-break"></div>
 *All lawful forms are harmonious.*
+<div class="section-break"></div>
 
 By harmonious, we mean beautiful or pleasant in the broadest sense. This
 statement, the *Fundamental Principle of Spatial Harmony*, has the
@@ -336,13 +338,17 @@ concordance with experience. It is identical to the Fundamental
 Principle of Color Harmony, and it holds a general significance for all
 art. We can also express it in the form of an equation:  
 
+<div class="section-break"></div>
 *Lawfulness = Harmony.*
+<div class="section-break"></div>
 
 Goethe conducted his entire artistic life's work in the light of this
 insight and also expressed it explicitly in the closing words of his art
 sonnet:  
 
+<div class="section-break"></div>
 *And only law can give us freedom.*
+<div class="section-break"></div>
 
 We therefore call this general law of art, of which color and spatial
 harmony are merely specific applications, the *Goethean Law*.  `
@@ -427,6 +433,7 @@ When going beyond the immediate purpose of marking, one can multiply the simple,
 3.  the line varies in thickness along its course¹;
 
 4.  the line is not straight but dynamic, i.e., somehow curved or broken.
+
 Properties 2, 3, and 4 can simultaneously occur in the same line. 
 Since each of these properties offers two possibilities(present or
 not present), there are a total of eight groups encompassing a very
