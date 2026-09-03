@@ -369,7 +369,7 @@ function _22(md) {
   3. Die Linie wird stärker und schwächer in ihrem Verlauf; (Auf diese Mannigfaltigkeit machte mich *H. Prof. Krais* aufmerksam.)
   4. die Linie ist nicht gerade, sondern bewegt, d. h. irgendwie gebogen oder gebrochen.
 
-  Die Eigenschaften 2, 3, 4 können gleichzeitig an derselben Linie auftreten. Da jede von ihnen zwei Fälle (vorhanden oder nicht vorhanden) ergibt, so liegen insgesamt acht Gruppen vor, die eine sehr große Anzahl von Einzelfällen umfassen.`
+Die Eigenschaften 2, 3, 4 können gleichzeitig an derselben Linie auftreten. Da jede von ihnen zwei Fälle (vorhanden oder nicht vorhanden) ergibt, so liegen insgesamt acht Gruppen vor, die eine sehr große Anzahl von Einzelfällen umfassen.`
   )
 }
 
