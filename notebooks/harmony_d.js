@@ -558,7 +558,7 @@ function _44(md) {
   5. Linien mit Knick;
   6. Linien mit Sprung.
 
-  Als Teilstücke der Fälle 3 bis 6 können Krumme wie Gerade auftreten. So bildet man insbesondere nach 5 häufig Linien, die aus lauter geknickten Geraden bestehen.
+Als Teilstücke der Fälle 3 bis 6 können Krumme wie Gerade auftreten. So bildet man insbesondere nach 5 häufig Linien, die aus lauter geknickten Geraden bestehen.
 
   Von den drei Unstetigkeiten wird der *Stoß* (Nr. 4) noch nicht bewusst angewendet. Das Auge ist durchschnittlich noch nicht so weit erzogen, dass es vorhandene Stöße unmittelbar erkennt. Eine gesetzliche Anwendung von Stößen wird noch nicht als Spiel, als bewusstes Schalten mit der Mannigfaltigkeit empfunden und hat deshalb noch keinen Schönheitswert.
 
