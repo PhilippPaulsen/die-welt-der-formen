@@ -313,7 +313,9 @@ function _16(md) {
 
   *Goethe* hat sein ganzes künstlerisches Lebenswerk im Lichte dieser Einsicht durchgeführt und sie auch in bestimmter Form ausgesprochen in den Schlussworten seines Kunstsonetts:
 
+  <div class="section-break"></div>
   *Und das Gesetz nur kann uns Freiheit geben.*
+  <div class="section-break"></div>
 
   Wir nennen daher dieses allgemeine Kunstgesetz, von dem die Farb- und Formharmonik nur einzelne Anwendungen bilden, das *Goethesche Gesetz.*`
   )
