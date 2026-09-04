@@ -340,7 +340,7 @@ function _18(md) {
 function _19(md) {
   return (
     md`#### Stärke der Linien
-  Die erste Anforderung, welche an eine Linie gestellt werden muss, ist die *Deutlichkeit*. Es war oben schon angegeben worden, dass die Erkennbarkeit einer Linie aufhört, wenn ihre Breite unter 1  ⁄  10 000 der Augenentfernung liegt. In der Kunst werden solche Grenzwerte (außer zu Sonderzwecken) weit vermieden; als praktischen unteren Wert kann man etwa den zehnfachen Betrag, 1 ⁄ 1000, annehmen. Bei einer Flächengröße des Gegenstandes von 50 cm nach der kleinsten Breite soll also die Linie für unsere Zwecke nicht schmäler als 1 ⁄ 2 mm sein.`
+  Die erste Anforderung, welche an eine Linie gestellt werden muss, ist die *Deutlichkeit*. Es war oben schon angegeben worden, dass die Erkennbarkeit einer Linie aufhört, wenn ihre Breite unter 1 ⁄ 10 000 der Augenentfernung liegt. In der Kunst werden solche Grenzwerte (außer zu Sonderzwecken) weit vermieden; als praktischen unteren Wert kann man etwa den zehnfachen Betrag, 1 ⁄ 1000, annehmen. Bei einer Flächengröße des Gegenstandes von 50 cm nach der kleinsten Breite soll also die Linie für unsere Zwecke nicht schmäler als 1 ⁄ 2 mm sein.`
   )
 }
 

@@ -339,7 +339,7 @@ function _18(md) {
 function _19(md) {
   return (
     md`#### Thickness of Lines
-  The first requirement to be met by a line is *clarity*. It was already noted above that the discernibility of a line ceases when its width falls below 1⁄10 000 of the viewing distance. In art, such limiting values are largely avoided (except for special purposes); as a practical lower value, one may assume roughly ten times that amount, 1⁄1000. For an object with a surface size of 50 cm along its smallest dimension, the line for our purposes should therefore not be narrower than 1⁄2 mm.`
+  The first requirement to be met by a line is *clarity*. It was already noted above that the discernibility of a line ceases when its width falls below 1 ⁄ 10 000 of the viewing distance. In art, such limiting values are largely avoided (except for special purposes); as a practical lower value, one may assume roughly ten times that amount, 1 ⁄ 1000. For an object with a surface size of 50 cm along its smallest dimension, the line for our purposes should therefore not be narrower than 1 ⁄ 2 mm.`
   )
 }
 
@@ -525,7 +525,7 @@ function _40(md) {
 function _41(md) {
   return (
     md`#### Curvature
-  A line of uniform curvature everywhere is the circle; it is the only such line. The larger it is, the smaller its curvature. The radius *r* of the circle is thus a measure of curvature, but in the inverse sense; it is not measured by *r*, but by ¹⁄*r*.`
+  A line of uniform curvature everywhere is the circle; it is the only such line. The larger it is, the smaller its curvature. The radius *r* of the circle is thus a measure of curvature, but in the inverse sense; it is not measured by *r*, but by ¹ ⁄ *r*.`
   )
 }
 
@@ -539,7 +539,7 @@ function _43(md) {
   return (
     md`Any curve that is not a circle has a different curvature at every point. To find a measure for this, one uses the fact that for every point of any continuous curve, there is a circle that fits its course there more closely than any other circle, Fig. 16.
 
-  This *circle of curvature* has a radius *r*, which in the form ¹⁄*r* is the measure of the curvature present there. Furthermore, it has a center *k*, the *center of curvature*, whose position and distance uniquely determine the curvature.
+  This *circle of curvature* has a radius *r*, which in the form ¹ ⁄ *r* is the measure of the curvature present there. Furthermore, it has a center *k*, the *center of curvature*, whose position and distance uniquely determine the curvature.
 
   Every curve that has only one center of curvature at every point is now equipped with *continuous* curvature. In Fig. 17, two circles meet at *a* in such a way that neither a jump nor a kink arises there, since the guide lines are also equal, as both are perpendicular to the straight line *abc*. However, there is a *jolt* at *a*, since one circle has its center at *b*, the other at *c*. The point *a* thus has two centers of curvature; the curvature is therefore discontinuous there.`
   )
@@ -619,7 +619,7 @@ function _50(md) {
   return (
     md`The mathematical investigation of the sine curve confirms the judgment of the eye regarding its perfect continuity. Not only the first, but also the second differential quotient are continuous, and so are all the following ones. In addition, the functions that express the dependence of these quantities on the abscissa are, in turn, geometrically represented by sine curves. This line is thus based entirely and completely on and within itself, and is therefore the archetype of the wave.
 
-  Moreover, all other waves, without exception, can be fully represented by the summation of sine curves whose lengths stand in the ratio 1⁄1, 1⁄2, 1⁄3, 1⁄4, etc., and whose starting points and heights are determined by the wave line to be represented.`
+  Moreover, all other waves, without exception, can be fully represented by the summation of sine curves whose lengths stand in the ratio 1 ⁄ 1, 1 ⁄ 2, 1 ⁄ 3, 1 ⁄ 4, etc., and whose starting points and heights are determined by the wave line to be represented.`
   )
 }
 
@@ -740,7 +740,7 @@ function _65(md) {
 function _66(md) {
   return (
     md`#### Multiple Rotations
-  Repeating the rotation by the same angle produces a third coinciding form, and so on. Here it makes an essential difference whether the angle of rotation is a simple fraction 1⁄*n* of the full angle, or not. In the second case, there are infinitely many repetitions of the form, overlapping one another. In the first, the total number is finite, namely *n*, including the original form, since the image following the *n*-th coincides with the original.`
+  Repeating the rotation by the same angle produces a third coinciding form, and so on. Here it makes an essential difference whether the angle of rotation is a simple fraction 1 ⁄ *n* of the full angle, or not. In the second case, there are infinitely many repetitions of the form, overlapping one another. In the first, the total number is finite, namely *n*, including the original form, since the image following the *n*-th coincides with the original.`
   )
 }
 
@@ -916,7 +916,7 @@ function _89(md) {
 
   Here there are three degrees of freedom, namely the number, the thickness, and the spacing. As regards number, it has already been stated that one takes 5 or more when the lines are no longer meant to have an individual effect. In the other case, 2, the double line, is the preferred solution, probably because it is grasped the most quickly, while 3, being rarer, possesses a corresponding charm.
 
-  The thickness is determined by the distance from which the lines are seen; it should amount to 1⁄1000 or more of the eye's distance. It is also good to seek some connection with the line thickness of the framed or bounded content, if this contains lines.
+  The thickness is determined by the distance from which the lines are seen; it should amount to 1 ⁄ 1000 or more of the eye's distance. It is also good to seek some connection with the line thickness of the framed or bounded content, if this contains lines.
 
   The spacing can be chosen with the greatest freedom. A law requiring, say, that the black and white portions of the group be equal would scarcely be understood, since, for physiological reasons, white lines appear much broader than black ones of the same width. For the double line, one will determine the spacing by the requirement of clarity; for the group of lines, by the depth of the intended shadow effect.`
   )
@@ -956,7 +956,7 @@ function _94(htl) {
 
 function _95(md) {
   return (
-    md`In a group of lines whose spacing is equal, the sensation of the spacing also remains equal. If this sensation is to change in the simplest way, namely by equal amounts, then the spacing, as done in Fig. 36, must increase or decrease in equal *ratio*, and not, say, by equal amounts. In other words, the spacing must be arranged according to a *geometric* series, and not an *arithmetic* one. The geometric series used for this purpose differ by the ratio of their change, which can take on any value whatsoever. If the ratio is greater than one, the series increases, e.g., 1, 2, 4, 8, 16, where the ratio is 2. If it is smaller than one, it decreases, e.g., 1, 1⁄3, 1⁄9, 1⁄27, 1⁄81, where the ratio is 1⁄3.
+    md`In a group of lines whose spacing is equal, the sensation of the spacing also remains equal. If this sensation is to change in the simplest way, namely by equal amounts, then the spacing, as done in Fig. 36, must increase or decrease in equal *ratio*, and not, say, by equal amounts. In other words, the spacing must be arranged according to a *geometric* series, and not an *arithmetic* one. The geometric series used for this purpose differ by the ratio of their change, which can take on any value whatsoever. If the ratio is greater than one, the series increases, e.g., 1, 2, 4, 8, 16, where the ratio is 2. If it is smaller than one, it decreases, e.g., 1, 1 ⁄ 3, 1 ⁄ 9, 1 ⁄ 27, 1 ⁄ 81, where the ratio is 1 ⁄ 3.
 
   Parallel groups of lines whose spacing is regulated according to a geometric series appear convincing, and to that extent beautiful. Fig. 36 is graded according to a geometric series with the ratio 0.7.`
   )
@@ -1071,7 +1071,7 @@ function _110(htl) {
 function _111(md) {
   return (
     md`#### Freer Braids
-  Any arbitrary wave form can, through translation by whole fractions, be developed into a braid that retains the same characteristics — resting or running, one-sided or two-sided — that the original form possesses. With somewhat more richly designed original forms, one already obtains considerable braids through translation by 1⁄2 a wavelength, Fig. 42, which quickly become richer and more intricate on passing to 1⁄3, 1⁄4, 1⁄5. At the same time, the increasing lawfulness acts as a justification for whatever arbitrariness may have been exercised in the original form, and pushes back the question of its rationale. Especially desirable here is a uniform, or otherwise simply lawful, filling of the entire area by the resulting network of lines. The course of the original form is to be determined with particular regard to this. See the section after next on this matter.`
+  Any arbitrary wave form can, through translation by whole fractions, be developed into a braid that retains the same characteristics — resting or running, one-sided or two-sided — that the original form possesses. With somewhat more richly designed original forms, one already obtains considerable braids through translation by 1 ⁄ 2 a wavelength, Fig. 42, which quickly become richer and more intricate on passing to 1 ⁄ 3, 1 ⁄ 4, 1 ⁄ 5. At the same time, the increasing lawfulness acts as a justification for whatever arbitrariness may have been exercised in the original form, and pushes back the question of its rationale. Especially desirable here is a uniform, or otherwise simply lawful, filling of the entire area by the resulting network of lines. The course of the original form is to be determined with particular regard to this. See the section after next on this matter.`
   )
 }
 
@@ -1148,9 +1148,9 @@ function _121(md) {
 function _122(md) {
   return (
     md`#### Rotations
-  A second kind of doubling of a given wave line consists in rotating a wave by 1⁄2 about a suitably chosen point, and lengthening this new form by translation. Together with the original form, this produces a simplest two-strand braid. This is two-sided even if the original form was one-sided, but retains its running or resting character, Fig. 46.
+  A second kind of doubling of a given wave line consists in rotating a wave by 1 ⁄ 2 about a suitably chosen point, and lengthening this new form by translation. Together with the original form, this produces a simplest two-strand braid. This is two-sided even if the original form was one-sided, but retains its running or resting character, Fig. 46.
 
-  By translation of 1⁄2, 1⁄3, etc., of a wavelength, one obtains more intricate braids, without any change in the running or resting nature.`
+  By translation of 1 ⁄ 2, 1 ⁄ 3, etc., of a wavelength, one obtains more intricate braids, without any change in the running or resting nature.`
   )
 }
 
@@ -1207,7 +1207,7 @@ function _129(md) {
 function _130(md) {
   return (
     md`#### Pure Form Art
-  A free form without lawfulness has, in itself, no aesthetic value as yet. It can acquire one by depicting some object of the external world that we find beautiful for particular reasons. This, however, is not an immediate form value, but a mediated one — a relational value arising through association or memory. As an example, one may take the silhouette of a woman's head which, viewed in its normal position, evokes a feeling of pleasure. But if we view the same form, say, after a rotation by 1⁄4 or 1⁄2, possibly before we know what it depicts, it leaves us just as indifferent as any other blot.`
+  A free form without lawfulness has, in itself, no aesthetic value as yet. It can acquire one by depicting some object of the external world that we find beautiful for particular reasons. This, however, is not an immediate form value, but a mediated one — a relational value arising through association or memory. As an example, one may take the silhouette of a woman's head which, viewed in its normal position, evokes a feeling of pleasure. But if we view the same form, say, after a rotation by 1 ⁄ 4 or 1 ⁄ 2, possibly before we know what it depicts, it leaves us just as indifferent as any other blot.`
   )
 }
 
@@ -1249,7 +1249,7 @@ function _134(md) {
 
   A translation is therefore characterized by the length and the direction of these parallel lines. These are two degrees of freedom, which must be lawfully determined so that the requirement of beauty is satisfied.
 
-  In the case of the bands treated here, the direction of the translation is given by the longitudinal direction of the band. The distance is determined by conditions that mostly lie outside the band itself, namely in the overall form to which the band belongs. It should, in general, amount to a small fraction, 1⁄5 or less, of the length of the band.`
+  In the case of the bands treated here, the direction of the translation is given by the longitudinal direction of the band. The distance is determined by conditions that mostly lie outside the band itself, namely in the overall form to which the band belongs. It should, in general, amount to a small fraction, 1 ⁄ 5 or less, of the length of the band.`
   )
 }
 
@@ -1322,7 +1322,7 @@ function _142(md) {
 function _143(md) {
   return (
     md`#### Connection
-  In order to make the connection (repeat) simple and correct when designing a continuous pattern, one proceeds, for surface forms, in the same way as has been described for line forms. After one has become settled on the general shape, one begins drawing from the left edge. Once one has reached about 1⁄4 or 1⁄3 of the field, one at once repeats the drawing begun in the following field. Then it is easy, in carrying it through to the right edge, to establish the connection with the second drawing already present there. Here, the same rules apply for the boundary lines of the continuous surface form that were set out above ([S. 15]) for lines — namely, that they pass into one another continuously, without a kink and without a jolt.
+  In order to make the connection (repeat) simple and correct when designing a continuous pattern, one proceeds, for surface forms, in the same way as has been described for line forms. After one has become settled on the general shape, one begins drawing from the left edge. Once one has reached about 1 ⁄ 4 or 1 ⁄ 3 of the field, one at once repeats the drawing begun in the following field. Then it is easy, in carrying it through to the right edge, to establish the connection with the second drawing already present there. Here, the same rules apply for the boundary lines of the continuous surface form that were set out above ([S. 15]) for lines — namely, that they pass into one another continuously, without a kink and without a jolt.
 
   This rule, however, represents only the simplest, or most lawful, solution to the task. For particular reasons, one may forgo it and make use, for special effects, of the kinks that arise at the connection. The next law that offers itself here is the right angle.`
   )
@@ -1335,7 +1335,7 @@ function _144(md) {
 
   We thus have two degrees of freedom: the choice of the center of rotation, and that of the angle of rotation. We shall first consider the angle.
 
-  If one rotates the form so far that it returns to its original position (which is always possible), then all its points have traversed a full circle, and the angle amounts to a *full angle*, which we take as the natural *unit*. We therefore, on principle, decline to adopt the long-outdated measurement of angles in 360 degrees. A right angle accordingly has the value 1⁄4, since four of them make up a full angle. The angle of a regular triangle is 1⁄6, that of a regular hexagon 1⁄3, that of a regular *n*-gon is (*n*–2)⁄2*n*.
+  If one rotates the form so far that it returns to its original position (which is always possible), then all its points have traversed a full circle, and the angle amounts to a *full angle*, which we take as the natural *unit*. We therefore, on principle, decline to adopt the long-outdated measurement of angles in 360 degrees. A right angle accordingly has the value 1 ⁄ 4, since four of them make up a full angle. The angle of a regular triangle is 1 ⁄ 6, that of a regular hexagon 1 ⁄ 3, that of a regular *n*-gon is (*n*–2) ⁄ 2*n*.
 
   For us, only *whole-fraction* rotations come into consideration, where, after 2, 3, 4 ... *n* individual rotations, the form returns into itself.`
   )
@@ -1356,9 +1356,9 @@ function _146(htl) {
 
 function _147(md) {
   return (
-    md`The angle of rotation must be a *whole fraction*, since otherwise no finite figure results. That is: through a finite number of rotations by the same angle, the form must again reach exactly its initial position. The angle of rotation is thus represented by the formula 1⁄*n*, where *n* is a whole number. For our purposes, the numbers *n* = 2, 3, 4, 5, 6, 7, 8, 9, 10, 12 come into consideration, of which 7 is rarely used among us, but often in Chinese ornament. Higher numbers are not rare, but are no longer counted at a single glance, and therefore possess no special character.
+    md`The angle of rotation must be a *whole fraction*, since otherwise no finite figure results. That is: through a finite number of rotations by the same angle, the form must again reach exactly its initial position. The angle of rotation is thus represented by the formula 1 ⁄ *n*, where *n* is a whole number. For our purposes, the numbers *n* = 2, 3, 4, 5, 6, 7, 8, 9, 10, 12 come into consideration, of which 7 is rarely used among us, but often in Chinese ornament. Higher numbers are not rare, but are no longer counted at a single glance, and therefore possess no special character.
 
-  Besides rotations by equal angles, one can also carry out rotations by different angles. The simplest lawful case is to let two different rotations, *a* and *b*, alternate with one another, where *a* + *b*, taken together, yield a two-, three-, four-fold — in short, a whole-fraction — rotation; in other words, *a + b* must equal 1⁄*n*.
+  Besides rotations by equal angles, one can also carry out rotations by different angles. The simplest lawful case is to let two different rotations, *a* and *b*, alternate with one another, where *a* + *b*, taken together, yield a two-, three-, four-fold — in short, a whole-fraction — rotation; in other words, *a + b* must equal 1 ⁄ *n*.
 
   Instead of the single alternation *a b*, more intricate ones can be applied, as was set out in ([S. 12]) for divisions. But the angle of the composite member must always be a whole fraction.
 
@@ -1402,15 +1402,15 @@ function _151(md) {
     md`#### Translation and Rotation
   We now come to the form harmonies of a higher order, which arise from the application of two kinds of repetition. Since there are three of these — translation, rotation, reflection — there are also three pairs, namely translation–rotation, translation–reflection, rotation–reflection.
 
-  The first case is realized most simply when the center of rotation lies at the endpoint of the original form, the rotation amounts to 1⁄2, and the translation equals the length of the overall form. The two rotational positions then alternate regularly with one another.
+  The first case is realized most simply when the center of rotation lies at the endpoint of the original form, the rotation amounts to 1 ⁄ 2, and the translation equals the length of the overall form. The two rotational positions then alternate regularly with one another.
 
   The picture becomes somewhat more diverse if one produces a double form from the original and the repetition rotated about a different point, and then repeats this by translation. Depending on the choice of the center of rotation and the distance, many derived forms can be developed from the given form.
 
   When applied to bands, the translation must occur in the direction of the band, and the center of rotation is to be chosen so that no overly strong lateral projections arise — most safely, therefore, somewhere on the principal line of the band.
 
-  If a different angle of rotation is chosen — 1⁄3, 1⁄4, etc. — the resulting forms are harder to understand, which, however, can in some cases mean an increase in charm.
+  If a different angle of rotation is chosen — 1 ⁄ 3, 1 ⁄ 4, etc. — the resulting forms are harder to understand, which, however, can in some cases mean an increase in charm.
 
-  With rotation-translation, a running pattern remains running; a one-sided one, on the other hand, becomes two-sided if the rotation is even-numbered, such as 1⁄2, 1⁄4, 1⁄6; otherwise it remains one-sided.
+  With rotation-translation, a running pattern remains running; a one-sided one, on the other hand, becomes two-sided if the rotation is even-numbered, such as 1 ⁄ 2, 1 ⁄ 4, 1 ⁄ 6; otherwise it remains one-sided.
 
   An illustration of these cases is unnecessary, since the essentials can be gathered from the corresponding line forms ([S. 36]). The same holds for the sections that follow next.`
   )
@@ -1479,11 +1479,11 @@ function _157(md) {
 function _158(md) {
   return (
     md`#### Angular Mirrors
-  Pattern designers and craftsmen frequently use the angular mirror to produce centrally ordered patterns. It is well known that, in doing so, the mirror angle must be set not only as a whole fraction, but also with an even-numbered rotation count — that is, to 1⁄2, 1⁄4, 1⁄6, 1⁄8, 1⁄10, etc., generally to 1⁄2*n*, since otherwise no closed forms are obtained.
+  Pattern designers and craftsmen frequently use the angular mirror to produce centrally ordered patterns. It is well known that, in doing so, the mirror angle must be set not only as a whole fraction, but also with an even-numbered rotation count — that is, to 1 ⁄ 2, 1 ⁄ 4, 1 ⁄ 6, 1 ⁄ 8, 1 ⁄ 10, etc., generally to 1 ⁄ 2*n*, since otherwise no closed forms are obtained.
 
   If one examines more closely what arises in this way, one finds that these are, throughout, *roses*. The free form placed in the mirror angle forms, together with its mirror image, on the one hand a mirror pair, whose principal line passes through the mirror axis. This is reflected in the other mirror, and again in the first, and so on.
 
-  With a mirror angle of 1⁄2*n*, an *n*-fold rotational form arises, made up of *n* mirror-equal petals, whose principal lines all pass through the same center of rotation. But this is precisely the definition of the rose.`
+  With a mirror angle of 1 ⁄ 2*n*, an *n*-fold rotational form arises, made up of *n* mirror-equal petals, whose principal lines all pass through the same center of rotation. But this is precisely the definition of the rose.`
   )
 }
 
@@ -1663,7 +1663,7 @@ function _177(htl) {
 
 function _178(md) {
   return (
-    md`To illustrate some of these diversities with the simplest example, in Figs. 54 to 57 a sine curve has been shifted downward by equal widths; the differences rest solely on differences of direction. In Fig. 54, the translation is perpendicular to the course of the sine curve. In Fig. 55 it is oblique, namely by 1⁄12 of a wavelength to the right each time; in Fig. 56 by 1⁄4 each time, and in Fig. 57 by 1⁄2 a wavelength each time.`
+    md`To illustrate some of these diversities with the simplest example, in Figs. 54 to 57 a sine curve has been shifted downward by equal widths; the differences rest solely on differences of direction. In Fig. 54, the translation is perpendicular to the course of the sine curve. In Fig. 55 it is oblique, namely by 1 ⁄ 12 of a wavelength to the right each time; in Fig. 56 by 1 ⁄ 4 each time, and in Fig. 57 by 1 ⁄ 2 a wavelength each time.`
   )
 }
 
@@ -1785,13 +1785,13 @@ function _192(md) {
 function _193(md) {
   return (
     md`#### Lawful Nets
-  Among the possible angles, the right angle, or 1⁄4, forms a distinguished case, since then all the angles become equal. The oblique quadrilateral turns into a rectangle.
+  Among the possible angles, the right angle, or 1 ⁄ 4, forms a distinguished case, since then all the angles become equal. The oblique quadrilateral turns into a rectangle.
 
   Among all side ratios, the ratio of 1, or equality, forms the distinguished case. The oblique quadrilateral turns into a rhombus.
 
   If there is equality of both the angles and the sides, the oblique quadrilateral turns into a square. This is the most lawful division of the plane.
 
-  Next to the angle 1⁄4, for geometric reasons, the angle 1⁄6 (not 1⁄5) is the most lawful. A rhombic net with this angle yields, when the nodes are connected on all sides, a net made up entirely of equilateral triangles, which, however, are not all parallel, but lie alternately opposed. The same net makes possible the complete division of the plane into regular hexagons.
+  Next to the angle 1 ⁄ 4, for geometric reasons, the angle 1 ⁄ 6 (not 1 ⁄ 5) is the most lawful. A rhombic net with this angle yields, when the nodes are connected on all sides, a net made up entirely of equilateral triangles, which, however, are not all parallel, but lie alternately opposed. The same net makes possible the complete division of the plane into regular hexagons.
 
   Furthermore, among rectangles, one of outstanding importance is that with the side ratio 1 : √2, or 1 : 1.414, roughly 7 : 10. This is the ratio that exists between the side and the diagonal of the square. Such a rectangle has the property that, on being halved, it yields a geometrically similar rectangle.
 
@@ -1847,7 +1847,7 @@ function _198(md) {
 function _199(md) {
   return (
     md`#### The Oblique-Quadrilateral Mesh
-  In the most general case, where the two spacings and the angles are different, the mesh takes the form of an oblique quadrilateral (parallelogram). Such a figure has no mirror line, but it does have a twofold center of rotation, which lies at the point of intersection of the two diagonals. That is, on rotation by 1⁄2 about this center, the oblique quadrilateral, in its new position, exactly coincides — in sides and corners — with its initial position, or is “carried into itself”. This can be recognized from the fact that any straight line drawn through the center is cut off, on both sides, at equal distances, by the boundary of the oblique quadrilateral.
+  In the most general case, where the two spacings and the angles are different, the mesh takes the form of an oblique quadrilateral (parallelogram). Such a figure has no mirror line, but it does have a twofold center of rotation, which lies at the point of intersection of the two diagonals. That is, on rotation by 1 ⁄ 2 about this center, the oblique quadrilateral, in its new position, exactly coincides — in sides and corners — with its initial position, or is “carried into itself”. This can be recognized from the fact that any straight line drawn through the center is cut off, on both sides, at equal distances, by the boundary of the oblique quadrilateral.
 
   If one replaces one pair of sides of the oblique quadrilateral, respectively, by an arbitrary line, this property is, in general, no longer retained. The tiling forms that arise in this way ([S. 69]) therefore have no center of rotation, and hence possess no lawfulness at all, beyond that given by the position of the nodes. In order to retain the center of rotation that the oblique quadrilateral possesses, the free lines between the nodes must be subjected to a lawfulness, which we find as follows.
 
@@ -1884,9 +1884,9 @@ function _203(md) {
 function _204(md) {
   return (
     md`#### Division of Rotational Forms
-  A two-fold rotational form has the property that it is cut, by every straight line passing through the center of rotation, into two congruent pieces, which are rotated by 1⁄2 relative to one another. The two halves can, depending on the position of the straight line, take on very different forms, Fig. 61.
+  A two-fold rotational form has the property that it is cut, by every straight line passing through the center of rotation, into two congruent pieces, which are rotated by 1 ⁄ 2 relative to one another. The two halves can, depending on the position of the straight line, take on very different forms, Fig. 61.
 
-  Instead of the straight line, one can draw any other line with the same effect, provided that it is itself a two-fold rotational line. That is: from any point on the boundary, one draws an arbitrary line to the center of rotation, and repeats this line by a 1⁄2-rotation about the center of rotation. It will then meet the opposite side of the rotational form at the corresponding point.`
+  Instead of the straight line, one can draw any other line with the same effect, provided that it is itself a two-fold rotational line. That is: from any point on the boundary, one draws an arbitrary line to the center of rotation, and repeats this line by a 1 ⁄ 2-rotation about the center of rotation. It will then meet the opposite side of the rotational form at the corresponding point.`
   )
 }
 
@@ -1898,7 +1898,7 @@ function _205(htl) {
 
 function _206(md) {
   return (
-    md`Of all such lines, the most lawful is the parallel repetition of one of the two side lines. This gives rise to a tiling division of the plane by congruent, but alternately positioned (rotated by 1⁄2), forms, which, through this connection, possess a particular charm, Fig. 63.`
+    md`Of all such lines, the most lawful is the parallel repetition of one of the two side lines. This gives rise to a tiling division of the plane by congruent, but alternately positioned (rotated by 1 ⁄ 2), forms, which, through this connection, possess a particular charm, Fig. 63.`
   )
 }
 
@@ -2033,9 +2033,9 @@ function _224(md) {
 
   If one replaces one side of the square with an arbitrary stroke, and the other with its mirror image in the diagonal lying between them, one obtains, after the parallel completion of the other two sides, a form that is mirror-equal about that diagonal. It has essentially the same properties as the corresponding figure arising from a rhombus, Fig. 72.
 
-  If one replaces one side of the square with a rotational line, and the second with its rotation about one endpoint, the completion of the figure yields a *four-fold rotational form*, Fig. 73. The rotational forms obtained so far were all two-fold. If one draws through the center two arbitrary rotational lines (or also straight lines) standing perpendicular to one another, the rotational form is divided into four congruent pieces, rotated against one another by 1⁄4 each. The most lawful case is again that the two lines are parallel to the sides, Fig. 74. More illustrative is the second case, that both lines are drawn as mirror images of the sides, Fig. 75.
+  If one replaces one side of the square with a rotational line, and the second with its rotation about one endpoint, the completion of the figure yields a *four-fold rotational form*, Fig. 73. The rotational forms obtained so far were all two-fold. If one draws through the center two arbitrary rotational lines (or also straight lines) standing perpendicular to one another, the rotational form is divided into four congruent pieces, rotated against one another by 1 ⁄ 4 each. The most lawful case is again that the two lines are parallel to the sides, Fig. 74. More illustrative is the second case, that both lines are drawn as mirror images of the sides, Fig. 75.
 
-  The subdivision becomes more interesting if, for the cutting, one uses the same rotational line from which the sides are formed, but employs it, by reflecting it at the diagonals about the side midpoints until it passes through the center, to cut the main form. Four congruent partial forms then arise, in positions that come about from one another by a 1⁄4-rotation about a side midpoint each, Fig. 76. A particularly striking pattern, much used by the Moors, arises if one uses, as the arbitrary stroke, two straight lines forming a right angle with one another. Fig. 77, again drawn as an unlimited filling of space, gives an example of this. One senses the presence of an extensive lawfulness at once, but has some trouble making the law itself fully clear to oneself. Therein lies the particular charm of this division of space.`
+  The subdivision becomes more interesting if, for the cutting, one uses the same rotational line from which the sides are formed, but employs it, by reflecting it at the diagonals about the side midpoints until it passes through the center, to cut the main form. Four congruent partial forms then arise, in positions that come about from one another by a 1 ⁄ 4-rotation about a side midpoint each, Fig. 76. A particularly striking pattern, much used by the Moors, arises if one uses, as the arbitrary stroke, two straight lines forming a right angle with one another. Fig. 77, again drawn as an unlimited filling of space, gives an example of this. One senses the presence of an extensive lawfulness at once, but has some trouble making the law itself fully clear to oneself. Therein lies the particular charm of this division of space.`
   )
 }
 
@@ -2073,9 +2073,9 @@ function _230(md) {
   return (
     md`Finally, if one replaces one side of the square with a rotational line, and the other with its mirror image in the diagonal lying between them, and completes it by parallel translation, all sides prove to stand in mirror position to their neighbors. The form thus has two perpendicular mirror lines, the diagonals of the mesh, Fig. 78. These, however, are not equivalent, and the form is therefore not a four-fold, but a two-fold, rose. If one cuts it by two side-parallels passing through the center, one likewise obtains not four equal pieces, but two such pairs standing opposite each other.
 
-  A different lawfulness arises if, for producing the rotational line, one uses not an arbitrary stroke, as before, but a mirror-equal one. In other words: one erects a perpendicular at 1⁄4 of the side length, draws an arbitrary line from the end of the side to a point on the perpendicular, mirrors it in this perpendicular, and rotates this mirror-equal line about its endpoint, which lies at the middle of the side of the square. A two-sided wave thus arises, Fig. 79.
+  A different lawfulness arises if, for producing the rotational line, one uses not an arbitrary stroke, as before, but a mirror-equal one. In other words: one erects a perpendicular at 1 ⁄ 4 of the side length, draws an arbitrary line from the end of the side to a point on the perpendicular, mirrors it in this perpendicular, and rotates this mirror-equal line about its endpoint, which lies at the middle of the side of the square. A two-sided wave thus arises, Fig. 79.
 
-  This line can again be used in the square net in two ways. Either one lets the second side arise from the first by rotation, or by reflection. In the first case, a four-fold rotational form arises, Fig. 80, which can be cut, by two mirror images of the sides, into four congruent pieces, which, as before, pass into one another by a 1⁄4-rotation about the side midpoints. These pieces have two perpendicular mirror lines. If one brings about the division by two lines parallel to the sides, one likewise obtains four congruent pieces, rotated by 1⁄4 each, but which have only one mirror line, Fig. 81.`
+  This line can again be used in the square net in two ways. Either one lets the second side arise from the first by rotation, or by reflection. In the first case, a four-fold rotational form arises, Fig. 80, which can be cut, by two mirror images of the sides, into four congruent pieces, which, as before, pass into one another by a 1 ⁄ 4-rotation about the side midpoints. These pieces have two perpendicular mirror lines. If one brings about the division by two lines parallel to the sides, one likewise obtains four congruent pieces, rotated by 1 ⁄ 4 each, but which have only one mirror line, Fig. 81.`
   )
 }
 
@@ -2106,13 +2106,13 @@ function _234(md) {
 function _235(md) {
   return (
     md`#### The Triangular Net
-  It has already been noted that the nodes of the rhombus net with the angle 1⁄6 are also the nodes of a net consisting entirely of equilateral triangles. For if one lets two families of equally spaced parallels intersect at 1⁄6, one can lay a third family over them in such a way that it likewise intersects the other two at 1⁄6, and passes, in doing so, through the points of intersection, or nodes, of the first two families. There thus arises a net which is comparable to the square net in that it has a regular polygon — indeed the simplest one — as its mesh. It differs essentially from the square net, however, in that not all triangles lie parallel, but only every other one, the remaining ones being mirror images of the first.
+  It has already been noted that the nodes of the rhombus net with the angle 1 ⁄ 6 are also the nodes of a net consisting entirely of equilateral triangles. For if one lets two families of equally spaced parallels intersect at 1 ⁄ 6, one can lay a third family over them in such a way that it likewise intersects the other two at 1 ⁄ 6, and passes, in doing so, through the points of intersection, or nodes, of the first two families. There thus arises a net which is comparable to the square net in that it has a regular polygon — indeed the simplest one — as its mesh. It differs essentially from the square net, however, in that not all triangles lie parallel, but only every other one, the remaining ones being mirror images of the first.
 
   In the triangle lie three mirror lines, which bisect the angles. The triangle is, moreover, a three-fold rotational form. Furthermore, in the net, six triangles lie around every node, with one point at the node, so that every node in the net is a six-fold center of rotation. Thereby, the triangular net is at the same time a hexagonal net. This is noteworthy in that, besides the square and the regular triangle, the regular hexagon is the only tiling polygon that exists.
 
   By combining two, or respectively three, sixth-rotations, a six-fold center of rotation can also be made to act as a three-fold or a two-fold one, respectively. This yields a great diversity of possible forms that can be developed in this net.
 
-  If one attempts to transform the triangle in the same way as was previously done with the other meshes — namely, by connecting the nodes with free strokes — one recognizes that this is not, in general, possible here. For the multiplication of the resulting forms was, in those cases, brought about by translation. This is excluded here, because the triangles in the net do not lie parallel, but are rotated by 1⁄6. One arrives at the same result through the following consideration. With every replacement of a side of the mesh by a free stroke, the area of the mesh is changed. In the four-sided nets, this change turns out to be equal in magnitude but opposite in sign on the parallel opposite side; the two thus cancel each other out. In the triangle, the number of sides is odd; a pairwise cancellation is therefore impossible.
+  If one attempts to transform the triangle in the same way as was previously done with the other meshes — namely, by connecting the nodes with free strokes — one recognizes that this is not, in general, possible here. For the multiplication of the resulting forms was, in those cases, brought about by translation. This is excluded here, because the triangles in the net do not lie parallel, but are rotated by 1 ⁄ 6. One arrives at the same result through the following consideration. With every replacement of a side of the mesh by a free stroke, the area of the mesh is changed. In the four-sided nets, this change turns out to be equal in magnitude but opposite in sign on the parallel opposite side; the two thus cancel each other out. In the triangle, the number of sides is odd; a pairwise cancellation is therefore impossible.
 
   The same procedure already described ([S. 75]) must therefore be applied here — namely, that one places the compensation within the free line itself, so that whatever it has added or removed in the first half of the area of the triangle is removed or added again in the other half. This can be achieved in general by means of a rotational line.`
   )
@@ -2130,7 +2130,7 @@ function _237(md) {
 
   The overall form becomes a three-fold rotational form, Fig. 84, and all the triangles of the net run in the same sense. There is thus, for every such division of the surface, a mirror image with an opposite rotation. One can make use of such pairs where surfaces are placed symmetrically to one another and are to be ornamented alike with unlimited patterns.
 
-  Every three-fold rotational form is divided into three congruent pieces by every three-fold rotational star, that is, a group of three lines formed from an arbitrary line by rotation of 1⁄3 each.`
+  Every three-fold rotational form is divided into three congruent pieces by every three-fold rotational star, that is, a group of three lines formed from an arbitrary line by rotation of 1 ⁄ 3 each.`
   )
 }
 
@@ -2332,7 +2332,7 @@ function _259(md) {
 
   One then need not concern oneself specially with the delimitation of the pattern, except that a clearly prominent symmetry of the overall form should not be disturbed by an unsymmetrical delimitation of the pattern on the two sides.
 
-  Furthermore, care must be taken that a proper ratio exists between the size of the surface and that of the pattern unit. The unit should repeat itself at least five times in the shortest direction, so that the sensation of an indefinite multiplicity arises. This sets an upper limit on the size of the pattern. Toward the lower end, the limit is much less definite, and is essentially given by the viewing distance at which the surface is customarily observed. For this distance, the smallest element of the pattern that is to be perceived on its own should amount to no less than 1⁄1000 (cf. [S. 9]). It may, however, be much larger, depending on the purpose.
+  Furthermore, care must be taken that a proper ratio exists between the size of the surface and that of the pattern unit. The unit should repeat itself at least five times in the shortest direction, so that the sensation of an indefinite multiplicity arises. This sets an upper limit on the size of the pattern. Toward the lower end, the limit is much less definite, and is essentially given by the viewing distance at which the surface is customarily observed. For this distance, the smallest element of the pattern that is to be perceived on its own should amount to no less than 1 ⁄ 1000 (cf. [S. 9]). It may, however, be much larger, depending on the purpose.
 
   Very often, an unlimited pattern is combined with the special treatment, to be described presently, of the limited surface, by serving as a *ground* for the corresponding ornamental forms. In this case, it is expedient for the pattern size to lie near the lower limit, so that disturbances in the effect of the superimposed ornamental forms are avoided (see below).`
   )
@@ -2349,7 +2349,7 @@ function _260(md) {
 
   Ellipses have a center, and, in addition, two principal points, namely the foci. It is not known to me whether these have ever been made use of for ornamental purposes. Trials that I myself have made have turned out well.
 
-  Accordingly, the form and boundary of the central piece are to be chosen with regard to the centers and lines of symmetry present. The size can range from zero up to the filling of the entire surface. It usually lies somewhere around 1⁄2 to 1⁄4 of the total surface.`
+  Accordingly, the form and boundary of the central piece are to be chosen with regard to the centers and lines of symmetry present. The size can range from zero up to the filling of the entire surface. It usually lies somewhere around 1 ⁄ 2 to 1 ⁄ 4 of the total surface.`
   )
 }
 
@@ -2358,7 +2358,7 @@ function _261(md) {
     md`#### Border and Spandrel
   A second distinguished region is the *border*. This is ornamented with lines, braids, or bands that are usually carried around the entire form at a uniform width.
 
-  The width of the border can increase from the practical limit of legibility (1⁄1000) up to the point where it meets the central field. Depending on the shape of the latter, the whole surface is then filled in this last case, or there remain, between border and central piece, residual fields, which shall be called *spandrels*. The spandrels are, in general, separate, but can also merge into one another if the border and central field do not touch. They represent the third distinguished region.
+  The width of the border can increase from the practical limit of legibility (1 ⁄ 1000) up to the point where it meets the central field. Depending on the shape of the latter, the whole surface is then filled in this last case, or there remain, between border and central piece, residual fields, which shall be called *spandrels*. The spandrels are, in general, separate, but can also merge into one another if the border and central field do not touch. They represent the third distinguished region.
 
   If there is a ground pattern present that is meant to come into its own, the spandrels are a preferred region. They then remain unornamented, or receive only a hint of decoration. Otherwise, the spandrels, too, can be furnished with border and center.`
   )
