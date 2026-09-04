@@ -368,7 +368,7 @@ function _22(md) {
   3. the line becomes thicker and thinner along its course; (H. Prof. Krais drew my attention to this diversity.)
   4. the line is not straight but moving, i.e., somehow curved or broken.
 
-  The properties 2, 3, and 4 can occur simultaneously in the same line. Since each of them offers two possibilities (present or not present), there are altogether eight groups, comprising a very large number of individual cases.`
+The properties 2, 3, and 4 can occur simultaneously in the same line. Since each of them offers two possibilities (present or not present), there are altogether eight groups, comprising a very large number of individual cases.`
   )
 }
 
@@ -557,7 +557,7 @@ function _44(md) {
   5. Lines with kinks;
   6. Lines with jumps.
 
-  As segments of cases 3 to 6, curves as well as straight lines can occur. Thus, one forms, particularly after case 5, lines that consist entirely of straight segments joined by kinks.
+As segments of cases 3 to 6, curves as well as straight lines can occur. Thus, one forms, particularly after case 5, lines that consist entirely of straight segments joined by kinks.
 
   Of the three types of discontinuity, the *jolt* (No. 4) is not yet consciously applied. The eye is, on average, not yet trained enough to immediately recognize existing jolts. A lawful application of jolts is not yet felt as play, as a conscious handling of diversity, and therefore still has no aesthetic value.
 
@@ -2183,7 +2183,7 @@ function _243(md) {
   4. Choice of the number of lines;
   5. Choice of the law of repetition (reflection or rotation).
 
-  On point 5, it should be noted that, in the general account, the assumption was made that all reflections and rotations proper to the mesh of the chosen net come into play. This is not necessary; one can also exclude certain groups. Thus, in the square net, for example, one can apply only the 4 rotations, whereby a single line yields only 4, not 8. Likewise, one can exclude the rotations and use only 2 of the 4 mirror lines, whereby a line again yields 4, but differently positioned, results. The other nets can be treated in the same way.
+On point 5, it should be noted that, in the general account, the assumption was made that all reflections and rotations proper to the mesh of the chosen net come into play. This is not necessary; one can also exclude certain groups. Thus, in the square net, for example, one can apply only the 4 rotations, whereby a single line yields only 4, not 8. Likewise, one can exclude the rotations and use only 2 of the 4 mirror lines, whereby a line again yields 4, but differently positioned, results. The other nets can be treated in the same way.
 
   If the result is simplified by this, it is multiplied by the possibility mentioned under 4. For introducing more than one line as a "theme" for the working has the effect that several first-order patterns (each arising from a single line) are laid over one another, so that their lines lawfully cross, yielding a second- or higher-order pattern. This is evidently a means leading to exceedingly diverse results. It is found widely applied, particularly with simpler first-order patterns, and serves mainly to eliminate deviations from the law of equal density — deviations that are not uncommon in simple patterns — by choosing the second pattern so that it fills precisely the gaps of the first.
 
