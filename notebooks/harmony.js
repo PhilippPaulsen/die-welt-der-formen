@@ -298,17 +298,23 @@ function _16(md) {
 
   From these and countless other facts, we derive (in a very far-reaching generalization) a law, stating:
 
+  <div class="section-break"></div>
   *All lawful forms are harmonious.*
+  <div class="section-break"></div>
 
   By harmonious, we mean beautiful or pleasant in the broadest sense.
 
   This statement, the *Fundamental Law of Spatial Harmony*, has the nature of a postulate, i.e., a probable assumption that serves us as a first ordering of facts and whose correctness must first be tested everywhere through agreement with experience. It is identical with the fundamental law of color harmony, and has a quite general significance for *all* art. We can also express it in the form of an equation:
 
+  <div class="section-break"></div>
   *Lawfulness = Harmony.*
+  <div class="section-break"></div>
 
   *Goethe* carried out his entire artistic life's work in the light of this insight and also expressed it in definite form in the closing words of his art sonnet:
 
+  <div class="section-break"></div>
   *And only law can give us freedom.*
+  <div class="section-break"></div>
 
   We therefore call this general law of art, of which color and form harmony form only individual applications, the *Goethean Law*.`
   )
