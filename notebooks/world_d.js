@@ -1369,7 +1369,7 @@ function _124(md) {
     md`#### Bl. 46. *Die gestachelte Raute*
   Aus dem einfachen Rautenmuster 9 ist hier durch Verlängerung der Seiten die gestachelte Raute geworden. Es ist zu beachten, dass die stumpfen Rautenecken, wo die Stacheln sitzen, nicht in einem Knotenpunkt liegen.
 
-  Vorgreifend sei schon hier bemerkt, dass die gestachelte Raute 46 besonders viele schöne Verbindungen mit anderen Mustern liefert. Hiermit sind die Inselformen erschöpft, und es folgen die geschlossenen Formen.`
+  Vorgreifend sei schon hier bemerkt, dass die gestachelte Raute 46 besonders viele schöne Verbindungen mit anderen Mustern liefert.`
   )
 }
 
