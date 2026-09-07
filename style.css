@@ -530,3 +530,8 @@ h1 + p, h2 + p, h3 + p, h4 + p, h5 + p, h6 + p {
 .section-break {
   height: 1em;
 }
+
+/* Abstand vor Bildern */
+img {
+  margin-top: 1em;
+}
