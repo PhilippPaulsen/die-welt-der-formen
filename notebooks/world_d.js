@@ -2746,7 +2746,7 @@ function _321(htl) {
 function _322(md) {
   return (
     md`#### Bl. 135. *Die Nelke*
-  Dieses neuartige Muster ist der Vertreter der Nelke 26 in der Dreieckreihe. In der Dreieckreihe besteht jede Nelke aus sechs Blättern, die sich zu dreien mit dem breiten Ende verschränken, Bl. 26. In der Viereckreihe, Bl. 83, ist jede Nelke von vier Blättern gebildet, die sich zu vieren verschränken. Hier endlich besteht jede Nelke aus drei Blättern, die sich zu sechsen verschränken. Die eigenartige Anmut, welche jene Muster auszeichnet, findet sich auch hier wieder.
+  Dieses neuartige Muster ist der Vertreter der Nelke 26 in der Sechseckreihe. In der Dreieckreihe besteht jede Nelke aus sechs Blättern, die sich zu dreien mit dem breiten Ende verschränken, Bl. 26. In der Viereckreihe, Bl. 83, ist jede Nelke von vier Blättern gebildet, die sich zu vieren verschränken. Hier endlich besteht jede Nelke aus drei Blättern, die sich zu sechsen verschränken. Die eigenartige Anmut, welche jene Muster auszeichnet, findet sich auch hier wieder.
 
   Man kann das Muster auch auffassen als gebildet durch Überschiebung halbregelmäßiger Sechsecke (Dreiecke mit ausspringendem stumpfen Winkel). Doch ist es nicht ganz leicht, die Form zu erfassen.`
   )
