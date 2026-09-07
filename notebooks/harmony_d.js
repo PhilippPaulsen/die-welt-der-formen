@@ -6,8 +6,8 @@ function _1(md) {
 
 function _2(md) {
   return (
-    md`Von Wilhelm Ostwald, mit 106 Figuren im Text, Leipzig, 1922 Unesma
-  Herausgegeben von Philipp Paulsen, Leipzig, 2027 Spector Books
+    md`Von Wilhelm Ostwald, mit 106 Figuren im Text, Leipzig, Unesma, 1922
+  Herausgegeben von Philipp Paulsen, Leipzig, Spector Books, 2027
   
   <div class="section-break"></div>
   <div class="section-break"></div>`
