@@ -3502,14 +3502,6 @@ function _438(md) {
   )
 }
 
-function _439(md) {
-  return (
-    md`Bei der Paarung zweier Drehlinge zu einem zusammengesetzten Muster geben die beiden Drehlinge mit entgegengesetzter Drehung mit einem gegebenen zweiten Drehling zwei wesentlich verschiedene Muster, denen man ihre Entstehung aus so nahe verwandten Teilmustern nicht ansehen kann. Man muss also die zwei Blätter einmal wie gewöhnlich aufeinanderlegen und das andere Mal eines umwenden. Hierbei stimmen die seitlichen Grenzen des Blattes nicht mehr, und man muss durch waagerechte Verschiebungen die richtige Stelle suchen. Man merkt sich, wie die Knoten der Gesamtdreiecke im Muster liegen, lässt diese aufeinanderfallen und hat dann die richtige Lage. Nennt man *a₁ a₂* die beiden gegenläufigen Formen des ersten, *b₁ b₂* die des zweiten Musters, so sind die vier Paare *a₁b₁*, *a₁b₂*, *a₂b₁*, *a₂b₂* möglich. Von diesen sind zwei ganz verschieden, die beiden anderen sind ihre Spiegelbilder. Es genügt also meist, nur die zwei zu betrachten, die entstehen, wenn man eines der beiden Blätter bei unveränderter Lage des anderen Blattes recht und umgewendet betätigt.
-
-  In der bisherigen Schmuckkunst finden sich Drehlinge viel seltener als Spiegelinge, und zwar nur solche einfachster Art. In noch viel höherem Maße, als dies bei den Spiegelingen der Fall war, treten hier neue, bisher nie gesehene Formen auf, die durch ihre ungewohnte Gesetzlichkeit hohe Schönheitswerte entwickeln. Hat man sich einige Zeit mit ihnen beschäftigt, so kostet es ein wenig Mühe, sich von ihnen zu den schlichteren Spiegelingen zurückzufinden.`
-  )
-}
-
 function _440(md) {
   return (
     md`#### Beschreibung der Muster
