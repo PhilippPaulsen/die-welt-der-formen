@@ -1633,6 +1633,7 @@ function _161(md) {
 function _162(md) {
   return (
     md`Die Ordnung der Muster ist ganz wie bei den Dreieckmustern durchgeführt. Es sind auch hier 1, 4, 9, 16, allgemein *n²* Teilquadrate zu einem Gesamtquadrat erster, zweiter, dritter, vierter, allgemein *n*-ter Ordnung zusammengefasst. Die Anzahl der Teilquadrate, ihrer Knoten und der verschiedenen Muster lässt sich in folgender Zusammenstellung erkennen:
+  <div class="section-break"></div>
 
   | Ordnung | Teilquadrate | Knoten | Muster |
   |---|---|---|---|
@@ -1641,6 +1642,7 @@ function _162(md) {
   | 3 | 9 | 16 | 16 |
   | 4 | 16 | 25 | 34 |
   | 5 | 25 | 36 | 57 |
+  <div class="section-break"></div>
 
   Die Anzahl der Muster ist annähernd 1 ⁄ 16 *n* (*n* – 1), wo *n* die Zahl der Knoten ist.
 
