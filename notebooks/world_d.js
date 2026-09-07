@@ -508,15 +508,17 @@ function _10(md) {
 
   Wir fragen nun nach der *Anzahl der möglichen Formen.* Zwischen *n* Punkten sind ½ *n* (*n* – 1) Verbindungsgeraden möglich. Folglich ergeben die 3 Knoten des ersten Dreiecks 3, die 6 Knoten des zweiten 15, die 10 Knoten des dritten 45 Fälle oder Formen usw.
 
-  Von diesen Fällen sind aber viele gleich. So ergibt jede der 6 Linien in Fig. 2 dieselbe Form, während doch jedesmal andere Knoten verbunden sind. Würden jedesmal aus einem Thema 6 gleichwertige Linien entstehen, so wäre die Anzahl der verschiedenen Muster nicht ½ *n* (*n* – 1), sondern der sechste Teil davon, nämlich 1⁄12 *n* (*n* – 1).`
+  Von diesen Fällen sind aber viele gleich. So ergibt jede der 6 Linien in Fig. 2 dieselbe Form, während doch jedesmal andere Knoten verbunden sind. Würden jedesmal aus einem Thema 6 gleichwertige Linien entstehen, so wäre die Anzahl der verschiedenen Muster nicht ½ *n* (*n* – 1), sondern der sechste Teil davon, nämlich 1 ⁄ 12 *n* (*n* – 1).`
   )
 }
 
 function _11(md) {
   return (
     md`Nun ergeben solche Themalinien, welche durch eine der Spiegellinien in zwei spiegelgleiche Hälften zerschnitten werden, nur 3 Linien statt 6 im Muster. Treffen solche Linien auf einen Knoten in der Spiegellinie, so gibt die halbe Linie dasselbe Muster wie die ganze. Hierdurch wird die Anzahl verschiedener Fälle teils vermehrt, teils vermindert, sodass Abweichungen von der oben gegebenen Formel ½ *n* (*n* – 1) eintreten müssen. Da deren Theorie zu verwickelt ausfallen würde, habe ich mich begnügt, erfahrungsmäßig die vorhandenen Formen aufzusuchen, wobei sich folgende Übersicht ergeben hat.
+    
+    <div class="section-break"></div>
 
-  | **Teil-Dreiecke** | **Knoten** | **1⁄12 n (n−1)** | **Formen gefunden** |
+  | **Teil-Dreiecke** | **Knoten** | **1 ⁄ 12 n (n−1)** | **Formen gefunden** |
   |---|---|---|---|
   | 1 | 3 | ½ | 1 |
   | 4 | 6 | 2 ½ | 3 |
@@ -524,6 +526,8 @@ function _11(md) {
   | 16 | 15 | 17 ½ | 17 |
   | 25 | 21 | 35 | 33 |
   | 36 | 28 | 63 | 57 |
+
+  <div class="section-break"></div>
 
   Während die Zahl der gefundenen Formen bis zum vierten Dreieck die der berechneten etwas übertrifft, bleibt sie darüber hinaus zunehmend zurück.
 
@@ -567,7 +571,7 @@ function _13(md) {
 
   Neben manchen wohlbekannten Mustern wird man schon in dieser Mappe eine Anzahl seltenere und endlich nicht wenige finden, die völlig neu sind. Die schaffende Phantasie aller Künstler zusammen war bei weitem nicht ausreichend, um restlos alle Fälle zu finden, welche unter den angenommenen Voraussetzungen möglich sind. Die wissenschaftliche Bearbeitung der Aufgabe hat dagegen die Kraft, dass sie die Fülle der Möglichkeiten endgültig ausschöpft.
 
-  Hiermit ist aber die Formenwelt noch keineswegs abgeschlossen, welche aus dem vorhandenen Material erzeugt werden kann. Es sind ja nur die Gebilde dargestellt worden, deren Thema eine einzige Gerade bildet. Lässt man eine zweite Gerade zu, die übrigens gleichfalls der Bedingung genügt, dass sie zwischen zwei Knoten verläuft, so gewinnt man eine vielfache Anzahl neuer Muster. Sind nämlich in einem bestimmten Gesamtdreieck *n* verschiedene Muster aus je einer Linie vorhanden, so ist die Anzahl der aus zwei Linien entstehenden Muster ½ *n* (*n* – 1). Aus den 33 einlinigen Mustern des fünften Dreiecks entstehen so 528 zweilinige Muster. Die Zahl der dreilinigen ist fast 6000, gemäß der Formel 1⁄6 *n* (*n* – 1) (*n* – 2). Die Gesamtzahl aller Muster ist 2ⁿ – 1.
+  Hiermit ist aber die Formenwelt noch keineswegs abgeschlossen, welche aus dem vorhandenen Material erzeugt werden kann. Es sind ja nur die Gebilde dargestellt worden, deren Thema eine einzige Gerade bildet. Lässt man eine zweite Gerade zu, die übrigens gleichfalls der Bedingung genügt, dass sie zwischen zwei Knoten verläuft, so gewinnt man eine vielfache Anzahl neuer Muster. Sind nämlich in einem bestimmten Gesamtdreieck *n* verschiedene Muster aus je einer Linie vorhanden, so ist die Anzahl der aus zwei Linien entstehenden Muster ½ *n* (*n* – 1). Aus den 33 einlinigen Mustern des fünften Dreiecks entstehen so 528 zweilinige Muster. Die Zahl der dreilinigen ist fast 6000, gemäß der Formel 1 ⁄ 6 *n* (*n* – 1) (*n* – 2). Die Gesamtzahl aller Muster ist 2ⁿ – 1.
 
   Um diese vielen neuen Gebilde anschaulich zu machen, sind die Muster auf durchsichtiges Papier gedruckt worden. Will man ein Muster sehen, das aus zwei verschiedenen Linien entsteht, so legt man die beiden entsprechenden Blätter auf weißer Unterlage so übereinander, dass sich die Punkte des Gesamtdreiecks links oben genau decken. Die Tafeln sind so gezeichnet, dass alsdann auch die Ränder zusammenfallen. Deckt man noch eine Glasplatte darüber, so hat man die gewünschte Gesamtform bequem vor sich.
 
@@ -696,9 +700,9 @@ function _25(htl) {
 function _26(md) {
   return (
     md`#### Bl. 4. *Der Dreisechs*
-  Die Themalinie verbindet die Seitenmitten des Dreiecks, steht also senkrecht auf der Spiegellinie, die sie schneidet. Folglich sind wieder nur drei Linien im Muster vorhanden. Diese lagern sich bei der Vervielfachung so aneinander, dass sie durchgehende Geraden bilden, die sich wie die Seiten des Netzes unter 1⁄6 schneiden. Es gehen aber nicht von den drei Scharen barer (paralleler) Linien je drei durch einen Punkt, sondern sie gehen derart aneinander vorbei, dass ein Gewebe aus regelmäßigen Dreiecken und Sechsecken entsteht. Wir nennen es deshalb den Dreisechs.
+  Die Themalinie verbindet die Seitenmitten des Dreiecks, steht also senkrecht auf der Spiegellinie, die sie schneidet. Folglich sind wieder nur drei Linien im Muster vorhanden. Diese lagern sich bei der Vervielfachung so aneinander, dass sie durchgehende Geraden bilden, die sich wie die Seiten des Netzes unter 1 ⁄ 6 schneiden. Es gehen aber nicht von den drei Scharen barer (paralleler) Linien je drei durch einen Punkt, sondern sie gehen derart aneinander vorbei, dass ein Gewebe aus regelmäßigen Dreiecken und Sechsecken entsteht. Wir nennen es deshalb den Dreisechs.
 
-  Es ist dies das erste Muster, das von dem Netz verschieden ist; man darf in ihm den einfachsten Fall eines unbegrenzten Flächenmusters erblicken, der über die schlichte Dreieckteilung hinausgeht. Es ist längst entdeckt und hat vielfache Anwendung, namentlich für Fliesen, gefunden. Mit dem Netz teilt es die durchgehenden Linien und den Winkel 1⁄6; neu ist die Bildung zweier verschiedener Flächenstücke, der Drei- und Sechsecke.`
+  Es ist dies das erste Muster, das von dem Netz verschieden ist; man darf in ihm den einfachsten Fall eines unbegrenzten Flächenmusters erblicken, der über die schlichte Dreieckteilung hinausgeht. Es ist längst entdeckt und hat vielfache Anwendung, namentlich für Fliesen, gefunden. Mit dem Netz teilt es die durchgehenden Linien und den Winkel 1 ⁄ 6; neu ist die Bildung zweier verschiedener Flächenstücke, der Drei- und Sechsecke.`
   )
 }
 
@@ -841,7 +845,7 @@ function _45(htl) {
 function _46(md) {
   return (
     md`#### Bl. 9. *Die Raute*
-  Wir treffen hier das sehr bekannte Rautenmuster mit den Winkeln 1⁄3 und 1⁄6 an. Es besteht aus lauter deckgleichen Rauten, die aber nicht bar zueinander liegen, sondern gegeneinander um 1⁄3 gedreht sind und so in 3 Gruppen barer Rauten zerfallen.
+  Wir treffen hier das sehr bekannte Rautenmuster mit den Winkeln 1 ⁄ 3 und 1 ⁄ 6 an. Es besteht aus lauter deckgleichen Rauten, die aber nicht bar zueinander liegen, sondern gegeneinander um 1 ⁄ 3 gedreht sind und so in 3 Gruppen barer Rauten zerfallen.
 
   Man kann nach Belieben 3 Rauten zu einem Sechseck oder 6 Rauten zu einem Sechsspitz zusammenfassen. Auch sind größere Sechsecke aus 12 Rauten und noch ausgedehntere Gesamtformen vorhanden. Die Sechsecke schließen ohne Rest oder sind *„schlüssig“*; die Sechsspitze lassen dagegen Rauten zwischen sich.
 
@@ -858,7 +862,7 @@ function _47(htl) {
 function _48(md) {
   return (
     md`#### Bl. 10. *Das überschobene Dreieck*
-  Das bereits recht reich aussehende Muster lässt sich in lauter Dreiecke auflösen, welche größer sind als das Netzdreieck und zudem in der zweiten Lage stehen. Deshalb stehen alle Linien senkrecht auf entsprechenden Netzlinien und ordnen sich in drei Scharen mit dem Winkel 1⁄3. Die Dreiecke liegen nicht wie im Netz schlicht nebeneinander, sondern überlagern sich teilweise. Dadurch bilden sich die regelmäßigen Sechsecke, Rauten und Dreiecke, alle mit gleicher Seitenlänge (mit Ausnahme der großen Sechsecke mit doppelter Seitenlänge), die das Muster zusammensetzen. Deshalb, und weil alle Linien den Spiegellinien des Netzdreiecks bar sind, darf das Muster als sehr gesetzlich angesehen werden. Jede stärkere oder schwächere Überschiebung würde die Form wesentlich verwickelter machen und jene Gleichheiten aufheben.`
+  Das bereits recht reich aussehende Muster lässt sich in lauter Dreiecke auflösen, welche größer sind als das Netzdreieck und zudem in der zweiten Lage stehen. Deshalb stehen alle Linien senkrecht auf entsprechenden Netzlinien und ordnen sich in drei Scharen mit dem Winkel 1 ⁄ 3. Die Dreiecke liegen nicht wie im Netz schlicht nebeneinander, sondern überlagern sich teilweise. Dadurch bilden sich die regelmäßigen Sechsecke, Rauten und Dreiecke, alle mit gleicher Seitenlänge (mit Ausnahme der großen Sechsecke mit doppelter Seitenlänge), die das Muster zusammensetzen. Deshalb, und weil alle Linien den Spiegellinien des Netzdreiecks bar sind, darf das Muster als sehr gesetzlich angesehen werden. Jede stärkere oder schwächere Überschiebung würde die Form wesentlich verwickelter machen und jene Gleichheiten aufheben.`
   )
 }
 
@@ -1639,7 +1643,7 @@ function _162(md) {
   | 4 | 16 | 25 | 34 |
   | 5 | 25 | 36 | 57 |
 
-  Die Anzahl der Muster ist annähernd 1⁄16 *n* (*n* – 1), wo *n* die Zahl der Knoten ist.
+  Die Anzahl der Muster ist annähernd 1 ⁄ 16 *n* (*n* – 1), wo *n* die Zahl der Knoten ist.
 
   Die Gesetzlichkeiten im Quadrat sind folgende: Das Quadrat ist ein vierzähliger Drehling und enthält vier Spiegellinien, die paarweise senkrecht aufeinanderstehen. Alle gehen durch den Mittelpunkt; das eine Paar ist bar zu den Seiten, das andere wird von den beiden Queren (Diagonalen) gebildet. [Jede Themalinie wird durch Betätigung der vier Spiegellinien zu einer vierzähligen Rose entwickelt] (wegen genauerer Erörterung dieser Begriffe sehe man nach: Ostwald, *Die Harmonie der Formen*, Leipzig, Verlag Unesma 1922). Jedes Motiv entwickelt sich im Allgemeinen zu einer Form aus 8, zuweilen 4 Linien.
 
@@ -1672,7 +1676,7 @@ function _165(htl) {
 function _166(md) {
   return (
     md`#### Bl. 64. *Das Netz in zweiter Lage*
-  Da das Grundquadrat 4 Knoten enthält, ermöglicht es zwei verschiedene Knotenlinien: in den Seiten und in den Queren. Aus der zweiten entsteht durch Vervielfältigung zum Muster ein anderes Quadratnetz, das gegen das erste um 1⁄8 gedreht ist und kleinere Abstände im Verhältnis 1 : √½, rund 10 : 7, hat. Wir bezeichnen diese Richtung der Netzlinien als die *zweite Lage*.`
+  Da das Grundquadrat 4 Knoten enthält, ermöglicht es zwei verschiedene Knotenlinien: in den Seiten und in den Queren. Aus der zweiten entsteht durch Vervielfältigung zum Muster ein anderes Quadratnetz, das gegen das erste um 1 ⁄ 8 gedreht ist und kleinere Abstände im Verhältnis 1 : √½, rund 10 : 7, hat. Wir bezeichnen diese Richtung der Netzlinien als die *zweite Lage*.`
   )
 }
 
@@ -2547,11 +2551,11 @@ function _295(htl) {
 function _296(md) {
   return (
     md`#### Bl. 123. *Das Bandnetz*
-  Diese neue Form erinnert an 79 des dritten Vierecks, indem an Stelle der Netzlinien bandartige Doppellinien auftreten. Diese verlaufen hier indessen derart, dass das verkleinerte Sechseck, das sich zwischen ihnen bildet, nicht bar zu dem Sechseck des Netzes 121 liegt, sondern um 1⁄12 gedreht, also in *zweiter* Lage. Das findet bei 79 nicht statt, und insofern ist die Ähnlichkeit mehr äußerlich. Die genauer entsprechende tritt erst beim fünften Viereck auf und ergibt dort Bänder, die ebenso breit sind wie das Mittelfeld, d. h. im Quadratnetz von halber Größe der zweiten Lage.
+  Diese neue Form erinnert an 79 des dritten Vierecks, indem an Stelle der Netzlinien bandartige Doppellinien auftreten. Diese verlaufen hier indessen derart, dass das verkleinerte Sechseck, das sich zwischen ihnen bildet, nicht bar zu dem Sechseck des Netzes 121 liegt, sondern um 1 ⁄ 12 gedreht, also in *zweiter* Lage. Das findet bei 79 nicht statt, und insofern ist die Ähnlichkeit mehr äußerlich. Die genauer entsprechende tritt erst beim fünften Viereck auf und ergibt dort Bänder, die ebenso breit sind wie das Mittelfeld, d. h. im Quadratnetz von halber Größe der zweiten Lage.
 
   Auffallend ist die große Mannigfaltigkeit dieser Form, die bereits im ersten Sechseck erscheint. Das Muster besteht aus Dreiecken, Rauten und Sechsecken und gestattet verschiedene Zusammenstellungen. Dass es neu ist, wage ich nicht zu behaupten; mir war es neu, und in den mir zugänglichen Ornamentwerken habe ich es ohne Erfolg gesucht.
 
-  Die innere Form dieses Musters ist übrigens der Weinspitz, den wir in 45 kennengelernt haben. Da seine Winkel sämtlich 1⁄6 und 1⁄3 sind, setzen sich die Spitzen so aneinander, dass die durchlaufenden Bänder entstehen. Es ist zu beachten, dass auch 23 aus (größeren) Weinspitzen gebildet ist. Doch ist die Zusammensetzung anders. Es entstehen zwar auch in 23 drei Scharen barer Linien, die sich unter 1⁄3 kreuzen. Sie fallen aber in 23 gleichabständig aus, in 123 nicht. Dies entspricht den Spiegelverhältnissen des Dreiecks und des Sechsecks.`
+  Die innere Form dieses Musters ist übrigens der Weinspitz, den wir in 45 kennengelernt haben. Da seine Winkel sämtlich 1 ⁄ 6 und 1 ⁄ 3 sind, setzen sich die Spitzen so aneinander, dass die durchlaufenden Bänder entstehen. Es ist zu beachten, dass auch 23 aus (größeren) Weinspitzen gebildet ist. Doch ist die Zusammensetzung anders. Es entstehen zwar auch in 23 drei Scharen barer Linien, die sich unter 1 ⁄ 3 kreuzen. Sie fallen aber in 23 gleichabständig aus, in 123 nicht. Dies entspricht den Spiegelverhältnissen des Dreiecks und des Sechsecks.`
   )
 }
 
@@ -2728,7 +2732,7 @@ function _319(htl) {
 function _320(md) {
   return (
     md`#### Bl. 134. *Der Eckspitz*
-  Dies schöne, aus Sechsecken und Sechsspitzen gebildete Muster, dem wegen dieser Zusammensetzung der Name gegeben wurde, entsteht dadurch, dass drei aus schrägen Geraden (Winkel 1⁄3) gebildete Wellenzüge sich unter Winkeln von 1⁄3 durchkreuzen. Die Linien sind alle bar den Netzseiten, es ist also, wie auch alle vorangegangenen, ein netzbares Muster, das letzte im zweiten Sechseck. Unter den Mustern des Dreiecks kommt es nicht vor. Mit dem Dreisechs 132 ist es nahe verwandt, wie man beim Vergleich der Formen erkennt: die durchgehenden Linien von 132 sind hier unterbrochen, sodass das innere Sechseck von 132 bei 134 fortfällt.`
+  Dies schöne, aus Sechsecken und Sechsspitzen gebildete Muster, dem wegen dieser Zusammensetzung der Name gegeben wurde, entsteht dadurch, dass drei aus schrägen Geraden (Winkel 1 ⁄ 3) gebildete Wellenzüge sich unter Winkeln von 1 ⁄ 3 durchkreuzen. Die Linien sind alle bar den Netzseiten, es ist also, wie auch alle vorangegangenen, ein netzbares Muster, das letzte im zweiten Sechseck. Unter den Mustern des Dreiecks kommt es nicht vor. Mit dem Dreisechs 132 ist es nahe verwandt, wie man beim Vergleich der Formen erkennt: die durchgehenden Linien von 132 sind hier unterbrochen, sodass das innere Sechseck von 132 bei 134 fortfällt.`
   )
 }
 
@@ -2770,7 +2774,7 @@ function _326(md) {
     md`#### Bl. 137. *Der zwölfarmige Zwölfspitz*
   Die Formen 136 und 137 werden beide aus Zwölfspitzen gebildet, deren Spitzen sich berühren. Bei 136 sind es aber nur sechs Spitzen, während die sechs anderen frei enden. Bei 137 berühren sich dagegen alle zwölf Spitzen.
 
-  Durch die Berührung entstehen jedesmal Verlängerungen der Linien. Diese ergeben in 136 drei Wellenzüge, die zu Flechten zusammentreten und sich unter 1⁄3 kreuzen. In 137 kann man sehr große Dreispitze erkennen, welche sich gegenseitig überlagern und durchdringen.
+  Durch die Berührung entstehen jedesmal Verlängerungen der Linien. Diese ergeben in 136 drei Wellenzüge, die zu Flechten zusammentreten und sich unter 1 ⁄ 3 kreuzen. In 137 kann man sehr große Dreispitze erkennen, welche sich gegenseitig überlagern und durchdringen.
 
   Doch ist die Auffassung als Zwölfspitze vorzuziehen, da im dritten Sechseck die gleichen Formen getrennt auftreten und daher nur als Zwölfspitze aufgefasst werden können.`
   )
@@ -2864,7 +2868,7 @@ function _339(htl) {
 function _340(md) {
   return (
     md`#### Bl. 143. *Der Dreistern in zweiter Lage*
-  Auch diese Dreisterne entstehen wie 126 erst im Muster durch das Zusammenwirken der benachbarten Sechsecke. Dabei stimmt die Entstehungsweise von 142 mit der von 126 überein, nur dass die Sterne entsprechend dem größeren Sechseck weiter auseinanderliegen. Der Dreistern von 143 entsteht dagegen auf andere Weise und ist gegen jenen um 1⁄6 gedreht. Deshalb sieht das Muster auch wesentlich anders aus.`
+  Auch diese Dreisterne entstehen wie 126 erst im Muster durch das Zusammenwirken der benachbarten Sechsecke. Dabei stimmt die Entstehungsweise von 142 mit der von 126 überein, nur dass die Sterne entsprechend dem größeren Sechseck weiter auseinanderliegen. Der Dreistern von 143 entsteht dagegen auf andere Weise und ist gegen jenen um 1 ⁄ 6 gedreht. Deshalb sieht das Muster auch wesentlich anders aus.`
   )
 }
 
@@ -3146,7 +3150,7 @@ function _383(htl) {
 function _384(md) {
   return (
     md`#### Bl. 165. *Das schmale Bandnetz*
-  Obwohl 165 ganz ähnlich wie 164 mittels Durchkreuzung dreier Bänder unter 1⁄3 entstanden ist, erweist sich das Ergebnis als weit verschieden. Statt von Sechsecken werden die großen Zwischenfelder von Dreiecken gebildet, und die Bänder selbst gestalten bei ihrer Begegnung einen Weinspitz. Dies weist auf den entscheidenden Unterschied hin. Auf 164 gehen die Bänder nebeneinander vorbei wie in einem Flechtwerk; auf 165 überlagern sie sich, und der Weinspitz kann nur erscheinen, wenn die Bänder durchsichtig sind.`
+  Obwohl 165 ganz ähnlich wie 164 mittels Durchkreuzung dreier Bänder unter 1 ⁄ 3 entstanden ist, erweist sich das Ergebnis als weit verschieden. Statt von Sechsecken werden die großen Zwischenfelder von Dreiecken gebildet, und die Bänder selbst gestalten bei ihrer Begegnung einen Weinspitz. Dies weist auf den entscheidenden Unterschied hin. Auf 164 gehen die Bänder nebeneinander vorbei wie in einem Flechtwerk; auf 165 überlagern sie sich, und der Weinspitz kann nur erscheinen, wenn die Bänder durchsichtig sind.`
   )
 }
 
