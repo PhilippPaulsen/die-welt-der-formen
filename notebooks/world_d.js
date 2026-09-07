@@ -1547,7 +1547,7 @@ function _150(htl) {
 
 function _151(md) {
   return (
-    md`#### Bl. 59 *Der Rautenkranz*`
+    md`#### Bl. 59. *Der Rautenkranz*`
   )
 }
 
