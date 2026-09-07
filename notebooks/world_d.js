@@ -549,7 +549,7 @@ function _12(md) {
 
   Jedes Blatt enthält oben links zunächst die laufende Nummer. Diese wird durch alle weiteren Veröffentlichungen fortgeführt, sodass jedes Muster dauernd seine eigene Nummer haben und behalten wird.
 
-  In der gleichen Ecke ist das Gesamtdreieck durch seine Knotenpunkte angegeben. Auf Bl. 1 ist es identisch mit dem Teildreieck. Bl. 2 zeigt aber bereits das aus 4 Teildreiecken bestehende zweite Gesamtdreieck mit seinen 6 Knoten, zwischen denen 3 verschiedene Gerade möglich sind, deren Muster auf Bl. 2, 3, 4 gezeigt werden. Mit Tafel 5 beginnt die Gruppe des dritten Dreiecks aus 9 Teildreiecken mit 10 Knoten, welches 8 Muster gibt, usw. Jede Gruppe beginnt mit dem „*Netz*“, der einfachen Teilung in die Gesamtdreiecke, indem die benutzten Knotenlinien von den Dreieckseiten gebildet werden.
+  In der gleichen Ecke ist das Gesamtdreieck durch seine Knotenpunkte angegeben. Auf Bl. 1 ist es identisch mit dem Teildreieck. Bl. 2 zeigt aber bereits das aus 4 Teildreiecken bestehende zweite Gesamtdreieck mit seinen 6 Knoten, zwischen denen 3 verschiedene Gerade möglich sind, deren Muster auf Bl. 2, 3, 4 gezeigt werden. Mit Bl. 5 beginnt die Gruppe des dritten Dreiecks aus 9 Teildreiecken mit 10 Knoten, welches 8 Muster gibt, usw. Jede Gruppe beginnt mit dem „*Netz*“, der einfachen Teilung in die Gesamtdreiecke, indem die benutzten Knotenlinien von den Dreieckseiten gebildet werden.
 
   Von den 6 bzw. 3 Geraden, die sich in dem durch die Knotenpunkte bezeichneten Gesamtdreieck links oben vorfinden, kann jede einzelne als „Thema“ des vorliegenden Musters betrachtet werden, da jede die anderen vermöge der drei Spiegellinien erzeugt.
 
