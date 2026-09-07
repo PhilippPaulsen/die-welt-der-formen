@@ -2959,7 +2959,7 @@ function _353(htl) {
 function _354(md) {
   return (
     md`#### Bl. 150. *Die Raute*
-  Es ist die gleiche kleine Raute, welche das Dreieckmuster 41 bildet, und auch die Abstände sind dieselben. Nur bilden in 41 die Rauten die Ecken des Sechsecks, während sie in 150 senkrecht auf den Seitenmitten stehen. In der Stellung sind sie daher näher verwandt mit der großen Raute 42 des fünften Dreiecks.`
+  Es ist die gleiche kleine Raute, welche das Dreieckmuster 40 bildet, und auch die Abstände sind dieselben. Nur bilden in 40 die Rauten die Ecken des Sechsecks, während sie in 150 senkrecht auf den Seitenmitten stehen. In der Stellung sind sie daher näher verwandt mit der großen Raute 41 des fünften Dreiecks.`
   )
 }
 
