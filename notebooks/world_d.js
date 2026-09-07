@@ -515,8 +515,7 @@ function _10(md) {
 function _11(md) {
   return (
     md`Nun ergeben solche Themalinien, welche durch eine der Spiegellinien in zwei spiegelgleiche Hälften zerschnitten werden, nur 3 Linien statt 6 im Muster. Treffen solche Linien auf einen Knoten in der Spiegellinie, so gibt die halbe Linie dasselbe Muster wie die ganze. Hierdurch wird die Anzahl verschiedener Fälle teils vermehrt, teils vermindert, sodass Abweichungen von der oben gegebenen Formel ½ *n* (*n* – 1) eintreten müssen. Da deren Theorie zu verwickelt ausfallen würde, habe ich mich begnügt, erfahrungsmäßig die vorhandenen Formen aufzusuchen, wobei sich folgende Übersicht ergeben hat.
-    
-    <div class="section-break"></div>
+  <div class="section-break"></div>
 
   | **Teil-Dreiecke** | **Knoten** | **1 ⁄ 12 n (n−1)** | **Formen gefunden** |
   |---|---|---|---|
