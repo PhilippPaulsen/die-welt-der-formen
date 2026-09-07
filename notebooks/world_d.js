@@ -35,7 +35,7 @@ function _4(md) {
       - [Benutzung der Muster](#benutzung-der-muster)
       - [Beschreibung der Muster](#beschreibung-der-muster)
     - [Erstes Dreieck](#erstes-dreieck)
-      - [Bl. 1. Das Netz](#bl-1-das-netz)
+      - [Bl. 1. Das Netz](#bl-1-das-netz-)
     - [Zweites Dreieck](#zweites-dreieck)
       - [Bl. 2. Das Netz](#bl-2-das-netz)
       - [Bl. 3. Das Netz in zweiter Lage](#bl-3-das-netz-in-zweiter-lage)
