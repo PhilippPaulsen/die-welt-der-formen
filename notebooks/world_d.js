@@ -8,7 +8,6 @@ function _2(md) {
   return (
     md`#### Entwicklung und Ordnung der gesetzlich-schönen Gebilde
 
-  <div class="section-break"></div>
   <div class="section-break"></div>`
   )
 }
@@ -26,7 +25,7 @@ function _3(md) {
 function _4(md) {
   return (
     md`<details>
-  <summary style="cursor: pointer; font-weight: bold; font-size: 1.2em; margin-bottom: 1em;">Inhaltsverzeichnis</summary>
+  <summary style="cursor: pointer; font-weight: bold; font-size: 1.2em; margin-bottom: 1em;">Inhalt</summary>
 
   - **Erste Mappe.** [Gespiegelte Knotenlinien der Dreiecke 1 bis 5](#erste-mappe)
     - [Einleitung](#einleitung)
