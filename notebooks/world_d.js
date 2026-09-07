@@ -4,9 +4,22 @@ function _1(md) {
   )
 }
 
+function _4(md) {
+  return (
+    md`Gezeichnet und beschrieben von Wilhelm Ostwald, Leipzig, Unesma, 1922–25
+  Herausgegeben von Philipp Paulsen, Leipzig, Spector Books, 2027
+    
+  <div class="section-break"></div>
+  <div class="section-break"></div>`
+  )
+}
+
 function _2(md) {
   return (
-    md`#### Entwicklung und Ordnung der gesetzlich-schönen Gebilde`
+    md`#### Entwicklung und Ordnung der gesetzlich-schönen Gebilde
+
+  <div class="section-break"></div>
+  <div class="section-break"></div>`
   )
 }
 
@@ -418,13 +431,6 @@ function _3(md) {
       - [Verbindungen](#verbindungen-14)
       - [Schlussbemerkung](#schlussbemerkung)
   </details>`
-  )
-}
-
-function _4(md) {
-  return (
-    md`Gezeichnet und beschrieben von Wilhelm Ostwald, Leipzig, Unesma, 1922–28.
-  Herausgegeben von Philipp Paulsen, Leipzig, Spector Books, 2027.`
   )
 }
 
