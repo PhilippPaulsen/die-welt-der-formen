@@ -492,11 +492,11 @@ function _10(md) {
 
   In a single triangle, only the 3 corner points occur as distinguished spots. The next overall triangle, with 2² sub-triangles, has 6 such points, or *nodes*; the third has 10, the fourth 15, the fifth 21 nodes, all of which are formed by the corners of their sub-triangles.
 
-  We now draw a straight line between any two nodes of an overall triangle. This is our "theme," and we ask ourselves what becomes of it when we apply to it the laws present in the regular triangle.
+  We now draw a straight line between any two nodes of an overall triangle. This is our “theme”, and we ask ourselves what becomes of it when we apply to it the laws present in the regular triangle.
 
-  Now, the triangle has, to begin with, three mirror lines, which run from each corner to the midpoint of the opposite side. Through their operation, there arise from the assumed line, in general, 6 lines lawfully arranged in the triangle (in certain cases only 3), all of which are of equal length and lie correspondingly to the corners and sides. These lines form the "form," which, in accordance with its origin, likewise possesses the three mirror lines.
+  Now, the triangle has, to begin with, three mirror lines, which run from each corner to the midpoint of the opposite side. Through their operation, there arise from the assumed line, in general, 6 lines lawfully arranged in the triangle (in certain cases only 3), all of which are of equal length and lie correspondingly to the corners and sides. These lines form the “form”, which, in accordance with its origin, likewise possesses the three mirror lines.
 
-  We now imagine the whole plane filled with identical triangles, all of which contain the form. We let the sides and nodes vanish, so that only the lines of the form remain. By joining together as many such triangles as one pleases, the unlimited "pattern" arises. It can fill any plane whatsoever.
+  We now imagine the whole plane filled with identical triangles, all of which contain the form. We let the sides and nodes vanish, so that only the lines of the form remain. By joining together as many such triangles as one pleases, the unlimited “pattern” arises. It can fill any plane whatsoever.
 
   In the present work, all patterns are shown that can arise from the straight-line connection of any nodes present in the first to fifth overall triangle (containing 1, 4, 9, 16, 25 sub-triangles and 3, 6, 10, 15, 21 nodes). They therefore contain everything that, in lawfulness and hence in beauty, is at all possible under the stated conditions, and thereby solve a task that no one has hitherto ventured to pose, let alone to solve.
 
