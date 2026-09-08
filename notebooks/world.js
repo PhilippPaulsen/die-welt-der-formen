@@ -508,17 +508,17 @@ function _10(md) {
 
   We now ask about the *number of possible forms.* Between *n* points, ½ *n* (*n* – 1) connecting straight lines are possible. Accordingly, the 3 nodes of the first triangle yield 3, the 6 nodes of the second 15, the 10 nodes of the third 45 cases or forms, and so on.
 
-  Of these cases, however, many are identical. Thus each of the 6 lines in Fig. 2 yields the same form, although each time different nodes are connected. If, each time, 6 equivalent lines were to arise from one theme, the number of different patterns would not be ½ *n* (*n* – 1), but the sixth part of it, namely 1⁄12 *n* (*n* – 1).`
+  Of these cases, however, many are identical. Thus each of the 6 lines in Fig. 2 yields the same form, although each time different nodes are connected. If, each time, 6 equivalent lines were to arise from one theme, the number of different patterns would not be ½ *n* (*n* – 1), but the sixth part of it, namely 1 ⁄ 12 *n* (*n* – 1).`
   )
 }
 
 function _11(md) {
   return (
-    md`However, many of these cases are equal. Thus each of the 6 lines in Fig. 2 yields the same form, although each time different nodes are connected. If, each time, 6 equivalent lines were to arise from one theme, the number of different patterns would not be ½ *n* (*n* – 1), but the sixth part of it, namely 1⁄12 *n* (*n* – 1).
+    md`However, many of these cases are equal. Thus each of the 6 lines in Fig. 2 yields the same form, although each time different nodes are connected. If, each time, 6 equivalent lines were to arise from one theme, the number of different patterns would not be ½ *n* (*n* – 1), but the sixth part of it, namely 1 ⁄ 12 *n* (*n* – 1).
 
   Now, such theme lines as are cut by one of the mirror lines into two mirror-equal halves yield only 3 lines instead of 6 in the pattern. If such lines meet a node on the mirror line, the half-line gives the same pattern as the whole. Through this, the number of different cases is in part increased, in part diminished, so that deviations from the formula given above, ½ *n* (*n* – 1), must occur. Since a theory of these would turn out too intricate, I have contented myself with seeking out the existing forms empirically, whereby the following overview has resulted.
 
-  | **Sub-Triangles** | **Nodes** | **1⁄12 *n* (*n*−1)** | **Forms Found** |
+  | **Sub-Triangles** | **Nodes** | **1 ⁄ 12 *n* (*n*−1)** | **Forms Found** |
   |---|---|---|---|
   | 1 | 3 | ½ | 1 |
   | 4 | 6 | 2 ½ | 3 |
@@ -569,7 +569,7 @@ function _13(md) {
 
   Besides some well-known patterns, one will already find, in this portfolio, a number of rarer ones, and, finally, not a few that are entirely new. The creative imagination of all artists together was by far not sufficient to find, exhaustively, all the cases that are possible under the assumed presuppositions. The scientific treatment of the task, by contrast, has the power to exhaust the abundance of possibilities finally.
 
-  With this, however, the world of forms that can be produced from the existing material is by no means closed off. For only the forms have been shown whose theme forms a single straight line. If one allows a second straight line, which likewise, of course, satisfies the condition of running between two nodes, one gains a manifold number of new patterns. For if, in a given overall triangle, there are *n* different patterns each from a single line, then the number of patterns arising from two lines is ½ *n* (*n* – 1). From the 33 single-line patterns of the fifth triangle there thus arise 528 two-line patterns. The number of three-line ones is nearly 6000, according to the formula 1⁄6 *n* (*n* – 1)(*n* – 2). The total number of all patterns is 2ⁿ – 1.
+  With this, however, the world of forms that can be produced from the existing material is by no means closed off. For only the forms have been shown whose theme forms a single straight line. If one allows a second straight line, which likewise, of course, satisfies the condition of running between two nodes, one gains a manifold number of new patterns. For if, in a given overall triangle, there are *n* different patterns each from a single line, then the number of patterns arising from two lines is ½ *n* (*n* – 1). From the 33 single-line patterns of the fifth triangle there thus arise 528 two-line patterns. The number of three-line ones is nearly 6000, according to the formula 1 ⁄ 6 *n* (*n* – 1)(*n* – 2). The total number of all patterns is 2ⁿ – 1.
 
   In order to make these many new structures visually accessible, the patterns have been printed on transparent paper. If one wishes to see a pattern that arises from two different lines, one lays the two corresponding sheets, on a white surface, one over the other, so that the points of the overall triangle at the top left coincide exactly. The sheets are drawn in such a way that the edges then also coincide. If one covers this, further, with a glass plate, one has the desired overall form conveniently before one.
 
@@ -698,9 +698,9 @@ function _25(htl) {
 function _26(md) {
   return (
     md`#### Sh. 4. *The Tri-Hex*
-  The theme line connects the midpoints of the sides of the triangle, and thus stands perpendicular to the mirror line that it intersects. Consequently, only three lines are again present in the pattern. In multiplication, these arrange themselves side by side in such a way that they form continuous straight lines, which intersect, like the sides of the net, at 1⁄6. From the three families of parallel lines, however, it is not the case that three pass through a single point each; rather, they pass by one another in such a way that a web of regular triangles and hexagons arises. We therefore call it the *tri-hex*.
+  The theme line connects the midpoints of the sides of the triangle, and thus stands perpendicular to the mirror line that it intersects. Consequently, only three lines are again present in the pattern. In multiplication, these arrange themselves side by side in such a way that they form continuous straight lines, which intersect, like the sides of the net, at 1 ⁄ 6. From the three families of parallel lines, however, it is not the case that three pass through a single point each; rather, they pass by one another in such a way that a web of regular triangles and hexagons arises. We therefore call it the *tri-hex*.
 
-  This is the first pattern that differs from the net; in it one may see the simplest case of an unlimited surface pattern that goes beyond the plain division of the triangle. It has long been discovered and has found manifold application, particularly for tiles. It shares with the net the continuous lines and the angle 1⁄6; new is the formation of two different surface pieces, the triangles and hexagons.`
+  This is the first pattern that differs from the net; in it one may see the simplest case of an unlimited surface pattern that goes beyond the plain division of the triangle. It has long been discovered and has found manifold application, particularly for tiles. It shares with the net the continuous lines and the angle 1 ⁄ 6; new is the formation of two different surface pieces, the triangles and hexagons.`
   )
 }
 
@@ -843,7 +843,7 @@ function _45(htl) {
 function _46(md) {
   return (
     md`#### Sh. 9. *The Rhombus*
-  Here we encounter the well-known rhombus pattern with the angles 1⁄3 and 1⁄6. It consists of nothing but congruent rhombi, which, however, do not lie parallel to one another, but are rotated against one another by 1⁄3, and thus fall into 3 groups of parallel rhombi.
+  Here we encounter the well-known rhombus pattern with the angles 1 ⁄ 3 and 1 ⁄ 6. It consists of nothing but congruent rhombi, which, however, do not lie parallel to one another, but are rotated against one another by 1 ⁄ 3, and thus fall into 3 groups of parallel rhombi.
 
   One can, at will, combine 3 rhombi into a hexagon, or 6 rhombi into a hexagram. There are also larger hexagons made of 12 rhombi, and still more extensive overall forms. The hexagons join without remainder, or are "*tiling*"; the hexagrams, by contrast, leave rhombi between themselves.
 
@@ -860,7 +860,7 @@ function _47(htl) {
 function _48(md) {
   return (
     md`#### Sh. 10. *The Overlapped Triangle*
-  The pattern, already looking quite rich, can be resolved into nothing but triangles, which are larger than the net triangle and, moreover, stand in the second position. Hence, all lines stand perpendicular to the corresponding net lines and arrange themselves into three families at the angle 1⁄3. The triangles do not lie simply side by side, as in the net, but overlap in part. Through this, the regular hexagons, rhombi, and triangles arise, all of equal side length (with the exception of the large hexagons, of double side length), which compose the pattern. For this reason, and because all lines are parallel to the mirror lines of the net triangle, the pattern may be regarded as highly lawful. Any stronger or weaker overlapping would make the form substantially more intricate, and would abolish those equalities.`
+  The pattern, already looking quite rich, can be resolved into nothing but triangles, which are larger than the net triangle and, moreover, stand in the second position. Hence, all lines stand perpendicular to the corresponding net lines and arrange themselves into three families at the angle 1 ⁄ 3. The triangles do not lie simply side by side, as in the net, but overlap in part. Through this, the regular hexagons, rhombi, and triangles arise, all of equal side length (with the exception of the large hexagons, of double side length), which compose the pattern. For this reason, and because all lines are parallel to the mirror lines of the net triangle, the pattern may be regarded as highly lawful. Any stronger or weaker overlapping would make the form substantially more intricate, and would abolish those equalities.`
   )
 }
 
@@ -1641,7 +1641,7 @@ function _162(md) {
   | 4 | 16 | 25 | 34 |
   | 5 | 25 | 36 | 57 |
 
-  The number of patterns is approximately 1⁄16 *n* (*n* – 1), where *n* is the number of nodes.
+  The number of patterns is approximately 1 ⁄ 16 *n* (*n* – 1), where *n* is the number of nodes.
 
   The lawful relations in the square are as follows: the square is a four-fold rotational form and contains four mirror lines, standing perpendicular to one another in pairs. All pass through the center; one pair is parallel to the sides, the other is formed by the two diagonals. [Every theme line is developed, through the operation of the four mirror lines, into a four-fold rose] (for a more detailed discussion of these terms, see: Ostwald, *The Harmony of Forms*, Leipzig, Unesma Publishing, 1922). Every motif generally develops into a form of 8, occasionally 4, lines.
 
@@ -1674,7 +1674,7 @@ function _165(htl) {
 function _166(md) {
   return (
     md`#### Sh. 64. *The Net in Second Position*
-  Since the basic square contains 4 nodes, it allows two different node lines: in the sides, and in the diagonals. From the second, through multiplication into a pattern, there arises another square net, rotated by 1⁄8 against the first, and having smaller spacings in the ratio 1 : √½, roughly 10 : 7. We designate this direction of the net lines as the *second position*.`
+  Since the basic square contains 4 nodes, it allows two different node lines: in the sides, and in the diagonals. From the second, through multiplication into a pattern, there arises another square net, rotated by 1 ⁄ 8 against the first, and having smaller spacings in the ratio 1 : √½, roughly 10 : 7. We designate this direction of the net lines as the *second position*.`
   )
 }
 
@@ -2549,11 +2549,11 @@ function _295(htl) {
 function _296(md) {
   return (
     md`#### Sh. 123. *The Band Net*
-  This new form recalls 79 of the third square, in that, in place of the net lines, band-like double lines appear. Here, however, these run in such a way that the reduced hexagon that forms between them does not lie parallel to the hexagon of net 121, but rotated by 1⁄12, that is, in *second* position. This does not occur in 79, and to that extent the resemblance is more superficial. The more precisely corresponding case appears only with the fifth square, and there yields bands just as wide as the central field, that is, in the square net, of half the size of the second position.
+  This new form recalls 79 of the third square, in that, in place of the net lines, band-like double lines appear. Here, however, these run in such a way that the reduced hexagon that forms between them does not lie parallel to the hexagon of net 121, but rotated by 1 ⁄ 12, that is, in *second* position. This does not occur in 79, and to that extent the resemblance is more superficial. The more precisely corresponding case appears only with the fifth square, and there yields bands just as wide as the central field, that is, in the square net, of half the size of the second position.
 
   Striking is the great manifoldness of this form, which already appears in the first hexagon. The pattern consists of triangles, rhombi, and hexagons, and permits various combinations. That it is new, I dare not assert; it was new to me, and I have sought it, without success, in the ornamental works accessible to me.
 
-  The inner form of this pattern is, incidentally, the wine star, which we came to know in 45. Since its angles are all 1⁄6 and 1⁄3, the tips join together in such a way that the running bands result. It should be noted that 23 too is formed of (larger) wine stars. The composition, however, is different. In 23, too, there arise three families of parallel lines, crossing at 1⁄3. In 23, however, they turn out equally spaced, but not in 123. This corresponds to the mirror relations of the triangle and of the hexagon.`
+  The inner form of this pattern is, incidentally, the wine star, which we came to know in 45. Since its angles are all 1 ⁄ 6 and 1 ⁄ 3, the tips join together in such a way that the running bands result. It should be noted that 23 too is formed of (larger) wine stars. The composition, however, is different. In 23, too, there arise three families of parallel lines, crossing at 1 ⁄ 3. In 23, however, they turn out equally spaced, but not in 123. This corresponds to the mirror relations of the triangle and of the hexagon.`
   )
 }
 
@@ -2730,7 +2730,7 @@ function _319(htl) {
 function _320(md) {
   return (
     md`#### Sh. 134. *The Corner-Tip*
-  This beautiful pattern, formed of hexagons and hexagrams, and named accordingly after this composition, arises through three wave trains, formed of oblique straight lines (angle 1⁄3), crossing one another at angles of 1⁄3. All the lines are parallel to the net sides, so that this, like all the preceding ones, is a net-parallel pattern, the last one within the second hexagon. It does not occur among the patterns of the triangle. It is closely related to the tri-hex, 132, as one recognizes on comparing the forms: the continuous lines of 132 are here interrupted, so that the inner hexagon of 132 is absent in 134.`
+  This beautiful pattern, formed of hexagons and hexagrams, and named accordingly after this composition, arises through three wave trains, formed of oblique straight lines (angle 1 ⁄ 3), crossing one another at angles of 1 ⁄ 3. All the lines are parallel to the net sides, so that this, like all the preceding ones, is a net-parallel pattern, the last one within the second hexagon. It does not occur among the patterns of the triangle. It is closely related to the tri-hex, 132, as one recognizes on comparing the forms: the continuous lines of 132 are here interrupted, so that the inner hexagon of 132 is absent in 134.`
   )
 }
 
@@ -2772,7 +2772,7 @@ function _326(md) {
     md`#### Sh. 137. *The Twelve-Armed Twelve-Tip*
   The forms 136 and 137 are both formed of twelve-tips, whose tips touch one another. In 136, however, it is only six of the tips, while the other six end freely. In 137, by contrast, all twelve tips touch.
 
-  Through this touching, extensions of the lines arise in each case. These yield, in 136, three wave trains, which come together into braids and cross one another at 1⁄3. In 137, one can recognize very large three-tips, which overlap and interpenetrate one another.
+  Through this touching, extensions of the lines arise in each case. These yield, in 136, three wave trains, which come together into braids and cross one another at 1 ⁄ 3. In 137, one can recognize very large three-tips, which overlap and interpenetrate one another.
 
   The conception as twelve-tips is, however, to be preferred, since, in the third hexagon, the same forms occur separately, and can therefore be conceived only as twelve-tips.`
   )
@@ -2866,7 +2866,7 @@ function _339(htl) {
 function _340(md) {
   return (
     md`#### Sh. 143. *The Three-Point Star in Second Position*
-  These three-point stars, too, like 126, arise only within the pattern, through the interaction of neighboring hexagons. The manner of formation of 142 agrees here with that of 126, only the stars lie farther apart, corresponding to the larger hexagon. The three-point star of 143, by contrast, arises in a different way, and is rotated by 1⁄6 relative to the former. For this reason, too, the pattern looks substantially different.`
+  These three-point stars, too, like 126, arise only within the pattern, through the interaction of neighboring hexagons. The manner of formation of 142 agrees here with that of 126, only the stars lie farther apart, corresponding to the larger hexagon. The three-point star of 143, by contrast, arises in a different way, and is rotated by 1 ⁄ 6 relative to the former. For this reason, too, the pattern looks substantially different.`
   )
 }
 
@@ -3148,7 +3148,7 @@ function _383(htl) {
 function _384(md) {
   return (
     md`#### Sh. 165. *The Narrow Band Net*
-  Although 165 arises, quite similarly to 164, by the crossing of three bands at 1⁄3, the result proves to be very different. Instead of hexagons, the large intervening fields are formed by triangles, and the bands themselves, on meeting, form a wine star. This points to the decisive difference. In 164, the bands pass one another side by side, as in a wickerwork; in 165, they overlap, and the wine star can appear only if the bands are transparent.`
+  Although 165 arises, quite similarly to 164, by the crossing of three bands at 1 ⁄ 3, the result proves to be very different. Instead of hexagons, the large intervening fields are formed by triangles, and the bands themselves, on meeting, form a wine star. This points to the decisive difference. In 164, the bands pass one another side by side, as in a wickerwork; in 165, they overlap, and the wine star can appear only if the bands are transparent.`
   )
 }
 
