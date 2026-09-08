@@ -93,6 +93,7 @@ Independent research track; 1.6's geodesic work is a natural (though not strictl
 - Ostwald named patterns individually and by hand (Carnation, Wine Star, Triple/Quadruple/Sextuple Cross, Wheel, etc.), with explicit acknowledgment that the naming was laborious and incomplete beyond the published sheets
 - Develop a systematic enumeration scheme (net type, order, theme-line class) paired with either algorithmic descriptive naming or a curated naming interface
 - Apply Burnside/Pólya orbit reduction to collapse symmetry-equivalent theme lines before naming/enumerating — directly addresses the combinatorial explosion Ostwald flags repeatedly ("die Anzahl... übertrifft das beste Gedächtnis")
+- *Naming scheme: see `docs/terminology.md`, Part B, for a proposed systematic (Hinterreiter-style) parametric naming grammar, cross-referenced to Ostwald's original names for historical traceability. Includes open sub-tasks (canonical node numbering, mapping script, backfill table, orbit-equivalence handling) that constitute the concrete first steps for this item.*
 
 ### 1.12 Pattern combination beyond same-order pairs — ⛔ not started (depends on 1.1, 1.3, 1.2)
 - Ostwald's "Verbindungen" sections combine patterns of the *same* polygon order (pairs, triples, quadruples) via direct overlay
