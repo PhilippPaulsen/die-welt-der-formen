@@ -504,7 +504,7 @@ function _10(md) {
 
   In order at once to fill the general instructions just given with vivid life, let a single case be worked through, by which the general procedure becomes clear.
 
-  In Fig. 1, an overall triangle of 16 sub-triangles is shown, containing 15 nodes. From the left corner point, we draw a straight line to the topmost interior node, the "theme." Through reflection in the three mirror lines, shown dotted, a total of 6 lines arise from the theme, which, under further reflection, only pass into one another, thus yielding no further line. Together they form the form Fig. 2. If one repeats this by the exhaustive tiling of identical triangles, the unlimited pattern arises in the shape of a network of lines, Fig. 3, whose plain yet rich beauty I have still not tired of contemplating.
+  In Fig. 1, an overall triangle of 16 sub-triangles is shown, containing 15 nodes. From the left corner point, we draw a straight line to the topmost interior node, the “theme”. Through reflection in the three mirror lines, shown dotted, a total of 6 lines arise from the theme, which, under further reflection, only pass into one another, thus yielding no further line. Together they form the form Fig. 2. If one repeats this by the exhaustive tiling of identical triangles, the unlimited pattern arises in the shape of a network of lines, Fig. 3, whose plain yet rich beauty I have still not tired of contemplating.
 
   We now ask about the *number of possible forms.* Between *n* points, ½ *n* (*n* – 1) connecting straight lines are possible. Accordingly, the 3 nodes of the first triangle yield 3, the 6 nodes of the second 15, the 10 nodes of the third 45 cases or forms, and so on.
 
@@ -548,9 +548,9 @@ function _12(md) {
 
   Each sheet bears, at the top left, first the running number. This is continued through all further publications, so that each pattern will permanently have, and keep, its own number.
 
-  In the same corner, the overall triangle is indicated by its node points. On Sh. 1, this is identical with the sub-triangle. Sh. 2, however, already shows the second overall triangle, consisting of 4 sub-triangles, with its 6 nodes, among which 3 different straight lines are possible, whose patterns are shown on Sh. 2, 3, 4. With sheet 5 begins the group of the third triangle, of 9 sub-triangles with 10 nodes, which gives 8 patterns, and so on. Each group begins with the "*net*," the simple division into the overall triangles, in which the node lines used are formed by the sides of the triangle.
+  In the same corner, the overall triangle is indicated by its node points. On Sh. 1, this is identical with the sub-triangle. Sh. 2, however, already shows the second overall triangle, consisting of 4 sub-triangles, with its 6 nodes, among which 3 different straight lines are possible, whose patterns are shown on Sh. 2, 3, 4. With sheet 5 begins the group of the third triangle, of 9 sub-triangles with 10 nodes, which gives 8 patterns, and so on. Each group begins with the “*net*”, the simple division into the overall triangles, in which the node lines used are formed by the sides of the triangle.
 
-  Of the 6, or respectively 3, straight lines found in the overall triangle marked by the node points at the top left, each one individually may be regarded as the "theme" of the pattern in question, since each generates the others by means of the three mirror lines.
+  Of the 6, or respectively 3, straight lines found in the overall triangle marked by the node points at the top left, each one individually may be regarded as the “theme” of the pattern in question, since each generates the others by means of the three mirror lines.
 
   The remaining space is filled with the lawful repetitions of the pattern that has arisen in the overall triangle. Their number, even in the largest triangle, is sufficient to show the overall effect of the unlimited pattern.`
   )
@@ -607,9 +607,9 @@ function _15(md) {
 
   These instructions allow one to see how one can rise, step by step, to more intricate cases as well. In doing so, one will find by experience that the simple ones are, for the most part, the more effective, and will prefer these, especially since they already yield such an abundance of substantially different patterns that a need for more does not so easily arise.
 
-  Another kind of derivation consists in clothing the straight lines of the patterns with free strokes, which one may choose, according to intention and purpose, either geometrically or naturalistically. Here one has the choice of whether to retain the straight lines in the finished pattern or let them disappear. The latter has the particular charm of the "hidden law."
+  Another kind of derivation consists in clothing the straight lines of the patterns with free strokes, which one may choose, according to intention and purpose, either geometrically or naturalistically. Here one has the choice of whether to retain the straight lines in the finished pattern or let them disappear. The latter has the particular charm of the “hidden law”.
 
-  For such applications, the "open" patterns are especially suited, consisting of freestanding lines that form no closed figures.
+  For such applications, the “open” patterns are especially suited, consisting of freestanding lines that form no closed figures.
 
   I have satisfied myself that even entirely arbitrarily chosen lines, which are not repeated, but are different between each pair of nodes, yield usable patterns, *provided only that the node points are held to exactly.* This remnant of lawfulness suffices to secure an aesthetic effect, provided that the arbitrariness put into play appears in some way well founded.`
   )
@@ -634,9 +634,9 @@ function _17(md) {
 
   The 57 patterns of the 6th triangle have already been drawn. They contain much that is new as compared with the earlier ones, and will be published later.
 
-  Each pattern shows, at the top left, its running number, and, in the form of bold round dots, the nodes of the triangle in which it arose. Each of the six, or respectively three, node lines within the triangle thus designated may be regarded as the "theme" of the pattern.
+  Each pattern shows, at the top left, its running number, and, in the form of bold round dots, the nodes of the triangle in which it arose. Each of the six, or respectively three, node lines within the triangle thus designated may be regarded as the “theme” of the pattern.
 
-  The first sheet of each group, that is, sheets 1, 2, 5, 13, 30, shows the pattern that arises through multiplication of the main triangle when, as theme, one applies the sides of the triangle, that is, the connection of the nodes lying at the corners of the triangle (the net points): the "*net*." There then follow the remaining patterns, arranged so that similar ones are brought together.
+  The first sheet of each group, that is, sheets 1, 2, 5, 13, 30, shows the pattern that arises through multiplication of the main triangle when, as theme, one applies the sides of the triangle, that is, the connection of the nodes lying at the corners of the triangle (the net points): the “*net*”. There then follow the remaining patterns, arranged so that similar ones are brought together.
 
   The names attached to each pattern, on whose choice I have spent great pains, are not to be regarded as a mere pastime. The need to hold the existing rich world of forms in one's mind I have, after their production, not been able to satisfy otherwise than by such a labeling. And I believe that my readers, too, will have the same experience. In particular, the teacher will scarcely have success in teaching without such names.`
   )
@@ -845,7 +845,7 @@ function _46(md) {
     md`#### Sh. 9. *The Rhombus*
   Here we encounter the well-known rhombus pattern with the angles 1 ⁄ 3 and 1 ⁄ 6. It consists of nothing but congruent rhombi, which, however, do not lie parallel to one another, but are rotated against one another by 1 ⁄ 3, and thus fall into 3 groups of parallel rhombi.
 
-  One can, at will, combine 3 rhombi into a hexagon, or 6 rhombi into a hexagram. There are also larger hexagons made of 12 rhombi, and still more extensive overall forms. The hexagons join without remainder, or are "*tiling*"; the hexagrams, by contrast, leave rhombi between themselves.
+  One can, at will, combine 3 rhombi into a hexagon, or 6 rhombi into a hexagram. There are also larger hexagons made of 12 rhombi, and still more extensive overall forms. The hexagons join without remainder, or are “*tiling*”; the hexagrams, by contrast, leave rhombi between themselves.
 
   We call such patterns as 9, which cover the whole plane, *closed patterns*. The nets 1, 2, 3, 5 are closed, as is the tri-hex 4. But whereas the former consist of nothing but identical partial surfaces, in 4 there are two kinds of partial surfaces, namely triangles and hexagons.`
   )
@@ -955,7 +955,7 @@ function _59(htl) {
 function _60(md) {
   return (
     md`#### Sh. 15. *The Partial Stroke*
-  A form like 6, only with a different ratio (2 : 1) between the length of the stroke and the spacing. Note the peculiar bright circles that appear as an optical "illusion" at the empty net points.`
+  A form like 6, only with a different ratio (2 : 1) between the length of the stroke and the spacing. Note the peculiar bright circles that appear as an optical “illusion” at the empty net points.`
   )
 }
 
