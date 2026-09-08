@@ -14,7 +14,7 @@ function _2(md) {
 
 function _3(md) {
   return (
-    md`Gezeichnet und beschrieben von Wilhelm Ostwald, Leipzig, Unesma, 1922–25
+    md`Gezeichnet und beschrieben von Wilhelm Ostwald, Leipzig, Unesma, 1922–25  <br>
   Herausgegeben von Philipp Paulsen, Leipzig, Spector Books, 2027
     
   <div class="section-break"></div>
