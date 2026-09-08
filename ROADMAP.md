@@ -44,6 +44,24 @@ Ostwald himself pointed, across both works, to extensions he did not carry out. 
 ### 1.9 Higher-order combinatorics
 - Pairs → triples → quadruples systematically applied throughout; Ostwald stops enumerating individually only for reasons of scope, not principle — the method itself is open-ended
 
+### 1.10 Line-intersection detection and pattern coloring
+- Detect closed regions (faces) formed by line crossings, building on the adjacency-list structure already designed for this purpose (`edgeIndex`, `angleDeg` in the JSON export schema)
+- Enables systematic coloring of patterns by enclosed area — Ostwald himself relied on this only informally ("man kann die Linien durch Farbe zur Geltung bringen," *Erste Mappe*, Sh. 6) without a computational method
+- Foundation for later color-harmony integration (cf. Ostwald's *Farbharmonik*, referenced but not detailed in either work)
+
+### 1.11 Systematic enumeration and naming of patterns
+- Ostwald named patterns individually and by hand (Carnation, Wine Star, Triple/Quadruple/Sextuple Cross, Wheel, etc.), with explicit acknowledgment that the naming was laborious and incomplete beyond the published sheets
+- Develop a systematic enumeration scheme (net type, order, theme-line class) paired with either algorithmic descriptive naming or a curated naming interface
+- Apply Burnside/Pólya orbit reduction to collapse symmetry-equivalent theme lines before naming/enumerating — directly addresses the combinatorial explosion Ostwald flags repeatedly ("die Anzahl... übertrifft das beste Gedächtnis")
+
+### 1.12 Pattern combination beyond same-order pairs
+- Ostwald's "Verbindungen" sections combine patterns of the *same* polygon order (pairs, triples, quadruples) via direct overlay
+- Extend this to:
+  - combinations of patterns from polygons of *different* orders/sizes (e.g., third-triangle × fifth-triangle) — an extrapolation from Ostwald's combinatorial logic, not an idea he states explicitly (searched but no supporting passage found)
+  - combinations across net types where compatible (triangle × hexagon, sharing the same underlying triangular lattice)
+  - arbitrary sub-mesh-width shifts as a continuous parameter, generalizing the discrete "offset overlay" case already noted in 1.3
+- Unlike 1.1–1.9, this entry is a genuine extension beyond Ostwald's own stated program, not an implementation of an announced-but-unrealized idea
+
 ---
 
 ## Priority 2 — Editorial Framing (planned, coming weeks)
