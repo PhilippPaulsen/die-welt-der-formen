@@ -14,8 +14,8 @@ function _2(md) {
 
 function _3(md) {
   return (
-    md`Drawn and described by Wilhelm Ostwald, Leipzig, Unesma, 1922–25. <br>
-  Edited by Philipp Paulsen, Leipzig, Spector Books, 2027.
+    md`Drawn and described by Wilhelm Ostwald, Leipzig, Unesma, 1922–25 <br>
+  Edited by Philipp Paulsen, Leipzig, Spector Books, 2027
   
   <div class="section-break"></div>
   <div class="section-break"></div>`
