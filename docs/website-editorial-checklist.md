@@ -1,3 +1,7 @@
+# Website Editorial Checklist
+
+*Near-term editorial and UX polish plan. Independent of the generative-development priorities in [ROADMAP.md](../ROADMAP.md); see there for the current overall priority order.*
+
 ---
 
 ### December 2025 · 5-Day Website Improvement Checklist  
@@ -18,7 +22,7 @@ Secondary focus: **making Raumharmonik visible as an emerging, explicitly open r
   - historical + contemporary
   - editorial + generative
 - Add or refine a short framing sentence:
-  > “This platform is a digital editorial and research environment dedicated to the reconstruction and continuation of Wilhelm Ostwald’s theory of form.”
+  > "This platform is a digital editorial and research environment dedicated to the reconstruction and continuation of Wilhelm Ostwald's theory of form."
 - Align tone and terminology across all main pages.
 - Identify terms that require explanation or contextual framing.
 
@@ -33,7 +37,7 @@ Secondary focus: **making Raumharmonik visible as an emerging, explicitly open r
 - Ensure active navigation states are clearly visible.
 - Check DE / EN parity (structure, tone, hierarchy).
 - Standardize page titles and headings.
-- Add a short “What is this page?” editorial introduction to:
+- Add a short "What is this page?" editorial introduction to:
   - Harmony of Forms (edition / reference text)
   - World of Forms (systematic documentation of generative principles)
 - Visually separate:
