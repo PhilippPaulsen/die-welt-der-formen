@@ -3,9 +3,9 @@
 Regenerate with `tools/sync-studio.sh [commit]` (run `--dry-run` first). Changes belong in the generator repository.
 
 - Source: https://github.com/PhilippPaulsen/world_of_forms_generator.git
-- Commit: d18d63f9f6339d295a66d61b96e9b2d3b0c48db4
-- Files: 366 (without this file)
-- Size: 8044 KB
-- Script version: 1
-- Synced (UTC): 2026-11-25T18:53:24Z
+- Commit: ab22fce9b68fcec593578662a9f8335bf70ba1dd
+- Files: 367 (without this file)
+- Size: 8060 KB
+- Script version: 2
+- Synced (UTC): 2026-11-25T20:31:42Z
 - Fonts: none. SuisseIntl is served from https://bachmann-paulsen.de/fonts/ (see style.css).
