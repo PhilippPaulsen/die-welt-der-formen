@@ -158,9 +158,12 @@ a:active {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px;
+  /* Task 134: same height and hairline as the Studio header (studio/style.css .app-header: 60px, 1px #d9d9d9) */
+  box-sizing: border-box;
+  height: 60px;
+  padding: 0 20px;
   background-color: #fff;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid #d9d9d9;
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -259,8 +262,9 @@ a:active {
   background-color: transparent;
 }
 
-/* Divider Line */
+/* Divider Line: hidden since task 134, the header's own border is the single hairline (the <hr> stays in the markup) */
 .divider {
+  display: none;
   margin: 0;
   border: none;
   border-top: 1px solid #ccc;
@@ -271,6 +275,13 @@ a:active {
   body {
     font-size: 16px;
     padding: 10px;
+  }
+
+  /* Task 134: the header sits flush with the window edge again (body padding 10px no longer leaves a strip above it);
+     padding 0 30px keeps the text where it was (10px body padding + 20px header padding) */
+  .top-bar {
+    margin: -10px -10px 0;
+    padding: 0 30px;
   }
 
   /* Mobile Navigation Overrides */
