@@ -1,0 +1,1990 @@
+/*
+  Base stylesheet. UI rework, Phase 0 (foundations): this file owns the
+  design tokens, the typeface, the one body font stack and the one
+  .control-group definition. index.html's inline <style> keeps the
+  component rules and page layout and must not redeclare any of these.
+*/
+
+/* --- Typeface: SuisseIntl, weights 400 and 600 only ---------------------
+   Suisse Int'l is commercially licensed and NOT part of this repository.
+   The web fonts are served from https://bachmann-paulsen.de/fonts/ (CORS
+   restricted to that site's domain). Locally and in forks the request is
+   blocked and the stack below falls back to "SuisseIntl Fallback" (Arial,
+   scaled to Suisse's metrics) and then the system font. font-display: swap
+   never blocks text; index.html preloads Book. */
+@font-face {
+  font-family: "SuisseIntl";
+  src: url("https://bachmann-paulsen.de/fonts/suisseintl-book.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "SuisseIntl";
+  src: url("https://bachmann-paulsen.de/fonts/suisseintl-semibold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Fallback face with SuisseIntl's proportions, so the swap moves as
+   little text as possible. Values measured with fontTools, not guessed:
+   SuisseIntl Book upm 1000, hhea ascent 1174 / descent 556 / lineGap 0,
+   mean lowercase advance 0.5357 em; Arial mean lowercase advance 0.4895
+   em. size-adjust = 0.5357 / 0.4895 = 109.4%; ascent-override =
+   1.174 / 1.094 = 107.3%; descent-override = 0.556 / 1.094 = 50.8%. */
+@font-face {
+  font-family: "SuisseIntl Fallback";
+  src: local("Arial");
+  size-adjust: 109.4%;
+  ascent-override: 107.3%;
+  descent-override: 50.8%;
+  line-gap-override: 0%;
+}
+
+/* --- Design tokens ------------------------------------------------------
+   Colors: black, one secondary grey, one disabled grey, one hairline
+   grey, white. Weights: 400 and 600 only. Sizes: 12 secondary, 16 base,
+   18 tabs. Touch: targets >= 44px, gaps >= 8px.
+   These are the tokens for the new UI; the older --background / --text /
+   --hover-bg variables in index.html stay until Phase 1 migrates the
+   components that use them. */
+:root {
+  --color-text: #000000;
+  --color-secondary: #757575;
+  --color-disabled: #b3b3b3;
+  --color-hairline: #d9d9d9;
+  --color-bg: #ffffff;
+
+  --font-ui: "SuisseIntl", "SuisseIntl Fallback", system-ui, "Helvetica Neue", Arial, sans-serif;
+  --weight-regular: 400;
+  --weight-strong: 600;
+
+  /* the only three font sizes */
+  --size-secondary: 12px;
+  --size-base: 16px;
+  --fs-tab: 18px;
+
+  /* Sizes that change in ONE place.
+     --target  the height of EVERY control (shape buttons, symmetry choice, More, Help, steppers): 36px with a
+               mouse (pointer: fine), 48px on touch (pointer: coarse) - see the media query below.
+     --bar-h   the height of ONE top bar: the header, the nav row (one row on tablet/desktop), and each of the two
+               rows of a nav row on a phone. --target plus 12px above and below.
+     --icon    the size of every icon. */
+  --target: 48px;
+  --icon: 18px;
+  --bar-h: calc(var(--target) + 24px);   /* fine pointer 60px, coarse 72px */
+  --gap: 8px;
+  --radius: 6px;
+  --gutter: 16px;          /* page side margin */
+  --canvas-max: 560px;     /* canvas display size on tablet/desktop */
+  /* Canvas display size: one definite length, used for BOTH the width and
+     the height of #canvas-container (never derived through aspect-ratio
+     or a percentage), so it cannot be resolved differently by an engine. */
+  --canvas-size: min(var(--canvas-max), calc(100vw - 2 * var(--gutter)));
+  /* Task 078: the canvas box of a W x H sketch (a non-square area; the short side is 600 units, 560px shown). --canvas-ratio = W / H, set by sketch.js only for a non-square canvas (1 = square: every
+     value below is then --canvas-size, pixel for pixel). Display scale s = min(560 / 600, available width / W): the box is --canvas-max on its short side, or the available width when that is smaller.
+     --canvas-size stays the width of the panels under the canvas (face colours, timeline, morph, strip): it is NOT the canvas width any more. The phone layout (html.ph) defines its own pair below. */
+  --canvas-ratio: 1;
+  --canvas-avail: calc(100vw - 2 * var(--gutter));
+  /* Task 081: the display scale is --canvas-max / 600 per sketch unit (560 / 600) and never more, whatever the short side is (the triangle across and the hexagon upright are 520 units on their short side):
+     w0 = W * 560 / 600, limited by the available width. --canvas-wu = W (600 while the canvas is square). */
+  --canvas-w0: min(calc(var(--canvas-wu) * var(--canvas-max) / 600), var(--canvas-avail));
+  /* Task 078b: a NON-square canvas is also limited by the window height: --canvas-hfit = window height - the head above the canvas - the --gap below it (sketch.js canvasFitSync, set only for a non-square canvas,
+     updated on resize / orientationchange); --canvas-wu = the sketch width W in units. The display scale s = w / W never goes under 0.4 (then the page scrolls as before). Square: the defaults below
+     (100000px, 0) make both terms inert: --canvas-w = --canvas-w0. The phone layout (html.ph) defines its own --canvas-w / --canvas-h. */
+  --canvas-hfit: 100000px;
+  --canvas-wu: 600;
+  --canvas-w: min(var(--canvas-w0), max(calc(var(--canvas-hfit) * var(--canvas-ratio)), calc(0.4px * var(--canvas-wu))));
+  --canvas-h: calc(var(--canvas-w) / var(--canvas-ratio));
+}
+/* from 768px the canvas sits in the middle grid column: what is left of the row after the two rails and the gaps */
+@media (min-width: 768px) {
+  :root { --canvas-avail: calc(100vw - 48px - 2 * var(--target) - 2 * var(--gap)); }
+}
+
+/* Mouse: smaller controls. Touch keeps 48px and the 8px gap. */
+@media (pointer: fine) {
+  :root { --target: 36px; }
+}
+
+/* The one body rule for font and reset. Page layout (flex centering,
+   height, colors via --background/--text) is owned by index.html's inline
+   <style>. tabular-nums is essential here: SuisseIntl's default digits
+   have nine different advance widths (374..675 units in Book), so
+   changing numbers would shift their neighbours without it. */
+body {
+  font-family: var(--font-ui);
+  font-weight: var(--weight-regular);
+  font-size: var(--size-base);
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+
+/* Form controls do not inherit the font by default. */
+button, input, select, textarea {
+  font-family: inherit;
+  font-variant-numeric: inherit;
+}
+
+/* The container for the p5 canvas - flat, no glass/blur/shadow
+   (superseded by the equivalent, authoritative rule in index.html's
+   inline <style>, but kept here in sync so nothing leaks through the
+   cascade for properties that rule doesn't touch). */
+#canvas-container {
+  display: flex;
+  justify-content: center;
+  border: none;
+}
+
+/* Phase 2 (touch), track A. Every :hover rule in this file and in index.html's inline <style> sits inside @media (hover: hover): on a touch screen a tap
+   leaves :hover set until the next tap elsewhere (sticky hover); the pressed (:active) and keyboard (:focus-visible) states are outside the query and stay
+   the feedback on touch. touch-action: manipulation (never none) keeps scrolling and pinch zoom and drops the double-tap zoom delay; the canvas also gets
+   no callout and no text selection (a long press on iOS would otherwise open the image menu), and so do the stepper buttons (holding them repeats a step:
+   a long press). The viewport stays zoomable. tools/ui/test-touch-css.js guards all of it. */
+#canvas-container,
+#canvas-container canvas { touch-action: manipulation; }
+#canvas-container canvas {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.stepper-btn {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+button,
+[role="radio"],
+[role="spinbutton"],
+select,
+label { touch-action: manipulation; }
+
+/* Phase 2 (touch), track A, commit B: the coarse-pointer minimum target (--target, 48px). Only under (pointer: coarse): a mouse keeps every size it has.
+   What was below it at 375px (measured, scratchpad/ta-results/baseline/small-375.json): the header tab "Netz" (47.8px wide: text + 2 x 4px padding; all three tabs are
+   one bar high, 71px inside the header's 1px border), every .layer-btn / .icon-btn of the old layer row (40px high), the layer remove button (22px high, squeezed to
+   10.8px wide by flex-shrink), the old layer checkbox (24 x 13), the layer number fields (60 x 40), the selects (32px), the layer progress slider (6px), the export format and close buttons
+   (39-45px high), the node count / size / anchor hue number fields inside a stepper (28px high), and the two <a class="icon-btn"> links Gallery and Farborgel (content-box:
+   40px + border = 42px). (The old layer row and its checkbox are gone: the layer table, rail and strip replaced them.) Gallery and Farborgel are replaced by the organ
+   strip in 5b and only get their size. The one documented exception that stays below 48px: the stepper chevron halves (24px, WCAG 2.5.8, see .stepper). */
+@media (pointer: coarse) {
+  .app-tabs a { min-width: var(--target); justify-content: center; }
+  .icon-btn,
+  .layer-btn,
+  .layer-remove-btn,
+  .format-btn,
+  .dialog-content button {
+    box-sizing: border-box;
+    min-width: var(--target);
+    min-height: var(--target);
+  }
+  .layer-btn,
+  .layer-remove-btn { flex: none; white-space: nowrap; }
+  .icon-row { flex-wrap: wrap; }
+  .layer-tab { flex: none; }
+  #timeline-keyframe-list { flex-wrap: wrap; }
+  .pairing-row { flex-wrap: wrap; }          /* label + 5 buttons at --target do not fit a 320px row */
+  .pairing-label { min-width: 8em; }
+  .layer-btn.pairing-move-btn { min-width: var(--target); }   /* beats .pairing-move-btn { min-width: 24px } further down */
+  .control-group input[type="number"],
+  .control-group input.exact-field,
+  select { min-height: var(--target); }
+  /* a stepper's value (a typable number field, or the display span of the Netz / Farbe steppers) is --target wide and high too: the stepper's chevron
+     halves stay 24px (the documented exception) but the value is the one big target in it. "html" and ">" out-rank the base rules further down and index.html's `.control-group input[type="number"] { width: 60px }`. */
+  html .stepper > input[type="number"],
+  html .stepper > .stepper-display { align-self: stretch; width: var(--target); min-width: var(--target); }
+  html .stepper > .stepper-display { display: flex; align-items: center; justify-content: center; }
+}
+
+/* iOS Safari zooms the page when a field with a font size below 16px takes focus (#face-colors-rule, #timeline-pairing-segment and
+   #timeline-pairing-sort were 13.3px). Range inputs do not trigger it. Only on a coarse pointer: the desktop look is unchanged. */
+@media (pointer: coarse) {
+  select,
+  textarea,
+  input:not([type="range"]) { font-size: max(16px, 1em); }
+}
+
+/* Controls container - flat, no glass/blur/shadow. Layout (flex-wrap
+   row) is owned by index.html's inline <style>; max-width/grid removed
+   here since they constrained the toolbar to wrap into two rows and
+   fought with that flex layout. */
+.controls-container {
+  padding: 15px;
+  /* Without border-box, width:100% (set in index.html) plus this padding
+     was 30px wider than its container: a 5px horizontal page overflow at
+     375px (found in the Phase 0 measurement). */
+  box-sizing: border-box;
+}
+
+/* The one .control-group definition (this used to exist twice, here and
+   in index.html's inline <style>; the merged values below are exactly
+   what the cascade computed before, so nothing moves). */
+.control-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  width: auto;
+}
+
+/* Same specificity as .control-group{display:flex}, so the native [hidden]
+   rule would lose the tie without this. */
+.control-group[hidden] {
+  display: none;
+}
+
+/* The readout line of the Netz sheet (ui-net.js writes it): only the phone layout shows it (html.ph #net-readout, at the end of the file). */
+.net-readout { display: none; }
+
+/* Layer "Mehr" (5d, step 1): the wrapper around the rarely used layer controls. display: contents keeps every group inside it a flex item of #controls-container, exactly
+   where it was before the wrapper existed; [hidden] must be restated because display: contents would win over the attribute. */
+#layer-more-panel { display: contents; }
+#layer-more-panel[hidden] { display: none; }
+
+/* Layer "Mehr" block, step 1b-1: the shape icons, the node count and size steppers, the fold buttons, Align to base and the mesh presets use the SAME markup and classes as the Form row
+   (.nav-cluster, .ico, .stepper, .stepper-btn, .icon-btn). Three things in the Form row's CSS are scoped to .nav-row or lose to a rule that only applies inside .control-group, so
+   they are restated for the panel, with the same values: the icon button size (.nav-row .icon-btn), the stepper's number field (the inline `.control-group input[type="number"]`,
+   60 x 40 with a border, would otherwise win the tie against `.stepper input[type="number"]`) and the gap of a cluster (an .icon-row's own gap would win otherwise). */
+#layer-more-panel .icon-btn,
+#layer-more-panel .layer-fold-btn {
+  box-sizing: border-box;
+  width: var(--target);
+  height: var(--target);
+  padding: 0;
+  border-radius: var(--radius);
+  flex: none;
+  touch-action: manipulation;
+}
+#layer-more-panel .nav-cluster { gap: var(--gap); }
+/* the numerals of the fold buttons look like the numeral buttons of the Farbe row (2 / 3 / 4): the button default font, not .layer-btn's 13px / 600 */
+#layer-more-panel .layer-fold-btn { font-size: 13.3333px; font-weight: 400; }
+#layer-more-panel .stepper input[type="number"] {
+  width: 2.4ch;
+  height: auto;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--size-base);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* LABEL RULE: every <label> inside a .control-group is hidden with
+   display:none. The interface is icon/numeral based. Consequences for
+   anyone adding a control:
+   - a <label> here is NEVER visible: do not put a control, checkbox or
+     any state the person must see inside one (this hid the "Include net"
+     checkbox once);
+   - do not rely on the label for the accessible name either (browsers
+     treat display:none content inconsistently): every control must carry
+     its own aria-label and a tooltip (title). */
+.control-group label {
+  display: none;
+  font-size: var(--size-secondary);
+  font-weight: var(--weight-regular);
+}
+
+.control-group input,
+.control-group select {
+    width: 100%;
+}
+
+/* Icon buttons - flat chrome (size/border/radius/active/hover) is owned
+   by index.html's inline <style>; layout-only properties here. */
+.icon-btn {
+  cursor: pointer;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.theme-toggle {
+    grid-column: 1 / -1; /* Span across all columns */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- Dark Mode Styles --- */
+
+body.dark {
+  background-color: #111;
+  color: #eee;
+}
+
+body.dark label {
+    color: #eee;
+}
+
+/* --- Canvas Styles ---
+   No CSS border here anymore: the sketch itself draws a 4px frame
+   (see draw() in sketch.js) at the true canvas edge. A CSS border on
+   the <canvas> element on top of that produced a visible double line. */
+canvas {
+  display: block;
+  aspect-ratio: 1 / 1;
+  background: #fff;
+  box-shadow: none;
+}
+
+/* Dynamische Linienfarbe wird per CSS-Variable --line-color aus JS abgerufen */
+:root {
+  --line-color: #000;
+}
+
+body.dark {
+  --line-color: #fff;
+}
+
+body.dark canvas {
+  background: #000;
+  box-shadow: none;
+}
+
+/* --- Slider Styles (Minimal, Schwarz/Grau/Weiß) --- */
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: #ccc;
+  outline: none;
+  transition: background 0.3s;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #333;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+@media (hover: hover) {
+  input[type="range"]::-webkit-slider-thumb:hover {
+    background: #555;
+  }
+}
+
+body.dark input[type="range"] {
+  background: #444;
+}
+
+body.dark input[type="range"]::-webkit-slider-thumb {
+  background: #eee;
+}
+
+/* Tooltips: the native title only. There is no CSS bubble (an ::after bubble next to the native one showed twice, and sat under the wrong ancestor for most buttons). */
+
+/* Removed duplicated outer border from canvas */
+/* #canvas-container canvas {
+  border: 2px solid #000;
+  border-radius: 0 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+} */
+
+
+/* Node point styles */
+.node {
+  fill: #000;
+  stroke: #000;
+  stroke-width: 1px;
+}
+
+@media (hover: hover) {
+  .node:hover {
+    fill: red;
+  }
+}
+/* --- Line Color Variables for Light/Dark Mode --- */
+:root {
+  --line-color: #000;
+}
+
+body.dark {
+  --line-color: #fff;
+}
+/* Roadmap 1.8 Stage D phase (i): timeline line-pairing editor */
+.timeline-pairing { margin-top: 8px; }
+.timeline-pairing select { width: 100%; margin: 4px 0; }
+.pairing-row { display: flex; align-items: center; gap: 4px; margin: 2px 0; }
+.pairing-label { flex: 1; font-size: 12px; }
+.pairing-move-btn { padding: 0 6px; min-width: 24px; }
+#timeline-pairing-metric { font-size: 12px; margin-top: 4px; }
+
+/* Roadmap 1.8 Stage D phase (ii): "Browse all" pairing list */
+.pairing-browser-controls { display: flex; gap: 4px; margin: 4px 0; }
+.pairing-browser-controls select { flex: 1; margin: 0; }
+.pairing-browser-controls input { width: 90px; }
+#timeline-pairing-browser-count { font-size: 12px; margin: 2px 0; }
+#timeline-pairing-browser-list { max-height: 200px; overflow-y: auto; border: 1px solid #ccc; }
+.pairing-browse-row { display: flex; justify-content: space-between; width: 100%; padding: 2px 6px; border: 0; border-bottom: 1px solid #eee; background: #fff; font: 12px monospace; text-align: left; cursor: pointer; }
+@media (hover: hover) {
+  .pairing-browse-row:hover { background: #f0f0f0; }
+}
+.pairing-browse-row.current { background: #000; color: #fff; }
+#timeline-pairing-conclusive[aria-pressed="true"] { background: #000; color: #fff; }   /* d3 K3: the switch is on */
+
+/* Roadmap 1.8 Stage D phase (iii): per-row End-line orientation toggle */
+.pairing-flip-btn.active { background: #000; color: #fff; }
+
+/* Roadmap 1.8 Stage D phase (iv) step 2: per-row End-line variant stepper (k/c) */
+.pairing-variant { display: inline-flex; align-items: center; gap: 2px; }
+.pairing-variant-count { font: 12px monospace; min-width: 34px; text-align: center; }
+
+/* Roadmap 1.10a / Group D Phase 3: Face Colors panel */
+#face-colors-group select { width: 100%; margin: 4px 0; }
+#face-colors-status, #face-colors-note { font-size: 12px; margin: 2px 0; }
+#face-colors-note { color: #666; }
+.fc-axis { display: flex; align-items: center; gap: 4px; margin: 2px 0; font-size: 12px; }
+.fc-axis-label { min-width: 84px; }
+.fc-axis-value { color: #666; }
+#face-colors-list { margin: 6px 0; max-height: 240px; overflow-y: auto; }
+.fc-row { display: flex; align-items: center; gap: 6px; margin: 2px 0; padding: 1px 2px; font-size: 12px; border-radius: 3px; }
+@media (hover: hover) {
+  .fc-row:hover { background: #f0f0f0; }
+}
+.fc-swatch { width: 16px; height: 16px; border: 1px solid #888; flex: none; }
+.fc-label { flex: 1; }
+.fc-default { color: #888; font-style: italic; }
+#face-colors-unassigned { display: flex; align-items: center; gap: 6px; font-size: 12px; margin: 4px 0; }
+#face-colors-unassigned[hidden] { display: none; }
+#face-colors-unassigned-text { flex: 1; }
+#face-colors-timeline-note { font-size: 12px; margin: 2px 0; padding: 3px 6px; border-left: 3px solid #888; background: #f4f4f4; }
+#face-colors-timeline-note[hidden] { display: none; }
+#net-focus-hint, #net-size-hint, #net-macro-hint, #net-field-hint, #net-field-info { font-size: 12px; margin: 2px 0; padding: 3px 6px; border-left: 3px solid #888; background: #f4f4f4; }
+#net-focus-hint[hidden], #net-focus-row[hidden], #net-size-hint[hidden], #net-field-hint[hidden], #net-field-info[hidden], #net-macro-hint[hidden], #net-macro-row[hidden], #net-alternate-btn[hidden], #net-geo-row[hidden], #net-group[hidden], #net-strength-row[hidden] { display: none; }
+#net-macro-row { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%; }
+#net-focus-row, #net-strength-row { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%; }
+#net-group .icon-row { flex-wrap: wrap; justify-content: center; }
+#net-group .net-kind-btn, #net-group .net-axes-btn { flex: 0 0 auto; }
+.icon-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+/* The net lock (sketch.js): Curve, Free and Fill are aria-disabled, not natively disabled, so they stay focusable and a tap shows the reason; they look as the native ones did. */
+#btn-toggle-curve[aria-disabled="true"], #btn-toggle-free[aria-disabled="true"], #btn-toggle-faces[aria-disabled="true"] { opacity: 0.35; cursor: not-allowed; }
+@media (hover: hover) {
+  #btn-toggle-curve[aria-disabled="true"]:hover, #btn-toggle-free[aria-disabled="true"]:hover, #btn-toggle-faces[aria-disabled="true"]:hover { background: var(--background); }
+}
+
+#timeline-net-state { font-size: 12px; margin: 2px 0; padding: 3px 6px; border-left: 3px solid #888; background: #f4f4f4; }
+#timeline-net-state[data-state="animated"] { border-left-color: #2e8b57; background: #eaf6ee; }
+#timeline-net-state[data-state="incompatible"] { border-left-color: #c0392b; background: #fbeae8; }
+#timeline-net-state[data-state="partial"] { border-left-color: #d9822b; background: #fdf1e3; }
+/* "none" (no keyframe has a net captured) is the normal state of a timeline that never uses a net: grey like "constant" and "pending", not an error. Red is for "incompatible" only. */
+#timeline-net-state[data-state="constant"], #timeline-net-state[data-state="pending"], #timeline-net-state[data-state="none"] { border-left-color: #888; background: #f4f4f4; }
+#timeline-net-state[hidden] { display: none; }
+.kf-no-net { color: var(--color-secondary); }   /* "no net" on a keyframe is information, not an error: the secondary grey, 4.61:1 on the white page */
+
+/* === UI rework 4a: header, tabs, nav rows ===============================
+   Header: the three tabs (in-page hash links, nav.js) on the left, Help on
+   the right. Active tab = Semibold + black, the others secondary grey;
+   never a ring (a ring is reserved for keyboard focus, below).
+   Nav rows: one per tab, ALL the same fixed height (see below), so switching
+   tabs moves nothing below them. */
+/* Both top bars have the SAME height, --bar-h (60px fine pointer, 72px coarse), and centre their content vertically:
+   the header, the nav row on tablet/desktop (one row), and on a phone each of the THREE rows of a nav row (so a
+   phone nav row is 3 x --bar-h - Phase B-Farbstrategien step 2's new strategy stepper pushed #nav-farbe's own
+   mobile wrap from 2 lines to 3, measured: 104+160 | 95+112+131 | 18+48 at 375px, none of several DOM/CSS
+   `order` reshuffles tried got it back under 2 without real compromises - so the shared height grows instead,
+   same choice already made once before for this exact class of problem). Every nav row (Form, Farbe, Netz) has
+   this height, so switching tabs moves nothing below - Form/Netz keep an extra, empty --bar-h of space on
+   mobile now too, accepted the same way the earlier bump already accepted it. The tab links fill the bar
+   height as their click area; only the text is small (18px). */
+:root { --nav-h: var(--bar-h); }
+@media (max-width: 767px) {
+  :root { --nav-h: calc(3 * var(--bar-h)); }
+}
+
+.app-header {
+  align-self: stretch;
+  box-sizing: border-box;
+  height: var(--bar-h);              /* the 1px bottom border is inside this height */
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 var(--gutter);
+  border-bottom: 1px solid var(--color-hairline);
+}
+@media (min-width: 768px) {
+  .app-header { gap: 32px; padding: 0 24px; }
+}
+
+.app-tabs { display: flex; align-items: stretch; align-self: stretch; gap: 12px; }
+@media (min-width: 768px) {
+  .app-tabs { gap: 16px; }
+}
+
+.app-tabs a {
+  display: inline-flex;
+  align-items: center;               /* the text is centred in the full-height click area */
+  padding: 0 4px;
+  font-size: var(--fs-tab);
+  font-weight: var(--weight-regular);
+  line-height: 1.1;
+  color: var(--color-secondary);
+  text-decoration: none;
+}
+.app-tabs a[aria-current="page"] {
+  font-weight: var(--weight-strong);
+  color: var(--color-text);
+}
+
+.app-header .icon-btn {
+  margin-left: auto;
+  width: var(--target);
+  height: var(--target);
+  border: 0;                     /* fix F2: the help icon is frameless at every width, as it was on the phone since the phone layout: no frame, no fill, a muted icon; the hit area is the whole --target square */
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--color-secondary);
+  font-size: var(--size-base);   /* no browser-default 13.33px */
+}
+@media (hover: hover) {
+  .app-header .icon-btn:hover { background: var(--hover-bg); }   /* the subtle hover of a fine pointer; the keyboard ring is the global button:focus-visible rule below */
+}
+
+.nav-rows { align-self: stretch; }
+.nav-row {
+  box-sizing: border-box;
+  height: var(--nav-h);              /* the 1px bottom border is inside this height */
+  padding: 0 var(--gutter);
+  border-bottom: 1px solid var(--color-hairline);
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+}
+@media (min-width: 768px) {
+  .nav-row { padding: 0 24px; }
+}
+.nav-row[hidden] { display: none; }
+
+/* === UI rework 4b: Form row ==============================================
+   Every control has a fixed slot; nothing appears, disappears or moves when
+   the shape, symmetry, net or timeline changes. A control that is not
+   available is aria-disabled (dimmed, still focusable and tappable - a tap
+   shows the reason, ui.js), never hidden. All sizes come from the tokens
+   --target / --icon / --bar-h (top of this file). */
+.ico {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  display: block;
+  flex: none;
+  width: var(--icon);
+  height: var(--icon);
+}
+
+.nav-row .icon-btn {
+  width: var(--target);
+  height: var(--target);
+  border-radius: var(--radius);
+  flex: none;
+  touch-action: manipulation;   /* no double-tap zoom on the buttons */
+}
+.nav-row .icon-btn[aria-disabled="true"] {
+  color: var(--color-disabled);
+  border-color: var(--color-hairline);
+  cursor: not-allowed;
+}
+@media (hover: hover) {
+  .nav-row .icon-btn[aria-disabled="true"]:hover { background: var(--background); }
+}
+
+.nav-cluster { display: flex; align-items: center; gap: var(--gap); flex: none; }
+.nav-divider { width: 1px; height: var(--target); background: var(--color-hairline); margin: 0 4px; flex: none; }
+/* The anchor-colour swatch at the end of the Farbe row (fix F2): a --target square with the buttons' radius, the colour filling it and the .fc-swatch frame (1px #888), as it has been on the phone; it was a 16px chip at 768px
+   and up. Its colour is set inline by ui-farbe.js (the colour logic is unchanged). */
+#farbe-anchor-preview { box-sizing: border-box; width: var(--target); height: var(--target); border-radius: var(--radius); flex: none; }
+.nav-break { display: none; }
+/* Group D Phase B4 follow-up: the old rule row moved into #more-farbe (see that markup's own comment) -
+   #nav-farbe is back to just the anchor row, which fits Form/Netz's own single-line convention again, no
+   special-casing needed (an earlier round's unconditional flex-wrap/height override, needed only while the
+   old row shared this element, has been removed along with that row). */
+
+/* Task 068c2: the info card's grid line ("Gitter: 3d2 · Knoten: 12"), a read-out under the pattern name. */
+#grid-info-status { display: block; margin-top: 4px; }
+/* Task 071: a v2 name of many lines is one unbroken string (tokens joined by +): it may break anywhere on a narrow card instead of running out of it. */
+#pattern-name-status { overflow-wrap: anywhere; white-space: pre-line; }   /* task 072c: the mode "nur Drehung" shows the key and the source form on two lines */
+/* Task 071b: the name and grid block of the info card is quiet: left-aligned, ONE size, ONE weight, ONE colour (the card's text colour) - it replaces the centred, muted, smaller name. */
+#pattern-name-group { align-items: flex-start; text-align: left; }
+#pattern-name-group #pattern-name-status, #pattern-name-group #grid-info-status { font-size: var(--size-secondary); font-weight: var(--weight-regular); color: var(--color-text); opacity: 1; text-align: left; font-variant-numeric: tabular-nums; }
+
+/* Task 068c3b: the active shape button of a lage-2 grid (Form row and layer panel) carries the same small corner dot (.lage-2, set by ui-form.js / ui-layer.js);
+   currentColor = white on the black active button. */
+.shape-icon-btn, .layer-shape-icon-btn { position: relative; }
+.shape-icon-btn.lage-2::after, .layer-shape-icon-btn.lage-2::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: calc(var(--target) / 12 + 2px);   /* 5px on a 36px button, 6px on a 48px one: it follows the button (a fine pointer on a narrow screen has 48px buttons) */
+  height: calc(var(--target) / 12 + 2px);
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* "Other symmetry" set (none / mirror only): the More button shows a dot then. */
+.nav-more { position: relative; }
+.nav-more.has-state::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* The DOM (and so the tab order) is shapes | node | size | symmetry | More. Tablet/desktop shows exactly that in ONE
+   row. Phone (< 768px): two rows, each one --bar-h high with its content centred - shapes | symmetry | More, then the
+   two steppers - made with `order` and a full-width, zero-height .nav-break between them. The divider between shapes
+   and symmetry is dropped there: with 48px controls line 1 is shapes 160 + symmetry 104 + More 48 + 2 gaps of 8 =
+   328px and must fit the 343px that a 375px phone leaves.
+   KNOWN LIMIT (open until Phase 2, see ROADMAP.md Group B): this fits 360px and up; at 320px line 1 wraps into three
+   rows and overflows the fixed nav-row height. */
+@media (max-width: 767px) {
+  .nav-form { flex-wrap: wrap; align-content: flex-start; align-items: center; gap: 0 var(--gap); }
+  .nav-form > * { margin-top: 12px; margin-bottom: 12px; }   /* (--bar-h - --target) / 2 */
+  .nav-form .nav-shapes { order: 1; }
+  .nav-form .nav-symmetry { order: 2; }
+  .nav-form .nav-more { order: 3; }
+  .nav-form .nav-break { order: 4; display: block; flex: 0 0 100%; height: 0; margin: 0; }
+  .nav-form .stepper { order: 5; }
+  .nav-form .nav-divider { display: none; }
+}
+/* Task 080: the aspect-ratio lock: a closed padlock while locked (aria-pressed="true", the default), an open one when the height is free */
+#btn-size-lock .ico-open { display: none; }
+#btn-size-lock[aria-pressed="false"] .ico-closed { display: none; }
+#btn-size-lock[aria-pressed="false"] .ico-open { display: block; }
+#ov-size-section[hidden] { display: none; }
+#nav-size-y-stepper[aria-disabled="true"] input { color: var(--color-disabled); }
+#ov-size { align-items: center; }
+
+/* Stepper: [icon  number | up/down chevrons] around an existing number input. It is exactly --target high, like every
+   other control. The number is in the middle; the two stacked chevron halves on the right (like a compact native
+   spinner) are --target / 2 each: 24px on a coarse pointer, 18px on a fine pointer.
+   The 18px halves are a DELIBERATE exception to the 24x24 target size of WCAG 2.5.8 (Target Size, Minimum), which
+   allows an exception where an equivalent control is available: the field is typable, the arrow keys step it, and a
+   held chevron repeats - all of which reach the same result without hitting a small target. On a coarse pointer
+   (touch) the halves are the full 24px and there is no exception.
+   Fixed width: nothing moves when the number gets longer (tabular figures come from the body). The border is drawn
+   by ::after so it takes no room: the halves measure exactly --target / 2. */
+.stepper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  box-sizing: border-box;
+  height: var(--target);
+  padding-left: 8px;
+  border-radius: var(--radius);
+  background: var(--background);
+  color: var(--color-text);
+}
+.stepper::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border: 1px solid var(--color-text);
+  border-radius: var(--radius);
+  pointer-events: none;
+}
+.stepper-icon { color: var(--color-secondary); }
+.stepper input[type="number"] {
+  width: 2.4ch;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--size-base);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  /* the native spinners are replaced by the chevrons: WebKit/Blink and Firefox */
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.stepper input[type="number"]::-webkit-outer-spin-button,
+.stepper input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.stepper-chevrons {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  width: 32px;
+  margin-left: 2px;
+  border-left: 1px solid var(--color-hairline);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  overflow: hidden;
+}
+.stepper-btn {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+/* Chevron icon: 12px, and a 1.75px line ON SCREEN: the viewBox is 24 units wide, so it is drawn at half scale and needs
+   3.5 units (the other icons keep the .ico value of 1.75 units, as before). */
+.stepper-btn .ico { width: 12px; height: 12px; stroke-width: 3.5; }
+/* the hairline between the halves is an inset shadow, not a border: it takes no room, so both halves are exactly --target / 2 */
+.stepper-btn + .stepper-btn { box-shadow: inset 0 1px 0 var(--color-hairline); }
+@media (hover: hover) {
+  .stepper-btn:hover { background: var(--hover-bg); }
+}
+.stepper-btn[aria-disabled="true"] { color: var(--color-disabled); cursor: not-allowed; }
+@media (hover: hover) {
+  .stepper-btn[aria-disabled="true"]:hover { background: transparent; }
+}
+.stepper-btn:focus-visible { outline-offset: -2px; }
+
+/* Overlay ("More"): a popover under its button on wide screens, a bottom sheet on the phone. One at a time. */
+.overlay {
+  position: fixed;
+  z-index: 40;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(92vw, 360px);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-text);
+  border-radius: var(--radius);
+  font-size: var(--size-base);
+  line-height: 1.25;
+}
+.overlay[hidden] { display: none; }
+.overlay.sheet {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: auto;
+  width: auto;
+  max-width: none;
+  max-height: 80vh;    /* fallback for a browser without dvh */
+  max-height: 80dvh;   /* the visible height: 80vh is the large viewport on iOS, taller than the screen while the address bar shows */
+  overflow: auto;
+  border-width: 1px 0 0 0;
+  border-radius: 12px 12px 0 0;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+.overlay-scrim { position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 39; background: rgba(0, 0, 0, 0.25); }
+.overlay-scrim[hidden] { display: none; }
+.overlay-section { display: flex; flex-direction: column; gap: 8px; }
+.overlay-title { margin: 0; font-size: var(--size-secondary); font-weight: var(--weight-strong); color: var(--color-secondary); }
+.overlay-opts { display: flex; flex-wrap: wrap; gap: var(--gap); }
+.overlay-hint { margin: 0; font-size: var(--size-secondary); color: var(--color-secondary); }
+.overlay-hint[hidden] { display: none; }
+.opt {
+  min-width: var(--target);
+  min-height: var(--target);
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--color-text);
+  border-radius: var(--radius);
+  background: var(--background);
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+@media (hover: hover) {
+  .opt:hover { background: var(--hover-bg); }
+}
+.opt.active { background: var(--color-text); color: var(--color-bg); }
+.opt[aria-disabled="true"] { color: var(--color-disabled); border-color: var(--color-hairline); cursor: not-allowed; }
+@media (hover: hover) {
+  .opt[aria-disabled="true"]:hover { background: var(--background); }
+}
+
+/* Group D Phase B3: the Kreis/Dreieck/Register anchor widgets (#more-farbe) - a visual/text alternative to
+   the B2 numeric steppers over the same anchor state. Point styling mirrors .opt's active/hover language
+   above (fill swap instead of background swap, since these are SVG circles, not boxed buttons). */
+.anchor-widget-svg { width: 100%; max-width: 240px; height: auto; display: block; margin: 0 auto; }
+.anchor-widget-svg[hidden] { display: none; }
+.anchor-point circle.anchor-point-hit { fill: transparent; }
+.anchor-point circle.anchor-point-face { fill: var(--background); stroke: var(--color-text); stroke-width: 1.5; }
+@media (hover: hover) {
+  .anchor-point:hover circle.anchor-point-face { fill: var(--hover-bg); }
+}
+.anchor-point.active circle.anchor-point-face { fill: var(--color-text); }
+.anchor-point text { font-size: 8px; fill: var(--color-text); pointer-events: none; text-anchor: middle; dominant-baseline: central; }
+.anchor-point.active text { fill: var(--color-bg); }
+.anchor-point[aria-disabled="true"] circle.anchor-point-face { fill: var(--background); stroke: var(--color-hairline); cursor: not-allowed; }
+/* Group D Phase B4 follow-up: .anchor-register-list/.anchor-register-row (the Register linear-list widget)
+   removed along with the Register button/overlay - it duplicated the register stepper. .anchor-widget-svg/
+   .anchor-point above stay: both Kreis and Dreieck still use them. */
+
+/* The old three-button symmetry group and the fold group stay in the DOM (sketch.js owns them) but are hidden. */
+.legacy-controls[hidden] { display: none; }
+
+/* === The notices (ui.js: UI.notify, UI.toast) ===================================================================================================
+   #ui-notices is always rendered (a live region, never toggled with `hidden`) and empty most of the time. Fixed, centred, `min(92vw, 480px)` wide, 16px above the bottom edge plus the
+   bottom safe-area inset, a column with an 8px gap, newest at the bottom, at most two. The container does not catch the pointer; a notice does. The look is the toast's (background, text,
+   radius) plus a 3px left border per kind: info = the text colour, warn = a neutral grey, error = --danger. Nothing is filled. The text is clamped to three lines (the title has all of it).
+   A notice of 60 or more characters, or a sticky one, has a close button (--target square: 36 fine, 48 coarse). No animation, so nothing to reduce under prefers-reduced-motion. */
+.notices {
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 60;
+  box-sizing: border-box;
+  width: min(92vw, 480px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  pointer-events: none;
+}
+.notice {
+  pointer-events: auto;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  padding: 12px 16px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-text);
+  border-left-width: 3px;
+  border-radius: var(--radius);
+  font-size: var(--size-base);
+  line-height: 1.25;
+  text-align: left;
+}
+.notice-info { border-left-color: var(--color-text); }
+.notice-warn { border-left-color: var(--color-secondary); }
+.notice-error { border-left-color: var(--danger); }
+.notice-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.notice .notice-close { flex: none; width: var(--target); height: var(--target); margin: -6px -10px -6px 0; box-sizing: border-box; }   /* `.notice .` out-ranks index.html's inline .icon-btn { width: 40px; height: 40px } */
+
+/* === UI rework 4c: Netz row ===============================================
+   Aus | Sin | Tan | Geo, the strength stepper, More. Same rules as the Form row: every control is --target high, a
+   control that does not apply is aria-disabled (never hidden), nothing moves. */
+.nav-kinds .net-kind-btn {
+  width: calc(var(--target) + 12px);   /* four equal slots wide enough for "Aus" / "Sin" / "Tan" / "Geo" */
+  font-size: var(--size-base);
+  font-weight: var(--weight-regular);
+}
+
+/* A stepper whose number is a display (strength, focus): a focusable spinbutton, fixed width so nothing moves when
+   "0.5" becomes "0.86" or "x3.2". The state itself lives in a hidden range input (percent), as with the old slider. */
+.stepper-display {
+  display: inline-block;
+  min-width: 4ch;
+  text-align: center;
+  font-size: var(--size-base);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--color-text);
+}
+.stepper-display:focus-visible { outline: 2px solid var(--color-text); outline-offset: 2px; }
+
+/* Exact two-decimal value field (under More). */
+.exact-field {
+  box-sizing: border-box;
+  width: 96px;
+  height: var(--target);
+  padding: 0 8px;
+  border: 1px solid var(--color-text);
+  border-radius: var(--radius);
+  background: var(--background);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--size-base);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.exact-field[aria-disabled="true"] { color: var(--color-disabled); border-color: var(--color-hairline); cursor: not-allowed; }
+
+/* The net group (#net-group) now sits inside the Netz overlay: its rows read left-aligned, its buttons follow --target. */
+.overlay-wide { max-width: min(92vw, 420px); }
+/* The Info card (sheets redesign, commit 6b): the pattern name, then two native <details> ("Netz", "Zeitleiste"), closed by default. Closed, the card is as wide as its content (width: max-content, as every
+   overlay); an open section widens it up to the 420px of .overlay-wide. As a popover it scrolls inside the viewport (ui.js: the `fit` option sets max-height below its top); as the phone's bottom sheet it
+   scrolls through `.overlay.sheet` (max-height 80dvh). The summary is --target high (36px, 48px under a coarse pointer) with the app's own keyboard ring; the native marker is replaced by a chevron. */
+#info-card { overflow-y: auto; }
+.info-sections { display: flex; flex-direction: column; border-top: 1px solid var(--color-text); }
+.info-section { border-bottom: 1px solid var(--color-text); }
+.info-section:last-child { border-bottom: 0; }
+.info-section > summary { display: flex; align-items: center; gap: 8px; min-height: var(--target); cursor: pointer; list-style: none; font-weight: var(--weight-strong); touch-action: manipulation; }
+.info-section > summary::-webkit-details-marker { display: none; }
+.info-section > summary::before { content: ""; flex: none; width: 6px; height: 6px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); }
+.info-section[open] > summary::before { transform: rotate(45deg); }
+.info-section[open] > summary { margin-bottom: 8px; }
+.info-section > summary:focus-visible { outline: 2px solid var(--color-text); outline-offset: 2px; }
+.info-section > p { margin: 0 0 8px; font-size: var(--size-secondary); line-height: 1.35; }
+.info-section > p:last-child { margin-bottom: 16px; }
+.overlay .control-group { align-items: stretch; gap: 8px; width: 100%; }
+.overlay .icon-row { justify-content: flex-start; flex-wrap: wrap; gap: var(--gap); }
+.overlay .layer-btn {
+  height: auto;
+  min-height: var(--target);
+  padding: 0 12px;
+  border-radius: var(--radius);
+  font-size: var(--size-base);
+  font-weight: var(--weight-regular);
+}
+.overlay #net-focus-row, .overlay #net-macro-row { width: 100%; }
+
+/* task 122 (3C-3): the Netzart stepper (- | 1 | 3C) in front of the kinds, the Netzart 3C controls (a, b, format, W and stretch) in their place, and the Mehr sections. Tokens only: weights 400 / 600, sizes 12 / 16. */
+#net-art-value, #net-a-value, #net-b-value { min-width: 2.5ch; }   /* task 123: the Netzart, a and b steppers are one width (two characters, a and b show 12 at most) */
+.net-3c { display: flex; align-items: center; gap: var(--gap); flex: none; }
+.net-3c[hidden], .net-3c-warn[hidden], .nav-kinds[hidden], .nav-divider[hidden], #nav-netz .stepper[hidden], #nav-netz .nav-cluster[hidden] { display: none; }
+.net-3c-letter { display: inline-block; width: var(--icon); text-align: center; font-size: var(--size-base); font-weight: var(--weight-strong); line-height: 1; }
+.net-format-btn { width: var(--target); padding: 0; }   /* task 123: icon-only */
+.net-3c-warn { display: inline-flex; align-items: center; justify-content: center; width: var(--icon); height: var(--target); color: var(--color-text); }   /* task 123: only when there is a warning (hidden otherwise) */
+/* task 126: the reason line next to the sign (only while the 3C spec draws no net on this shape); one line, ellipsis. The phone has no room for it in the 104px panel (decision pending, see tasks/126). */
+.net-3c-reason { flex: 0 1 auto; min-width: 0; max-width: 34ch; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: var(--size-secondary); color: var(--color-text); }
+.net-3c-reason[hidden] { display: none; }
+/* task 126 (P7): the phone's stand-in for the line is a 48px sign button in row 2 of the Art panel (rules in the phone block, html.ph #net-3c-reason-btn); never shown above 768px */
+#net-3c-reason-btn { display: none; }
+.net-3c-measure { margin: 0; font-size: var(--size-base); font-variant-numeric: tabular-nums; }
+#net-group.net-3c-on #net-axes-row, #net-group.net-3c-on #net-domain-row { display: none; }
+.net-3c-note { margin: 0; font-size: var(--size-secondary); color: var(--color-secondary); }
+.net-3c-note:empty { display: none; }
+.net-3c-suggest { flex-wrap: wrap; }
+.net-3c-suggest .layer-btn { width: auto; padding: 0 12px; font-size: var(--size-base); font-variant-numeric: tabular-nums; }
+#net-domain-row[hidden], #net-axes-row[hidden] { display: none; }
+.net-art-sections { display: flex; flex-direction: column; gap: 16px; }
+.net-art-sections > .overlay-section[hidden] { display: none; }
+.net-art-list { margin: 0; padding-left: 1.2em; font-size: var(--size-secondary); color: var(--color-secondary); display: flex; flex-direction: column; gap: 4px; }
+
+/* Phone: two rows of --bar-h (Aus/Sin/Tan/Geo + More, then the strength stepper). 4 x (--target + 12) + 3 x 8 gaps + 8 +
+   More = 320px at --target 48 (fits a 360px phone). */
+@media (max-width: 767px) {
+  .nav-netz { flex-wrap: wrap; align-content: flex-start; align-items: center; gap: 0 var(--gap); }
+  .nav-netz > * { margin-top: 12px; margin-bottom: 12px; }
+  .nav-netz .nav-kinds { order: 1; }
+  .nav-netz .nav-more { order: 2; }
+  .nav-netz .nav-break { order: 3; display: block; flex: 0 0 100%; height: 0; margin: 0; }
+  .nav-netz .stepper { order: 4; }
+  .nav-netz .nav-divider { display: none; }
+}
+
+/* === UI rework 4d: Farbe row ===============================================
+   Group D Phase B4 follow-up: the old rule row (four harmony rules + axis steppers) is gone entirely, per
+   explicit decision - not just hidden. #face-colors-rule/#face-colors-axes/#face-colors-unassigned live on as
+   permanently-hidden, permanently-empty state carriers (index.html's own comment on #nav-farbe explains why
+   they can't just be deleted: renderFaceColorsPanel()'s own guard hard-requires them to exist for the
+   STILL-VISIBLE per-trail list to render at all) - nothing here needs to style them for display any more,
+   they are never shown. */
+
+/* "Fläche füllen einschalten": the old toolbar's fill button gets the same small dot More uses for "a state is
+   set behind it" (UI rework 4b's .nav-more.has-state), pointing at the fix while the Farbe tab is open. */
+#btn-toggle-faces.needs-attn { position: relative; }
+#btn-toggle-faces.needs-attn::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Layout round: Kreis/Dreieck are a two-state view switch (ui-farbe.js) - the current one is .active (black fill,
+   aria-pressed via UI.pressed()), the other gets the same small corner dot .nav-more.has-state uses when the
+   sheet's active harmony is in the family that is currently hidden. */
+.nav-anchor-views .icon-btn { position: relative; }
+.nav-anchor-views .icon-btn.has-state::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+/* The two harmony families (2/3/4 and B/W/S/V) share ONE slot; it always reserves four buttons' width, so the
+   steppers after it do not jump when the view switches. `[hidden]` must be restated: .nav-cluster's display:flex
+   would otherwise win over the attribute. */
+.nav-harmony-family { min-width: calc(4 * var(--target) + 3 * var(--gap)); }
+.nav-harmony-family[hidden] { display: none; }
+
+/* Phone: #nav-farbe's own anchor row wraps into 2 lines if needed (see the comment below). */
+@media (max-width: 767px) {
+  /* Group D Phase B4 follow-up: #nav-farbe is just the anchor row (Kreis/Dreieck, 2/3/4, the two steppers,
+     the preview swatch) - the old rule row is gone entirely (not moved anywhere). This row wraps on its own
+     via flex-wrap if it ever needs to (.nav-row has none by default) - matching Form's own established
+     pattern, not a special case). */
+  .nav-farbe { flex-wrap: wrap; align-content: flex-start; align-items: center; gap: 0 var(--gap); }
+  .nav-farbe > * { margin-top: 12px; margin-bottom: 12px; }
+  .nav-farbe .nav-divider { display: none; }
+}
+
+/* === UI rework 5a: canvas rail (rearranged into five groups) =============
+   The action rail flanks the canvas on tablet / desktop as ONE single-button-wide column, gutter-aligned like the header / nav rows (CSS Grid: `--target` left
+   column, `1fr` canvas column, a matching `--target` EMPTY right column so the canvas stays centered - an empty `auto` track would collapse to 0).
+   Its five groups, each a .rail-group (a column with a --rail-gap gap, a --rail-group-gap and a hairline between groups; a row on a phone):
+     A undo, redo, random | B points, curves, fill | C the catalog link (Formorgel, Farborgel in the Farbe tab), Paste Pattern | D info, download | E clear
+   plus More (#rail-group-more), a group of its own in the DOM so that it can sit in B on a phone and LAST on the desktop: there it is pulled to the end by `order`
+   (the one `order` on the tablet / desktop rail), 4px under Clear, so its popover hangs under the rail and never covers the canvas. The DOM order is the visual order
+   everywhere else, so the tab order is too; no per-button margin rules are left, and a group that is hidden as a whole takes no space.
+   Below 768px .rail-left is display: contents and the two row wrappers are the rows: .rail-top = A + B + More, .rail-bottom = C + D + E. A row wraps between groups only
+   (a group is one flex item); B and More are kept together by .rail-bm. Every button is the SAME element sketch.js wires by id (select('#btn-...').mousePressed()). */
+:root {
+  --rail-gap: 4px;        /* within a group - tighter than the row's own --gap, see the 5a-fix report */
+  --rail-group-gap: 12px; /* between groups - the same ~3:1 ratio measured on .nav-form's divider spacing */
+}
+.canvas-row {
+  display: grid;
+  grid-template-columns: var(--target) 1fr var(--target);
+  grid-template-rows: auto;
+  column-gap: var(--gap);
+  align-items: start;
+  justify-items: center;
+  align-self: stretch;
+  box-sizing: border-box;
+  padding: 0 var(--gutter);
+}
+@media (min-width: 768px) {
+  /* position:relative: the desktop-only anchor for #farbe-harmony-select's absolute positioning below the row */
+  .canvas-row { padding: 0 24px; position: relative; }
+}
+.canvas-row #canvas-container { grid-column: 2; grid-row: 1; }
+/* .rail-left is its OWN flex column, grid-row 1 next to the canvas but NOT spanning/sharing its row track: a grid item that spans (or shares an auto row track with) a
+   taller sibling gets that track's auto-sizing algorithm applied to it too, which silently stretched every margin below to fill the canvas's 560px. A flex column sizes
+   only to its own content regardless of how tall row 1 is. */
+.rail-left { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; }
+/* border-box: the catalog links are <a> elements, and a link is content-box (a button is border-box): 48 + a 1px border on each side made them 50px. */
+.canvas-row .icon-btn {
+  box-sizing: border-box;
+  width: var(--target);
+  height: var(--target);
+  border-radius: var(--radius);
+  flex: none;
+  touch-action: manipulation;
+}
+
+/* The wrappers: transparent on the tablet / desktop (their groups are the column's items), the rows on a phone (below). */
+.rail-top, .rail-bm, .rail-bottom { display: contents; }
+.rail-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rail-gap);
+  margin-top: var(--rail-group-gap);
+  position: relative;
+}
+/* Farbe-only and Form-only controls. Hidden by html[data-tab] (nav.js sets it) regardless of viewport width - these selectors out-specify .icon-btn's display: flex. */
+html:not([data-tab="farbe"]) .rail-farbe-only { display: none; }
+html:not([data-tab="form"]) .rail-form-only { display: none; }
+/* The Face Colors group (#face-colors-group, sketch.js updateFaceColorsPanel()) belongs to the Farbe tab only (fix F1). sketch.js shows it whenever the active sheet's Fill is on and knows no tab, and the group sits
+   in the controls container, which is visible at 768px and up in every tab: with Fill on, the Form and Netz tabs showed its status, notes and rows under the canvas (the keyframe layers of the net workflow made it
+   the "timeline keyframe and hidden" ghost messages). A display rule, not the `hidden` attribute: it holds whatever sketch.js does to `hidden`, and it takes everything inside with it (a leftover chip view too).
+   In the Farbe tab at 768px and up only the chip view shows: the parked rule of the trails surface below hides the rest. On the phone the container is hidden anyway. */
+html:not([data-tab="farbe"]) #face-colors-group { display: none; }
+/* Farbe: Undo / Redo / Random (group A), Clear (group E) and Mehr are not applicable to face-color work (fill already requires straight lines; generating / undoing /
+   clearing pattern connections aren't color operations) - hidden as whole groups, so a hidden group leaves no gap; the Formorgel link goes too (the Farborgel link takes its place); Kurven (curve toggle) sits in the More popover, which is hidden with More. Undo / Redo's stack (core/state.js) is per layer, not tab-scoped, so hiding the buttons loses no history. */
+html[data-tab="farbe"] #rail-group-a,
+html[data-tab="farbe"] #rail-group-e,
+html[data-tab="farbe"] #rail-group-more,
+html[data-tab="farbe"] #btn-gallery { display: none; }
+
+@media (min-width: 768px) {
+  /* the first visible group sits var(--gap) below the row's top (#canvas-container carries its own `margin: var(--gap) 0`), with no hairline above it: group A, and
+     group B in the Farbe tab (A is hidden there) */
+  #rail-group-a, html[data-tab="farbe"] #rail-group-b { margin-top: var(--gap); }
+  #rail-group-a::before, html[data-tab="farbe"] #rail-group-b::before { display: none; }
+  /* More: last, close under Clear (a --rail-gap, not a group gap, and no hairline) */
+  #rail-group-more { order: 1; margin-top: var(--rail-gap); }
+  #rail-group-more::before { display: none; }
+  /* a hairline centered in the --rail-group-gap above each group (like .nav-divider, but horizontal); drawn with ::before so it takes no row space */
+  .rail-group::before {
+    content: "";
+    position: absolute;
+    top: calc(-1 * var(--rail-group-gap) / 2 - 0.5px);
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--color-hairline);
+  }
+  /* The harmony dropdown is a below-canvas fallback, not a rail item (hidden today): out of flow, so it never widens the rail column (it once pushed the whole rail
+     off-screen to the left). On a phone .rail-left's display: contents makes it a normal in-flow .canvas-row child. */
+  #farbe-harmony-select {
+    position: absolute;
+    top: 100%;
+    left: 24px;
+    margin-top: var(--rail-group-gap);
+    font: inherit;
+  }
+}
+
+@media (max-width: 767px) {
+  .canvas-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--gap);
+  }
+  .rail-left { display: contents; }
+  /* The canvas is a square of --canvas-size (560px, or the row when that is narrower), centred in the row: flex-basis 100% used to beat the container's own width, so from 593px (the
+     row, 100vw - 32px, wider than 560px) the container filled the row and the 1200 x 1200 bitmap was stretched to row x 560. The side margins are what is left of the row, so the container's
+     outer size stays 100%: nothing else joins its line (the rail rows, and in the Farbe tab the groups that are display: contents, still wrap below it). Up to 592px the row is not wider than
+     --canvas-size and every term is 0 or 100%: identical to the old rule. */
+  .canvas-row #canvas-container {
+    flex: 0 0 min(var(--canvas-w), 100%);
+    margin-left: calc((100% - min(var(--canvas-w), 100%)) / 2);
+    margin-right: calc((100% - min(var(--canvas-w), 100%)) / 2);
+    order: 0;
+  }
+  /* Two rows, each wrapping between groups only: a group is one flex item. At 320px the 6 icons of A + B + More (328px) do not fit the 288px row, so A (3) and B + More (3)
+     wrap separately; C + D + E (5 icons, 272px) fits. B and More stay together (.rail-bm). */
+  .rail-top, .rail-bottom { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap); flex: 0 0 100%; }
+  .rail-bm { display: flex; gap: var(--gap); flex: none; }
+  .rail-group { flex-direction: row; gap: var(--gap); margin-top: 0; }
+  /* Farbe: the rows are not forced (A, E and More are hidden there): B, the Farborgel link and D share a line, the strategies and Reset Color the next */
+  html[data-tab="farbe"] .rail-top, html[data-tab="farbe"] .rail-bottom { display: contents; }
+  #farbe-harmony-select { font: inherit; }
+}
+
+/* The rail "Mehr" popover (#more-rail, a UI.overlay): ONE horizontal row - the four toggles, a separator, "Neu anfangen" - and a fixed name line below it. It hangs under the rail
+   on the tablet / desktop (More is the last item there) and is a bottom sheet on a phone (ui.js). The icons are the rail's size (--target); the row wraps only between the toggles and
+   "Neu anfangen". At a coarse pointer the row is 281px wide (4 x 48 + 1 + 48 + 5 gaps of 8), so it fits the 288px inside the sheet's padding down to 320px; below that it wraps and the
+   separator is hidden. The name line has a reserved height (two lines) and is as wide as the row, never wider (width: 0; min-width: 100%), so filling or emptying it moves nothing. */
+#more-rail .more-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gap); }
+#more-rail .more-toggles { display: flex; gap: var(--gap); flex: none; }
+#more-rail .icon-btn {
+  box-sizing: border-box;
+  width: var(--target);
+  height: var(--target);
+  border-radius: var(--radius);
+  flex: none;
+  touch-action: manipulation;
+}
+#more-rail .more-sep { width: 1px; height: var(--target); background: var(--color-hairline); flex: none; }
+@media (max-width: 319px) { #more-rail .more-sep { display: none; } }
+#more-rail .more-name {
+  box-sizing: border-box;
+  width: 0;
+  min-width: 100%;
+  height: 2.5em;
+  margin: 0;
+  overflow: hidden;
+  font-size: var(--size-secondary);
+  line-height: 1.25;
+  color: var(--color-secondary);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+#more-rail .more-name-state { font-weight: var(--weight-strong); color: var(--color-text); }
+
+
+/* === The layer table (layer-table commit 1; ui-layers.js builds it) ==================================================================================================
+   The Base and one row per layer: a number chip (the Base: a stack), the eye, the remove x; below them "+" and "..." and a fixed name line. The table is 4 columns wide in its
+   final form (chip, eye, diamond, x: 4 x --target + 3 gaps of 4px = 156px at a fine pointer, 204px at a coarse one); commit 1 draws three of them (chip in column 1, eye in 2, x in 4)
+   and reserves the third, so the width, and with it the thresholds, stay valid when the diamond column comes. It sits at the right gutter, absolutely positioned (the canvas stays
+   centred: the free width right of the canvas is (W - 560) / 2 - 24, the table needs its width + an 8px gap): a fine pointer from 936px, a coarse pointer from 1032px. Below
+   that the rail (768px up) or the strip (below 768px) shows. The old layer row is display: none at every width (a rule of its own, see the strip block; never removed: its handlers are what layerApi (sketch.js) runs); "..." toggles
+   the same block. */
+.layer-table { display: none; }
+@media (pointer: fine) and (min-width: 936px), (pointer: coarse) and (min-width: 1032px) {
+  .layer-table {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: var(--gap);
+    right: 24px;
+    box-sizing: border-box;
+    width: calc(4 * var(--target) + 3 * var(--rail-gap));
+    max-height: var(--canvas-size);
+  }
+}
+.layer-table .lt-base { flex: none; }   /* the Base row: fixed, outside the scrolling layer rows (like "+" and "..." in the foot) */
+.layer-table .lt-rows { display: flex; flex-direction: column; gap: var(--rail-gap); padding: 4px; margin: 0 -4px -4px; overflow-y: auto; min-height: 0; flex: 0 1 auto; }   /* only the layer rows scroll; the 4px of padding on top is the gap under the Base row (and the focus ring's room), so a scrolled row is clipped at the Base row's bottom edge */
+.layer-table .lt-rows:empty { display: none; }   /* no layers: the table is the Base row and the foot, as before */
+.layer-table .lt-row, .layer-table .lt-foot { display: grid; grid-template-columns: repeat(4, var(--target)); gap: var(--rail-gap); }
+.layer-table .lt-chip { grid-column: 1; }
+.layer-table .lt-chip, .layer-rail .lt-chip, .layer-strip .lt-chip { font: inherit; font-size: var(--size-base); font-variant-numeric: tabular-nums; }
+.layer-table .lt-eye { grid-column: 2; }
+.layer-table .lt-dia { grid-column: 3; }
+.layer-table .lt-x { grid-column: 4; }
+.layer-table .lt-add { grid-column: 1; }
+.layer-table .lt-more { grid-column: 2; position: relative; }
+.layer-table .icon-btn[aria-disabled="true"], .layer-rail .icon-btn[aria-disabled="true"], .layer-strip .icon-btn[aria-disabled="true"] { color: var(--color-disabled); border-color: var(--color-disabled); cursor: not-allowed; }
+.layer-table .lt-chip.is-hidden:not(.active), .layer-rail .lt-chip.is-hidden:not(.active), .layer-strip .lt-chip.is-hidden:not(.active) { color: var(--color-secondary); border-color: var(--color-secondary); }
+.layer-table .lt-foot { position: relative; margin-top: var(--rail-group-gap); flex: none; }
+.layer-table .lt-foot::before {
+  content: "";
+  position: absolute;
+  top: calc(-1 * var(--rail-group-gap) / 2 - 0.5px);
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--color-hairline);
+}
+/* the name line: a reserved height (two lines), as wide as the table and never wider, so filling or emptying it moves nothing */
+.layer-table .lt-name {
+  box-sizing: border-box;
+  width: 0;
+  min-width: 100%;
+  height: 2.5em;
+  margin: var(--rail-gap) 0 0;
+  overflow: hidden;
+  font-size: var(--size-secondary);
+  line-height: 1.25;
+  color: var(--color-secondary);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  flex: none;
+}
+.layer-table .lt-name-state { font-weight: var(--weight-strong); color: var(--color-text); }
+
+/* === The layer rail (layer-table commit 2; ui-layers.js builds it) ==================================================================================================
+   The narrow view of the same model: ONE column, as wide as a button (--target: 36px fine, 48px coarse), at the right gutter (right: 24px, like the left tool rail) and level with the
+   canvas top (top: var(--gap)); absolutely positioned, so the canvas stays centred. From 768px (the width where the left tool rail turns vertical, so both rails appear together) up to the
+   table's threshold: a fine pointer 768 to 935px, a coarse pointer 768 to 1031px; there the table shows instead (above) and below 768px the strip (commit 4, below) shows. 768px leaves 104px right of the canvas (24px gutter included): the rail needs --target + 8px. The old row is hidden at every width (the strip block).
+   Group 1 = the chips (.lr-chips, scrolls inside the rail's max-height; "+" sits under it, outside the scrolling part), a hairline, group 2 = the actions of the active sheet. The scrolling
+   part has 4px of padding (and an equal negative margin) so the keyboard focus ring of an edge chip is not clipped by its overflow. */
+.layer-rail { display: none; }
+@media (min-width: 768px) and (max-width: 935px) and (pointer: fine), (min-width: 768px) and (max-width: 1031px) and (pointer: coarse) {
+  .layer-rail {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: var(--gap);
+    right: 24px;
+    box-sizing: border-box;
+    width: var(--target);
+    max-height: var(--canvas-size);
+  }
+}
+.layer-rail .lr-group { display: flex; flex-direction: column; gap: var(--rail-gap); }
+.layer-rail .lr-g1 { min-height: 0; flex: 0 1 auto; }
+.layer-rail .lr-chips {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rail-gap);
+  padding: 4px;
+  margin: -4px;
+  overflow-y: auto;
+  min-height: 0;
+  flex: 0 1 auto;
+  scrollbar-width: none;
+}
+.layer-rail .lr-chips::-webkit-scrollbar { display: none; }
+.layer-rail .lr-g2 { position: relative; margin-top: var(--rail-group-gap); flex: none; }
+.layer-rail .lr-g2::before {
+  content: "";
+  position: absolute;
+  top: calc(-1 * var(--rail-group-gap) / 2 - 0.5px);
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--color-hairline);
+}
+.layer-rail .lt-more { position: relative; }
+
+/* === The confirmation dialogs ("Neu anfangen", "Ebene entfernen") ===================================================================================================
+   index.html's inline `.dialog-content button { background: var(--accent); color: white; border: none }` (specificity 0,1,1) is meant for the Help and Export "Close" buttons and hits EVERY
+   button inside any .dialog-content, so both buttons of both confirmations were filled red. These two rules (0,2,1 and 0,3,0) out-rank it for the buttons in .restart-actions only: "Abbrechen" is
+   the normal outlined button (the focus ring is the global one, untouched), the destructive confirm button (.dialog-danger) differs only in a red text and border (var(--danger), a token of its own: --accent is 3.55:1 on white, --danger 5.38:1), nothing filled. */
+.dialog-content .restart-actions button {
+  box-sizing: border-box;
+  margin-top: 12px;
+  padding: 8px 16px;
+  border: 1px solid var(--text);
+  border-radius: var(--radius);
+  background: var(--background);
+  color: var(--text);
+}
+.dialog-content .restart-actions .dialog-danger { color: var(--danger); border-color: var(--danger); }
+@media (hover: hover) {
+  .dialog-content .restart-actions button:hover { background: var(--hover-bg); }
+}
+
+/* === The animation export block in the Download dialog (task 116; index.html #export-anim, sketch.js animExport*()) ===================================================================
+   A column inside .dialog-content: no html.ph rule is needed (the dialog scrolls, the buttons, the select and the number field already get the --target size from the phone and the coarse rules). */
+.export-anim { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--text); }
+.export-anim[hidden], .export-anim-run[hidden], .export-anim-group[hidden], .export-anim-note[hidden] { display: none; }
+.export-anim-group { display: flex; flex-direction: column; gap: 6px; }
+.export-anim-title { margin: 0; font-weight: 600; }
+.export-anim-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0; }
+.export-anim-row input[type="number"] { width: 6em; }
+.export-anim-note { margin: 0; min-height: 1.2em; font-size: 0.9em; }
+.export-anim-run { display: flex; flex-direction: column; gap: 6px; }
+.export-anim-run progress { width: 100%; }
+.export-anim .format-btn[aria-pressed="true"] { background: var(--text); color: var(--background); }
+.export-anim .format-btn:disabled { opacity: 0.5; cursor: default; }
+
+/* === The layer strip (layer-table commit 4; ui-layers.js builds it) ==================================================================================================
+   The phone view of the same model: two rows of --target buttons with 8px gaps, left-aligned at the gutter (.canvas-row's 16px padding), directly under the canvas. Shown below 768px for
+   BOTH pointer types (from 768px the rail or the table shows). Row 1 (.lr-g1) = the Base chip and "+" (fixed) around the layer chips, which scroll SIDEWAYS (.lr-chips: overflow-x: auto, no
+   scrollbar, 4px of padding and an equal negative margin so the focus ring of an edge chip is not clipped); row 2 (.lr-g2) = the eye, "..." and the remove x of the active sheet (a
+   fourth slot is for the diamond, a later commit). It is a flex item of .canvas-row (the phone's wrapping flex row) and takes a full line; the tool rail's rows follow it. The old layer row is gone: the strip, the rail and the table replaced it. */
+.layer-strip { display: none; }
+@media (max-width: 767px) {
+  .layer-strip {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    flex: 0 0 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+}
+.layer-strip .lr-group { display: flex; flex-direction: row; align-items: center; gap: var(--gap); min-width: 0; }
+.layer-strip .lr-chips {
+  display: flex;
+  flex-direction: row;
+  gap: var(--gap);
+  padding: 4px;
+  margin: -4px;
+  overflow-x: auto;
+  min-width: 0;
+  flex: 0 1 auto;
+  scrollbar-width: none;
+}
+.layer-strip .lr-chips::-webkit-scrollbar { display: none; }
+.layer-strip .lt-more { position: relative; }
+
+/* === The timeline strip (layer-table commit 6; ui-timeline.js builds it) ==================================================================================================
+   Play, the scrub bar, the Include net switch and "Mehr", in one row under the canvas. Below 768px it is a flex item of .canvas-row's wrapping row (a full line, between the canvas and the layer
+   strip: the DOM order); from 768px it is the SECOND grid row, in the canvas column, as wide as the canvas (--canvas-size) and centred: the canvas row stays where it was (row 1), so the canvas
+   does not move. The buttons are --target high (36px fine, 48px coarse: .canvas-row .icon-btn); the bar takes the rest. The scrub bar is a real <input type="range"> as high as a button
+   (a touch target) with the slider look of the other sliders (6px track, 14px thumb); the diamond marks sit on top of it at their time positions (decorative: aria-hidden, no pointer events),
+   computed from --f (0..1) over the track's length, which is the bar minus the thumb. The old timeline controls (Add to Timeline, Include net, the Play row, the progress input, Remove Timeline) are gone: the layers' diamonds,
+   this strip and "Zeitleiste entfernen" replaced them. #timeline-group (the keyframe list, the net status, the pairing editor, the status line, "Zeitleiste entfernen") is shown only while
+   "Mehr" is open. */
+#timeline-group:not(.ts-open) { display: none; }
+.timeline-strip {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  box-sizing: border-box;
+  min-width: 0;
+  flex: 0 0 100%;
+}
+.timeline-strip .ts-bar { position: relative; flex: 1 1 auto; min-width: 0; height: var(--target); --ts-thumb: 14px; }
+.timeline-strip .ts-range {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  position: relative;
+  width: 100%;
+  height: var(--target);
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  touch-action: manipulation;
+}
+.timeline-strip .ts-range::-webkit-slider-runnable-track { height: 6px; background: var(--slider-track-bg); border-radius: 3px; }
+.timeline-strip .ts-range::-moz-range-track { height: 6px; background: var(--slider-track-bg); border-radius: 3px; }
+.timeline-strip .ts-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: var(--ts-thumb); height: var(--ts-thumb); margin-top: -4px; border-radius: 50%; background: var(--slider-thumb-bg); }
+.timeline-strip .ts-range::-moz-range-thumb { width: var(--ts-thumb); height: var(--ts-thumb); border: none; border-radius: 50%; background: var(--slider-thumb-bg); }
+.timeline-strip .ts-range[aria-disabled="true"] { opacity: 0.4; cursor: not-allowed; }
+/* The keyboard focus ring of the scrub bar. Safari (and Chromium) showed none: index.html's inline `input[type="range"] { outline: none }` comes after this file and has the same
+   specificity as the global `input:focus-visible` rule below, so it won. The ring is the buttons' own (2px solid var(--color-text), offset 2px: the global rule at the end of this
+   file); an outline takes no space. It is drawn on the input and, with :has, on the .ts-bar around it (the same box, so the two coincide): a focused DISABLED bar (aria-disabled, which
+   keeps it focusable) is 0.4 opaque, and 0.4 black on white is 2.85:1 - the ring on the .ts-bar stays opaque (21:1). */
+.timeline-strip .ts-range:focus-visible { outline: 2px solid var(--color-text); outline-offset: 2px; }
+.timeline-strip .ts-bar:has(> .ts-range:focus-visible) { outline: 2px solid var(--color-text); outline-offset: 2px; }
+.timeline-strip .ts-marks { position: absolute; left: 0; right: 0; top: 0; height: 100%; pointer-events: none; }
+.timeline-strip .ts-mark {
+  position: absolute;
+  top: 3px;
+  left: calc(var(--ts-thumb) / 2 + var(--f, 0) * (100% - var(--ts-thumb)));
+  transform: translateX(-50%);
+  line-height: 0;
+  color: var(--text);
+}
+.timeline-strip .icon-btn[aria-disabled="true"] { color: var(--color-disabled); border-color: var(--color-disabled); cursor: not-allowed; }
+.timeline-strip .ts-net, .timeline-strip .ts-more { position: relative; }
+.timeline-strip .ts-net.has-state::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+@media (min-width: 768px) {
+  .timeline-strip { flex: none; grid-column: 2; grid-row: 2; width: var(--canvas-size); justify-self: center; }
+}
+
+/* Keyboard focus: its own 2px outline with a 2px offset, never the same
+   as the active state (black fill). :focus-visible = keyboard only. */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid var(--color-text);
+  outline-offset: 2px;
+}
+
+/* === Phone layout (phone layout, commits 1a to 3; ui-phone.js builds it, ui-phone-config.js says what goes where) =====================================================
+   Every rule here sits inside @media (max-width: 767px) AND starts with `html.ph`: the class is set only by ui-phone.js, only while a covered tab (Form, Farbe, Netz: all of them since commit 3) is applied below
+   768px, and removed by release(). Without the script and at 768px and up nothing below matches, so those keep the layout they had. Nothing above this block was changed.
+   SPACING (1a2): four values only - --sp-1 4px (inside a group of buttons, separator margins), --sp-2 8px (between zones and rows), --sp-3 16px (the gutter, the canvas margins), --sp-4 32px (between the
+   text tabs). Every padding, margin and gap below is one of them, 0, or a calc of them (tools/ui/test-phone-config.js lists a violation with its selector). 48, 44, 40 are control and bar sizes, not spacing.
+   Stack (px): header 40 | 8 | the canvas | tool row 64 (8 + 48 + 8, its hairline inside) | sub-tab row 44 (hairline inside) | 8 | panel 104 (two rows of 48 with an 8px gap). --chrome-h is everything but the
+   canvas (268); the canvas is a square of min(100vw - 2 x --sp-3, the viewport height - --chrome-h), left aligned at the 16px gutter (--canvas-ratio 1: width = height x ratio, so another proportion is a change of
+   one number here; the bitmap, the sketch and the pointer mapping stay as they are). --ph-inner-h is window.innerHeight from the script: the fallback of a browser without the small viewport unit (svh).
+   STRUCTURE (patterns C0a, a reordering only: no value, selector or rule changed): ONE media query holds, in this order, the PAGE LAYOUT block (everything around the canvas), SHARED (what several surfaces use:
+   the sheet host and the rows of the sheets in rows), OTHER SURFACES (rail More sheet, dialogs, Farbe harmony), and one block per surface: TRAILS, NETZ, LAYER SHEET, TIMELINE. Each block starts with a banner
+   comment; a new rule goes into the block of the surface it serves. Where two rules of equal specificity could meet on one element their order is the old one (tools/ui/test-phone-config.js, commit C0a). */
+@media (max-width: 767px) {
+  /* ================================================================================================================================================================================
+     PAGE LAYOUT (patterns C0a: the rules are ordered by what they serve; no value or selector changed). The custom properties, the header, the canvas stack, the tool row, the sub-tab
+     row, the panel slot, the notice anchor and the scroll lock: what is around every surface. Built in the phone layout commits 1a to 4.
+     ================================================================================================================================================================================ */
+
+  html.ph {
+    --sp-1: 4px;
+    --sp-2: 8px;
+    --sp-3: 16px;
+    --sp-4: 32px;
+    --target: 48px;
+    --ph-header-h: 40px;
+    --ph-toolrow-h: 64px;
+    --ph-subtabs-h: 44px;
+    --panel-h: 104px;
+    --chrome-h: calc(var(--ph-header-h) + var(--sp-2) + var(--ph-toolrow-h) + var(--ph-subtabs-h) + var(--sp-2) + var(--panel-h));
+    --ph-h: var(--ph-inner-h, 100vh);
+    --canvas-ratio: 1;
+    --canvas-h: min(calc((100vw - 2 * var(--sp-3)) / var(--canvas-ratio)), calc(var(--ph-h) - var(--chrome-h)));
+    --canvas-w: calc(var(--canvas-h) * var(--canvas-ratio));
+  }
+  @supports (height: 100svh) {
+    html.ph { --ph-h: 100svh; }
+  }
+
+  /* header: 40px with the hairline inside, the tabs on the left in text style, Help a frameless muted icon on the right (same element, id, handler and aria-label) with a 40px hit area */
+  html.ph .app-header { height: var(--ph-header-h); }
+  html.ph .app-header .icon-btn { width: var(--ph-header-h); height: var(--ph-header-h); min-width: var(--ph-header-h); min-height: var(--ph-header-h); }   /* frame, fill and colour: the generic .app-header .icon-btn rule (fix F2) */
+
+  /* the Form nav row is empty (its controls are in the panel) and the rail has nothing left for Form: neither takes room */
+  html.ph .nav-rows,
+  html.ph .rail-left { display: none; }
+
+  /* the canvas: 8px under the header, LEFT aligned at the gutter (the same 16px as the buttons below), a box of --canvas-w x --canvas-h; the right margin is what remains (16px when the width limits it). The 2px
+     frame is drawn by the sketch inside the bitmap */
+  html.ph .canvas-row { display: flex; flex-wrap: nowrap; justify-content: flex-start; align-items: flex-start; gap: 0; padding: var(--sp-2) var(--sp-3) 0; }
+  html.ph .canvas-row #canvas-container { flex: none; width: var(--canvas-w); height: var(--canvas-h); margin: 0; }
+  html.ph .ph-stack { align-self: stretch; width: 100%; }
+
+  /* the tool row: 64px = 8 + 48 + 8, its hairline drawn inside (a shadow takes no room); 48px icons, 4px inside a group, a hairline between groups; the groups scroll sideways when they do not fit and More
+     stays at the end (16px gutter, left aligned) */
+  html.ph .ph-toolrow { box-sizing: border-box; height: var(--ph-toolrow-h); padding: var(--sp-2) var(--sp-3); box-shadow: inset 0 -1px 0 var(--color-hairline); display: flex; align-items: center; justify-content: flex-start; }
+  html.ph .ph-tools { display: flex; align-items: center; flex: 0 1 auto; min-width: 0; padding: var(--sp-1); margin: calc(-1 * var(--sp-1)); overflow-x: auto; scrollbar-width: none; }   /* room for the focus ring of an edge icon */
+  html.ph .ph-tools::-webkit-scrollbar { display: none; }
+  html.ph .ph-toolgroup { display: flex; align-items: center; gap: var(--sp-1); flex: none; }
+  html.ph .ph-sep { flex: none; width: 1px; height: var(--target); margin: 0 var(--sp-2); background: var(--color-hairline); }
+  @media (max-width: 365px) {
+    html.ph .ph-sep { margin: 0 var(--sp-1); }
+  }
+  @media (max-width: 349px) {
+    html.ph .ph-sep { margin: 0; }
+  }
+  @media (max-width: 339px) {
+    html.ph .ph-sep { margin: 0 var(--sp-1); }   /* the row scrolls here */
+  }
+
+  /* the sub-tab row: text tabs like the header's (18px, muted, the current one 600 and black); same semantics - every tab in the Tab order, aria-current on the active one */
+  html.ph .ph-subtabs { box-sizing: border-box; height: var(--ph-subtabs-h); padding: 0 var(--sp-3); border-bottom: 1px solid var(--color-hairline); display: flex; align-items: flex-start; gap: calc(var(--sp-3) + var(--sp-2)); overflow-x: auto; scrollbar-width: none; }   /* 24px between the tabs; Farbe's four fit 343px, below that the row scrolls */
+  html.ph .ph-subtabs::-webkit-scrollbar { display: none; }
+  html.ph .ph-subtab {
+    box-sizing: border-box;
+    height: var(--ph-subtabs-h);   /* the whole row high: the 1px of the hairline below is under the button, which has no background */
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;   /* the text starts at the gutter and the labels are 24px apart (the gap); the hit area is widened by the ::after below */
+    border: 0;
+    border-radius: 0;
+    background: none;
+    font: inherit;
+    font-size: var(--fs-tab);
+    font-weight: var(--weight-regular);
+    line-height: 1.1;
+    color: var(--color-secondary);
+    cursor: pointer;
+    touch-action: manipulation;
+    flex: none;
+  }
+  html.ph .ph-subtab::after { content: ""; position: absolute; top: 0; bottom: 0; left: calc(-1 * (var(--sp-2) + var(--sp-1))); right: calc(-1 * (var(--sp-2) + var(--sp-1))); }   /* half the 24px gap on each side: neighbours meet in the middle */
+  html.ph .ph-subtab[aria-current="true"] { font-weight: var(--weight-strong); color: var(--color-text); }
+
+  /* the panel: ONE slot, 104px high, two rows of 48 with an 8px gap, 16px gutters, left aligned, 8px under the sub-tab row. The parking container holds the panes that are not shown (hidden: out of the Tab
+     order and the accessibility tree) */
+  html.ph .ph-slot { box-sizing: border-box; height: var(--panel-h); margin-top: var(--sp-2); padding: 0 var(--sp-3); display: flex; flex-direction: column; align-items: stretch; }
+  html.ph .ph-pane { display: flex; flex-direction: column; gap: var(--sp-2); }
+  html.ph .ph-row { display: flex; align-items: center; justify-content: flex-start; gap: var(--sp-2); min-width: 0; }
+  html.ph .ph-park[hidden] { display: none; }
+
+  /* the Form row's rules are scoped to .nav-row and the rail's to .canvas-row: restated for the tool row and the panel, with the same values */
+  html.ph .ph-toolrow .icon-btn,
+  html.ph .ph-slot .icon-btn {
+    box-sizing: border-box;
+    width: var(--target);
+    height: var(--target);
+    border-radius: var(--radius);
+    flex: none;
+    touch-action: manipulation;
+  }
+  html.ph .ph-slot .nav-cluster { gap: var(--sp-2); }
+  html.ph .ph-slot .icon-btn[aria-disabled="true"] { color: var(--color-disabled); border-color: var(--color-hairline); cursor: not-allowed; }
+
+  /* the narrowest phones (320px): the two steppers and More must fit the 288px row, so the number field gives up 8px */
+  @media (max-width: 339px) {
+    html.ph .ph-slot .stepper > input[type="number"] { width: 40px; min-width: 40px; }
+  }
+
+  /* The page does not scroll: html and body are exactly the viewport (--ph-h is 100svh, or window.innerHeight where svh does not exist) and clip. The leftover containers (the controls container, whose
+     two big blocks are sheets now and whose contextual groups moved into the rail's sheet) take no room. What still scrolls: the sheets (.overlay.sheet: max-height 80dvh, overflow auto), the info card, the
+     dialogs (below), the strips of chips and the tool row (sideways). */
+  html.ph, html.ph body { height: var(--ph-h); min-height: 0; overflow: hidden; }
+  html.ph .main-container { display: none; }
+
+  /* a hairline inside a panel row sits between two 8px gaps (no margin of its own: validate() counts the gaps only); a row that does not fit 288px (the harmony row) scrolls sideways below 340px */
+  html.ph .ph-row > .ph-sep { margin: 0; }
+  @media (max-width: 339px) {
+    html.ph .ph-row-scroll { overflow-x: auto; scrollbar-width: none; padding: var(--sp-1); margin: calc(-1 * var(--sp-1)); }
+    html.ph .ph-row-scroll::-webkit-scrollbar { display: none; }
+    html.ph .ph-row-scroll > * { flex: none; }
+  }
+
+  /* the tool row's strategy group is the Farbe rail's radiogroup wrapper (.rail-group): four 48px icons 4px apart in a row, no rail margins or hairline */
+  html.ph .ph-toolgroup .rail-group { display: flex; flex-direction: row; align-items: center; gap: var(--sp-1); margin: 0; padding: 0; }
+  html.ph .ph-toolgroup .rail-group::before { display: none; }
+
+  /* Under the phone layout the notices stack (#ui-notices, at most ONE notice: ui.js) sits over the BOTTOM of the canvas: as wide as the canvas and at its left edge, its bottom edge 8px above the canvas's bottom
+     edge (header + the 8px above the canvas + --canvas-h - 8px), growing upward; so it never reaches the tool row, the sub-tab row or the panel. `top` and translateY(-100%) rather than `bottom`: the position
+     does not depend on the viewport height the browser reports (svh against lvh). Without html.ph (768px and up, and nothing else) the stack keeps the bottom anchor above. */
+  html.ph .notices { top: calc(var(--ph-header-h) + var(--sp-2) + var(--canvas-h) - var(--sp-2)); bottom: auto; left: var(--sp-3); width: var(--canvas-w); transform: translateY(-100%); }
+
+  /* While an overlay is open (ui.js: UI.overlay puts the class overlay-open on html) a bottom sheet covers the lower part of the canvas and would lie under the notice, which sits above it (z-index 60 against 40)
+     and would hide the field being edited: the stack goes to the TOP of the canvas then, 8px under the header, growing downward. */
+  html.ph.overlay-open .notices { top: calc(var(--ph-header-h) + var(--sp-2)); transform: none; }
+
+  /* ================================================================================================================================================================================
+     SHARED (patterns C0a): what more than one surface uses - the sheet host (.ph-sheet), the rows and blocks of the sheets in rows (layer sheet, Netz sheet and timeline sheet), the wrapping
+     row and the hidden rule of the panel slot. Placed before the surface blocks that style the same classes.
+     ================================================================================================================================================================================ */
+
+  /* the layer "Mehr" and timeline "Mehr" blocks in their sheets (ui-phone.js makes the host, UI.overlay opens it): the groups flow like they did in the controls container */
+  html.ph .ph-sheet { flex-direction: row; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: var(--sp-3); }
+  html.ph .ph-sheet .control-group { max-width: 100%; }
+
+  /* The sheet is a column of blocks 16px apart (the sheet's own 16px padding all round); a block is a column of rows 8px apart; a row is 48px high, left aligned, 8px between its items. The items are the layer's
+     own .control-group wrappers (moved whole; their labels are display: none by the label rule above). A row or block the engine hides (all its items hidden) takes no room and no gap. */
+  html.ph .ph-sheet.ph-sheet-rows { flex-direction: column; flex-wrap: nowrap; align-items: stretch; justify-content: flex-start; gap: var(--sp-3); }
+  html.ph .ph-sheet-block { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-2); min-width: 0; }
+  html.ph .ph-sheet-row { display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: var(--sp-2); min-width: 0; max-width: 100%; }
+  html.ph .ph-sheet-block > .ph-sheet-row { align-self: stretch; }   /* a row is as wide as its block (commit 5c: the pairing list rows are 343px wide; every other row keeps its items at the left) */
+  html.ph .ph-sheet-block[hidden], html.ph .ph-sheet-row[hidden] { display: none; }
+  html.ph .ph-sheet-row .control-group { flex: none; flex-direction: row; align-items: center; justify-content: flex-start; gap: var(--sp-2); width: auto; max-width: none; margin: 0; padding: 0; text-align: left; }
+  html.ph .ph-sheet-row .control-group[hidden] { display: none; }
+
+  /* a row marked `wrap` wraps into lines when it does not fit (the layer sheet's first row: 328px; the timeline's pairing row: 323px); before commit 5b this was inside the 339px media query, which left 340 to 359px
+     phones with a row that overflowed by up to 20px */
+  html.ph .ph-sheet-row-wrap { flex-wrap: wrap; }
+
+  /* an element sketch.js hides (Reverse, the Fokus stepper) stays hidden whatever display its class gives it */
+  html.ph .ph-slot [hidden] { display: none; }
+
+  /* ================================================================================================================================================================================
+     OTHER SURFACES (patterns C0a): the rail's More sheet, the dialogs and the Farbe harmony panel (the anchor preview). Nothing here belongs to the four surface blocks below.
+     ================================================================================================================================================================================ */
+
+  /* the rail's sheet: the contextual groups (Curve / Free settings) sit under the second icon row; the wrapper takes no room of its own, so a hidden group leaves no gap */
+  html.ph #more-rail .more-settings { display: contents; }
+
+  /* a dialog never gets taller than the screen, and scrolls inside (the Download, Neu anfangen, remove and timeline dialogs had no maximum) */
+  html.ph .dialog-content { box-sizing: border-box; max-height: calc(var(--ph-h) - 2 * var(--sp-3)); overflow-y: auto; }
+  html.ph .dialog-content button { min-height: var(--target); }   /* a mouse at a phone width gets the same 48px buttons the coarse rule gives a finger */
+
+  /* the rail's sheet in Farbe: Form's first row (Curve, Free, Free Endpoints, Alternative Net, Neu anfangen) is not offered there (it was hidden in Farbe before); the second row holds Farbe's buttons */
+  html.ph[data-tab="farbe"] #more-rail > .more-row:not(.more-extra) { display: none; }
+
+  /* the anchor preview: a 48px swatch at the end of the second row (its rule is the generic #farbe-anchor-preview rule next to .nav-divider, fix F2) */
+
+  /* ================================================================================================================================================================================
+     SURFACE: TRAILS (patterns C0a; the Spuren chip view of the Farbe tab, phone layout commit 2; ui-phone-chips.js). One 48px chip per trail, the trail stepper under it.
+     ================================================================================================================================================================================ */
+
+  /* Spuren: row 1 = one 48px chip per trail (the number centred, a 4px bar of the trail's colour at the bottom edge), scrolling sideways, the selected one black; row 2 = the stepper of the selected trail */
+  html.ph .ph-chips { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; padding: var(--sp-1); margin: calc(-1 * var(--sp-1)); overflow-x: auto; scrollbar-width: none; }
+  html.ph .ph-chips::-webkit-scrollbar { display: none; }
+  html.ph .ph-chip { position: relative; box-sizing: border-box; flex: none; width: var(--target); height: var(--target); margin: 0; padding: 0; overflow: hidden; border: 1px solid var(--color-text); border-radius: var(--radius); background: var(--color-bg); color: var(--color-text); font: inherit; font-size: var(--fs-tab); cursor: pointer; touch-action: manipulation; }
+  html.ph .ph-chip.active { background: var(--color-text); color: var(--color-bg); }
+  html.ph .ph-chip-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; }
+  html.ph .ph-chips-empty { display: flex; align-items: center; height: var(--target); color: var(--color-secondary); font-size: var(--size-secondary); }
+  html.ph .ph-trail-stepper { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; }
+  html.ph .ph-trail-count { min-width: var(--target); text-align: center; font-variant-numeric: tabular-nums; }
+  html.ph .ph-trail-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-secondary); font-size: var(--size-secondary); }
+
+  /* ================================================================================================================================================================================
+     SURFACE: NETZ (patterns C0a; the Netz tab's panel buttons and Net lines icon, phone layout commit 3, the Netz sheet in rows, sheets redesign commit 4a/4b, and the readout line).
+     ================================================================================================================================================================================ */
+
+  /* Art: the four kind buttons are 60px wide ("Aus" / "Sin" / "Tan" / "Geo", as in the Netz row); the text buttons of the panel (Both / X / Y, Reverse) are --target high */
+  html.ph .ph-slot .net-kind-btn { width: 48px; }   /* task 122: three laws in the panel (Aus is a hidden technical element), 48px so the format buttons fit the Reverse slot */
+  html.ph .ph-slot .net-format-btn { width: 48px; padding: 0; }
+  @media (max-width: 339px) {
+    html.ph .ph-slot #net-art-stepper > .stepper-display, html.ph .ph-slot #net-a-stepper > .stepper-display, html.ph .ph-slot #net-b-stepper > .stepper-display, html.ph .ph-slot #net-strength-stepper > .stepper-display { width: 40px; min-width: 40px; }   /* task 122: the four display steppers of the Art panel give up 8px on the narrowest phones (the Farbe register stepper keeps its width) */
+  }
+  html.ph .ph-slot .layer-btn { box-sizing: border-box; min-height: var(--target); }
+
+  /* Net lines: the text button of the Netz sheet (#more-netz) becomes an icon in the tool row - two wavy lines drawn with a mask, so the button, its text (the accessible name), its title and its active state
+     are the ones it has; the button has no text, its name is its aria-label (netz.lines.button) */
+  html.ph .ph-toolrow #net-lines-btn { position: relative; box-sizing: border-box; flex: none; width: var(--target); height: var(--target); min-width: var(--target); padding: 0; border-radius: var(--radius); font-size: 0; line-height: 0; touch-action: manipulation; }
+  html.ph .ph-toolrow #net-lines-btn::before { content: ""; position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; transform: translate(-50%, -50%); background-color: currentColor; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M3 8 C6 4 9 4 12 8 S18 12 21 8'/%3E%3Cpath d='M3 16 C6 12 9 12 12 16 S18 20 21 16'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M3 8 C6 4 9 4 12 8 S18 12 21 8'/%3E%3Cpath d='M3 16 C6 12 9 12 12 16 S18 20 21 16'/%3E%3C/svg%3E") center / contain no-repeat; }
+
+  /* Reverse (Art panel, Geo only): an icon too, two opposed arrows drawn with a mask; the button has no text, its name is its aria-label (the dictionary key netz.reverse) */
+  html.ph .ph-slot #net-reverse-btn { position: relative; box-sizing: border-box; flex: none; width: var(--target); height: var(--target); min-width: var(--target); padding: 0; border-radius: var(--radius); touch-action: manipulation; }
+  html.ph .ph-slot #net-reverse-btn::before { content: ""; position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; transform: translate(-50%, -50%); background-color: currentColor; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 8 H20 M16 4 L20 8 L16 12'/%3E%3Cpath d='M20 16 H4 M8 12 L4 16 L8 20'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 8 H20 M16 4 L20 8 L16 12'/%3E%3Cpath d='M20 16 H4 M8 12 L4 16 L8 20'/%3E%3C/svg%3E") center / contain no-repeat; }
+  html.ph .ph-slot #net-reverse-btn[hidden] { display: none; }
+
+  /* #more-netz is an overlay of its own (a bottom sheet here): the same blocks and rows as the layer sheet. The leftover containers (the strength section, #net-group with the hints and whatever sketch.js still shows in
+     it) take no room - every control that matters is in a row - and the hints, the macro title and the headings are parked hidden: the readout line says what they said, shortly. */
+  html.ph .overlay.ph-sheet-rows { flex-direction: column; flex-wrap: nowrap; align-items: stretch; justify-content: flex-start; gap: var(--sp-3); }
+  html.ph #more-netz.ph-sheet-rows > .overlay-section, html.ph #more-netz.ph-sheet-rows > #net-group { display: none; }
+  html.ph #net-focus-hint, html.ph #net-macro-hint, html.ph #net-field-hint, html.ph #net-field-info, html.ph #net-size-hint, html.ph .ph-sheet-row #net-macro-row > label { display: none; }
+
+  /* the exact fields in block 1: typed fields 60 x --target (commit 4b makes them steppers) */
+  html.ph .ph-sheet-row > input.exact-field { box-sizing: border-box; flex: none; width: 60px; min-width: 0; height: var(--target); margin: 0; text-align: center; }
+  html.ph .ph-sheet-row > input.exact-field[aria-disabled="true"] { color: var(--color-disabled); border-color: var(--color-hairline); cursor: not-allowed; }
+  html.ph .ph-sheet-row #net-domain-row, html.ph .ph-sheet-row #net-geo-row { flex: none; flex-wrap: nowrap; justify-content: flex-start; gap: var(--sp-2); margin: 0; padding: 0; }
+  html.ph .ph-sheet-row #net-macro-row { display: block; margin: 0; }
+  html.ph .ph-sheet-row #net-macro-row[hidden], html.ph .ph-sheet-row #net-geo-row[hidden] { display: none; }
+  html.ph .ph-sheet-row #net-macro-buttons { justify-content: flex-start; flex-wrap: wrap; gap: var(--sp-2); }
+  html.ph .ph-sheet-row #net-macro-buttons .layer-btn { box-sizing: border-box; flex: none; min-height: var(--target); touch-action: manipulation; }
+
+  /* the three domains and Alternate are icons: the same buttons, their text (the accessible name, German) emptied visually and an icon drawn with a mask, like Net lines in the tool row (it inverts with the active state) */
+  html.ph .ph-sheet-row .net-domain-btn, html.ph .ph-sheet-row #net-alternate-btn { position: relative; box-sizing: border-box; flex: none; width: var(--target); height: var(--target); min-width: var(--target); padding: 0; border-radius: var(--radius); font-size: 0; line-height: 0; touch-action: manipulation; }
+  html.ph .ph-sheet-row .net-domain-btn[hidden], html.ph .ph-sheet-row #net-alternate-btn[hidden] { display: none; }
+  html.ph .ph-sheet-row .net-domain-btn::before, html.ph .ph-sheet-row #net-alternate-btn::before { content: ""; position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; transform: translate(-50%, -50%); background-color: currentColor; }
+  html.ph .ph-sheet-row .net-domain-btn:disabled { color: var(--color-disabled); border-color: var(--color-hairline); cursor: not-allowed; }
+  html.ph .ph-sheet-row #net-domain-single::before { -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Crect%20x='5'%20y='5'%20width='14'%20height='14'%20rx='1'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Crect%20x='5'%20y='5'%20width='14'%20height='14'%20rx='1'/%3E%3C/svg%3E") center / contain no-repeat; }
+  html.ph .ph-sheet-row #net-domain-tiled::before { -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Crect%20x='4'%20y='4'%20width='7'%20height='7'%20rx='1'/%3E%3Crect%20x='13'%20y='4'%20width='7'%20height='7'%20rx='1'/%3E%3Crect%20x='4'%20y='13'%20width='7'%20height='7'%20rx='1'/%3E%3Crect%20x='13'%20y='13'%20width='7'%20height='7'%20rx='1'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Crect%20x='4'%20y='4'%20width='7'%20height='7'%20rx='1'/%3E%3Crect%20x='13'%20y='4'%20width='7'%20height='7'%20rx='1'/%3E%3Crect%20x='4'%20y='13'%20width='7'%20height='7'%20rx='1'/%3E%3Crect%20x='13'%20y='13'%20width='7'%20height='7'%20rx='1'/%3E%3C/svg%3E") center / contain no-repeat; }
+  html.ph .ph-sheet-row #net-field-btn::before { -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Crect%20x='4'%20y='4'%20width='16'%20height='16'%20rx='1'/%3E%3Cpath%20d='M4%209.3%20H20%20M4%2014.7%20H20%20M9.3%204%20V20%20M14.7%204%20V20'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Crect%20x='4'%20y='4'%20width='16'%20height='16'%20rx='1'/%3E%3Cpath%20d='M4%209.3%20H20%20M4%2014.7%20H20%20M9.3%204%20V20%20M14.7%204%20V20'/%3E%3C/svg%3E") center / contain no-repeat; }
+  html.ph .ph-sheet-row #net-alternate-btn::before { -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M12%204%20V20'%20stroke-dasharray='2%202'/%3E%3Cpath%20d='M4%207%20L10%2012%20L4%2017%20Z'/%3E%3Cpath%20d='M20%207%20L14%2012%20L20%2017%20Z'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M12%204%20V20'%20stroke-dasharray='2%202'/%3E%3Cpath%20d='M4%207%20L10%2012%20L4%2017%20Z'/%3E%3Cpath%20d='M20%207%20L14%2012%20L20%2017%20Z'/%3E%3C/svg%3E") center / contain no-repeat; }
+
+  /* commit 4b: the exact fields as steppers (the engine wraps the typed text fields; the stepper markup and look are the Form row's, the field is the display, --target wide, no frame of its own) */
+  html.ph #more-netz .stepper > input.exact-field { box-sizing: border-box; flex: none; width: var(--target); min-width: var(--target); height: auto; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--color-text); font: inherit; font-size: var(--size-base); font-variant-numeric: tabular-nums; text-align: center; }
+  html.ph #more-netz .stepper > input.exact-field[aria-disabled="true"] { color: var(--color-disabled); cursor: not-allowed; }
+  @media (max-width: 339px) {
+    html.ph #more-netz .stepper > input.exact-field { width: 40px; min-width: 40px; }
+  }
+
+  /* the readout: ONE line of 20px, muted, 14px; nothing else of the sheet's former explanations is shown. Above 768px the element is not shown at all (the rule is not in the phone block). */
+  html.ph #net-readout { display: block; box-sizing: border-box; height: 20px; margin: 0; padding: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 14px; line-height: 20px; color: var(--color-secondary); }
+  /* task 126 (P7): the sign button of an invalid 3C spec (index.html #net-3c-reason-btn): 48px in row 2 of the Art panel; it takes Reverse's place for that time (Reverse is the one .layer-btn that is a direct child of row 2; it is locked under 3C anyway), so row 2 stays 285px */
+  html.ph #net-3c-reason-btn:not([hidden]) { display: inline-flex; align-items: center; justify-content: center; flex: none; width: var(--target); height: var(--target); box-sizing: border-box; padding: 0; }
+  html.ph .ph-row:has(> #net-3c-reason-btn:not([hidden])) > button.layer-btn { display: none; }
+
+  /* ================================================================================================================================================================================
+     SURFACE: LAYER SHEET (patterns C0a; the layer sheet in rows, sheets redesign commit 3a; ui-phone.js buildBlocks(), ui-phone-config.js sheets.layer.blocks). The rows themselves are in SHARED.
+     ================================================================================================================================================================================ */
+
+  /* the typed fields of the offsets and the rotation (until the steppers of commit 3b): 60 x --target */
+  html.ph .ph-sheet-row .control-group > input[type="number"] { box-sizing: border-box; flex: none; width: 60px; min-width: 0; height: var(--target); margin: 0; }
+
+  /* the node count and size steppers are as wide as the Form row's (117px): the number field is --target wide (the layer block's own rule for the inline block gives it 2.4ch, and an id wins over a class) */
+  html.ph #layer-more-panel .stepper > input[type="number"] { width: var(--target); min-width: var(--target); }
+
+  /* 320px: the number fields of the steppers give up 8px */
+  @media (max-width: 339px) {
+    html.ph #layer-more-panel .stepper > input[type="number"] { width: 40px; min-width: 40px; }
+  }
+
+  /* ================================================================================================================================================================================
+     SURFACE: TIMELINE (patterns C0a; the timeline sheet and the line-pairing editor and list, sheets redesign commits 5a to 5c; ui-phone-timeline.js, ui-phone-pairing.js).
+     ================================================================================================================================================================================ */
+
+  /* #timeline-group is the sheet's content: it takes no box of its own (its blocks are the sheet's flex items) and is not hidden by the inline rule while the sheet is closed (the sheet's host is). The old keyframe
+     list, the net box, the status span and the text button are PARKED hidden (they stay in the DOM: the keyframe list's "Net" buttons and #btn-clear-timeline are what the icon buttons forward their clicks to). */
+  html.ph #timeline-group, html.ph #timeline-group:not(.ts-open) { display: contents; }
+  html.ph #timeline-group > .icon-row, html.ph #timeline-group > #timeline-keyframe-list, html.ph #timeline-group > #timeline-net-state, html.ph #timeline-group > #timeline-status { display: none; }
+
+  /* the icon row (commit 5b: 8px gaps as in the mock): netrec | pairing toggle + the segment select | trash, the hairlines 1px wide, 32px high, 4px side margins: 48 + 8 + 9 + 8 + 48 + 8 + 84 + 8 + 9 + 8 + 48 = 286px */
+  html.ph #ph-tl-icons { display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: var(--sp-2); margin: 0; padding: 0; }
+  html.ph .ph-tl-btn { box-sizing: border-box; flex: none; width: var(--target); height: var(--target); border-radius: var(--radius); touch-action: manipulation; }
+  html.ph .ph-tl-sep { flex: none; width: 1px; height: 32px; margin: 0 var(--sp-1); background: var(--color-hairline); }
+  html.ph .ph-tl-trash { color: var(--danger); }
+  html.ph .ph-tl-btn[aria-disabled="true"] { color: var(--color-disabled); border-color: var(--color-hairline); cursor: not-allowed; }
+  html.ph #ph-tl-readout { display: block; box-sizing: border-box; height: 20px; margin: 0; padding: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 14px; line-height: 20px; color: var(--color-secondary); }
+
+  /* commit 5b: the line-pairing editor (#timeline-pairing and what sketch.js renders into it) is the MODEL of ui-phone-pairing.js and is PARKED hidden: it stays in the document (the view's buttons forward to its own) */
+  html.ph #timeline-pairing { display: none; }
+
+  /* the pairing view: row 1 = one 48px chip per line (the selected one black), scrolling sideways; row 2 = [end up, end down, reverse] | [variant back, k/c, variant forward]; row 3 = reset */
+  html.ph .ph-tl-segment { box-sizing: border-box; flex: none; width: 84px; height: var(--target); margin: 0; padding: 0 var(--sp-4) 0 var(--sp-2); border: 1px solid var(--color-text); border-radius: var(--radius); background-color: var(--color-bg); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9 L12 15 L18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right var(--sp-2) center; background-size: 18px 18px; -webkit-appearance: none; appearance: none; color: var(--color-text); font: inherit; font-size: 16px; touch-action: manipulation; }
+  html.ph .ph-tl-segment[hidden] { display: none; }
+  html.ph .ph-tl-chips { display: flex; flex-direction: row; align-items: center; gap: var(--sp-2); flex: 1 1 0; min-width: 0; padding: var(--sp-1); margin: calc(-1 * var(--sp-1)); overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }   /* room for the focus ring of an edge chip */
+  html.ph .ph-tl-chips::-webkit-scrollbar { display: none; }
+  html.ph .ph-tl-chip { font: inherit; font-size: 16px; font-variant-numeric: tabular-nums; }
+  html.ph .ph-tl-moves, html.ph .ph-tl-variant { display: flex; flex-direction: row; align-items: center; gap: var(--sp-2); flex: none; margin: 0; padding: 0; }
+  html.ph .ph-tl-variant .ph-tl-sep { margin: 0; }
+  html.ph .ph-tl-vcount { flex: none; width: 34px; text-align: center; font-variant-numeric: tabular-nums; }
+
+  /* commit 5c: the pairing list (a state of the same sheet): a header row [back][N von M Zuordnungen] and one 48px button per pairing, the current one black; the list scrolls inside the sheet (80dvh minus what stays above it:
+     16 + 48 + 8 + 20 + 16 + 48 + 8 + 16 = 180px, and 2px for the sheet's border and rounding) */
+  html.ph .ph-tl-listicon[hidden] { display: none; }
+  html.ph .ph-tl-listhead { display: flex; flex-direction: row; align-items: center; gap: var(--sp-2); flex: 1 1 0; min-width: 0; margin: 0; padding: 0; }
+  html.ph .ph-tl-listcount { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 14px; line-height: 20px; color: var(--color-secondary); }
+  html.ph .ph-tl-list { position: relative; display: flex; flex-direction: column; gap: var(--sp-2); flex: 1 1 0; min-width: 0; max-height: calc(80dvh - 182px); padding: var(--sp-1); margin: calc(-1 * var(--sp-1)); overflow-x: hidden; overflow-y: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  html.ph .ph-tl-list::-webkit-scrollbar { display: none; }
+  html.ph .ph-tl-lrow { box-sizing: border-box; flex: none; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: var(--sp-2); width: 100%; height: var(--target); margin: 0; padding: 0 var(--sp-3); border: 1px solid var(--color-text); border-radius: var(--radius); background: var(--color-bg); color: var(--color-text); font: inherit; font-size: 16px; font-variant-numeric: tabular-nums; text-align: left; cursor: pointer; touch-action: manipulation; }
+  html.ph .ph-tl-lrow.active { background: var(--color-text); color: var(--color-bg); }
+  html.ph .ph-tl-lleft { display: flex; flex-direction: row; align-items: center; gap: var(--sp-2); min-width: 0; }
+  html.ph .ph-tl-ldef { font-size: 14px; opacity: 0.7; }
+  html.ph .ph-tl-lsum { flex: none; text-align: right; white-space: nowrap; }
+
+  /* below 355px the pairing row (323px) wraps and the variant group starts the second line: no hairline in front of it */
+  @media (max-width: 354px) {
+    html.ph .ph-tl-variant .ph-tl-sep { display: none; }
+  }
+}
+
+
+/* === Surfaces (patterns C0b-1; the TWINS of the phone block's surface rules, for the compact surfaces at 768px and up; ui-phone.js sets the classes, from commit C0b-2) ====================================================
+   Nothing sets these gates yet, so no rule below matches anywhere: the page is unchanged. Each twin has the SAME declarations as its original in the phone block above (same selector, `html.ph` replaced by its gate),
+   in the same order; the originals stay where they are, inside @media (max-width: 767px). The gates, all classes of <html> set only by the engine: `html.sr` (any surface applied: the rows and blocks the surfaces share),
+   `html.sr-netz`, `html.sr-trails`, `html.sr-timeline` (one surface each). The neutral host classes of the neutral block (.sr-host, .sr-pane, .sr-row, .sr-row-scroll) are the twins of .ph-slot, .ph-pane, .ph-row, .ph-row-scroll
+   (page-layout rules the trail view borrows). NOT here, because they belong to the page layout: the sheet host (.ph-sheet), the panel (.ph-slot), the notices, the Netz panel buttons and the Net lines icon, the layer sheet, the
+   rail sheet and the dialogs; `html.ph` forces --target to 48px and so no gate here does. A rule that must differ at 768px and up will use `html.sr-...:not(.ph)` after its twin. */
+
+/* ================================================================================================================================================================
+   NEUTRAL HOST CLASSES (html.sr)
+   9 rules
+   ================================================================================================================================================================ */
+  html.sr .sr-pane { display: flex; flex-direction: column; gap: var(--sp-2); }
+  html.sr .sr-row { display: flex; align-items: center; justify-content: flex-start; gap: var(--sp-2); min-width: 0; }
+  html.sr .sr-host .icon-btn {
+    box-sizing: border-box;
+    width: var(--target);
+    height: var(--target);
+    border-radius: var(--radius);
+    flex: none;
+    touch-action: manipulation;
+  }
+  html.sr .sr-host .nav-cluster { gap: var(--sp-2); }
+  html.sr .sr-host .icon-btn[aria-disabled="true"] { color: var(--color-disabled); border-color: var(--color-hairline); cursor: not-allowed; }
+  html.sr .sr-row > .ph-sep { margin: 0; }
+@media (max-width: 339px) {
+    html.sr .sr-row-scroll { overflow-x: auto; scrollbar-width: none; padding: var(--sp-1); margin: calc(-1 * var(--sp-1)); }
+    html.sr .sr-row-scroll::-webkit-scrollbar { display: none; }
+    html.sr .sr-row-scroll > * { flex: none; }
+  }
+
+/* ================================================================================================================================================================
+   TOKENS (html.sr)
+   1 rule: the four spacings of the phone block (html.ph defines them with the page-layout tokens); a surface at 768px and up needs them too. Same values; --target is NOT defined here: it follows the pointer.
+   ================================================================================================================================================================ */
+  html.sr { --sp-1: 4px; --sp-2: 8px; --sp-3: 16px; --sp-4: 32px; }
+
+/* ================================================================================================================================================================
+   SHARED ROWS AND BLOCKS (html.sr)
+   7 rules
+   ================================================================================================================================================================ */
+  html.sr .ph-sheet-block { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-2); min-width: 0; }
+  html.sr .ph-sheet-row { display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: var(--sp-2); min-width: 0; max-width: 100%; }
+  html.sr .ph-sheet-block > .ph-sheet-row { align-self: stretch; }   /* a row is as wide as its block (commit 5c: the pairing list rows are 343px wide; every other row keeps its items at the left) */
+  html.sr .ph-sheet-block[hidden], html.sr .ph-sheet-row[hidden] { display: none; }
+  html.sr .ph-sheet-row .control-group { flex: none; flex-direction: row; align-items: center; justify-content: flex-start; gap: var(--sp-2); width: auto; max-width: none; margin: 0; padding: 0; text-align: left; }
+  html.sr .ph-sheet-row .control-group[hidden] { display: none; }
+  html.sr .ph-sheet-row-wrap { flex-wrap: wrap; }
+
+/* ================================================================================================================================================================
+   TRAILS (html.sr-trails)
+   9 rules
+   ================================================================================================================================================================ */
+  html.sr-trails .ph-chips { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; padding: var(--sp-1); margin: calc(-1 * var(--sp-1)); overflow-x: auto; scrollbar-width: none; }
+  html.sr-trails .ph-chips::-webkit-scrollbar { display: none; }
+  html.sr-trails .ph-chip { position: relative; box-sizing: border-box; flex: none; width: var(--target); height: var(--target); margin: 0; padding: 0; overflow: hidden; border: 1px solid var(--color-text); border-radius: var(--radius); background: var(--color-bg); color: var(--color-text); font: inherit; font-size: var(--fs-tab); cursor: pointer; touch-action: manipulation; }
+  html.sr-trails .ph-chip.active { background: var(--color-text); color: var(--color-bg); }
+  html.sr-trails .ph-chip-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; }
+  html.sr-trails .ph-chips-empty { display: flex; align-items: center; height: var(--target); color: var(--color-secondary); font-size: var(--size-secondary); }
+  html.sr-trails .ph-trail-stepper { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; }
+  html.sr-trails .ph-trail-count { min-width: var(--target); text-align: center; font-variant-numeric: tabular-nums; }
+  html.sr-trails .ph-trail-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--color-secondary); font-size: var(--size-secondary); }
+
+/* ================================================================================================================================================================
+   NETZ SHEET (html.sr-netz)
+   22 rules
+   ================================================================================================================================================================ */
+  html.sr-netz .overlay.ph-sheet-rows { flex-direction: column; flex-wrap: nowrap; align-items: stretch; justify-content: flex-start; gap: var(--sp-3); }
+  html.sr-netz #more-netz.ph-sheet-rows > .overlay-section, html.sr-netz #more-netz.ph-sheet-rows > #net-group { display: none; }
+  html.sr-netz #net-focus-hint, html.sr-netz #net-macro-hint, html.sr-netz #net-field-hint, html.sr-netz #net-field-info, html.sr-netz #net-size-hint, html.sr-netz .ph-sheet-row #net-macro-row > label { display: none; }
+  html.sr-netz .ph-sheet-row > input.exact-field { box-sizing: border-box; flex: none; width: 60px; min-width: 0; height: var(--target); margin: 0; text-align: center; }
+  html.sr-netz .ph-sheet-row > input.exact-field[aria-disabled="true"] { color: var(--color-disabled); border-color: var(--color-hairline); cursor: not-allowed; }
+  html.sr-netz .ph-sheet-row #net-domain-row, html.sr-netz .ph-sheet-row #net-geo-row { flex: none; flex-wrap: nowrap; justify-content: flex-start; gap: var(--sp-2); margin: 0; padding: 0; }
+  html.sr-netz .ph-sheet-row #net-macro-row { display: block; margin: 0; }
+  html.sr-netz .ph-sheet-row #net-macro-row[hidden], html.sr-netz .ph-sheet-row #net-geo-row[hidden] { display: none; }
+  html.sr-netz .ph-sheet-row #net-macro-buttons { justify-content: flex-start; flex-wrap: wrap; gap: var(--sp-2); }
+  html.sr-netz .ph-sheet-row #net-macro-buttons .layer-btn { box-sizing: border-box; flex: none; min-height: var(--target); touch-action: manipulation; }
+  html.sr-netz .ph-sheet-row .net-domain-btn, html.sr-netz .ph-sheet-row #net-alternate-btn { position: relative; box-sizing: border-box; flex: none; width: var(--target); height: var(--target); min-width: var(--target); padding: 0; border-radius: var(--radius); font-size: 0; line-height: 0; touch-action: manipulation; }
+  html.sr-netz .ph-sheet-row .net-domain-btn[hidden], html.sr-netz .ph-sheet-row #net-alternate-btn[hidden] { display: none; }
+  html.sr-netz .ph-sheet-row .net-domain-btn::before, html.sr-netz .ph-sheet-row #net-alternate-btn::before { content: ""; position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; transform: translate(-50%, -50%); background-color: currentColor; }
+  html.sr-netz .ph-sheet-row .net-domain-btn:disabled { color: var(--color-disabled); border-color: var(--color-hairline); cursor: not-allowed; }
+  html.sr-netz .ph-sheet-row #net-domain-single::before { -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Crect%20x='5'%20y='5'%20width='14'%20height='14'%20rx='1'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Crect%20x='5'%20y='5'%20width='14'%20height='14'%20rx='1'/%3E%3C/svg%3E") center / contain no-repeat; }
+  html.sr-netz .ph-sheet-row #net-domain-tiled::before { -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Crect%20x='4'%20y='4'%20width='7'%20height='7'%20rx='1'/%3E%3Crect%20x='13'%20y='4'%20width='7'%20height='7'%20rx='1'/%3E%3Crect%20x='4'%20y='13'%20width='7'%20height='7'%20rx='1'/%3E%3Crect%20x='13'%20y='13'%20width='7'%20height='7'%20rx='1'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Crect%20x='4'%20y='4'%20width='7'%20height='7'%20rx='1'/%3E%3Crect%20x='13'%20y='4'%20width='7'%20height='7'%20rx='1'/%3E%3Crect%20x='4'%20y='13'%20width='7'%20height='7'%20rx='1'/%3E%3Crect%20x='13'%20y='13'%20width='7'%20height='7'%20rx='1'/%3E%3C/svg%3E") center / contain no-repeat; }
+  html.sr-netz .ph-sheet-row #net-field-btn::before { -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Crect%20x='4'%20y='4'%20width='16'%20height='16'%20rx='1'/%3E%3Cpath%20d='M4%209.3%20H20%20M4%2014.7%20H20%20M9.3%204%20V20%20M14.7%204%20V20'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Crect%20x='4'%20y='4'%20width='16'%20height='16'%20rx='1'/%3E%3Cpath%20d='M4%209.3%20H20%20M4%2014.7%20H20%20M9.3%204%20V20%20M14.7%204%20V20'/%3E%3C/svg%3E") center / contain no-repeat; }
+  html.sr-netz .ph-sheet-row #net-alternate-btn::before { -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M12%204%20V20'%20stroke-dasharray='2%202'/%3E%3Cpath%20d='M4%207%20L10%2012%20L4%2017%20Z'/%3E%3Cpath%20d='M20%207%20L14%2012%20L20%2017%20Z'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M12%204%20V20'%20stroke-dasharray='2%202'/%3E%3Cpath%20d='M4%207%20L10%2012%20L4%2017%20Z'/%3E%3Cpath%20d='M20%207%20L14%2012%20L20%2017%20Z'/%3E%3C/svg%3E") center / contain no-repeat; }
+  html.sr-netz #more-netz .stepper > input.exact-field { box-sizing: border-box; flex: none; width: var(--target); min-width: var(--target); height: auto; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--color-text); font: inherit; font-size: var(--size-base); font-variant-numeric: tabular-nums; text-align: center; }
+  html.sr-netz #more-netz .stepper > input.exact-field[aria-disabled="true"] { color: var(--color-disabled); cursor: not-allowed; }
+  @media (max-width: 339px) {
+    html.sr-netz #more-netz .stepper > input.exact-field { width: 40px; min-width: 40px; }
+  }
+  html.sr-netz #net-readout { display: block; box-sizing: border-box; height: 20px; margin: 0; padding: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 14px; line-height: 20px; color: var(--color-secondary); }
+
+/* ================================================================================================================================================================
+   NETZ AT 768PX AND UP (html.sr-netz:not(.ph))
+   what differs from the phone sheet while the layout is OFF (C0b-3, C0b-4): one more class than the twins, so they come after them. The overlay holds each control once, left aligned: the leftover #net-group (XY / X / Y
+   and the Net lines icon, one row), the fine Fokus stepper, the domain icons, the macro buttons, the Geo row (Reverse and Alternate as icons) and the readout. The typed strength field and the old Fokus row (heading and
+   a 0.1 stepper) are parked hidden: the strength is edited in the panel's stepper, the Fokus has its one fine stepper.
+   ================================================================================================================================================================ */
+  html.sr-netz:not(.ph) #more-netz.ph-sheet-rows { align-items: flex-start; text-align: left; }
+  html.sr-netz:not(.ph) #more-netz.ph-sheet-rows > #net-group { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: var(--sp-2); width: auto; }
+  html.sr-netz:not(.ph) #more-netz.ph-sheet-rows > #net-group[hidden] { display: none; }
+  html.sr-netz:not(.ph) #more-netz #net-group .icon-row { justify-content: flex-start; flex-wrap: nowrap; gap: var(--sp-2); }
+  html.sr-netz:not(.ph) #more-netz #net-focus-row, html.sr-netz:not(.ph) #more-netz #net-strength-row { display: none; }
+  html.sr-netz:not(.ph) #more-netz .net-axes-btn { box-sizing: border-box; min-width: var(--target); padding: 0 var(--sp-2); }
+  html.sr-netz:not(.ph) #more-netz #net-lines-btn, html.sr-netz:not(.ph) #more-netz #net-reverse-btn { position: relative; box-sizing: border-box; flex: none; width: var(--target); height: var(--target); min-width: var(--target); padding: 0; border-radius: var(--radius); touch-action: manipulation; }
+  html.sr-netz:not(.ph) #more-netz #net-lines-btn::before { content: ""; position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; transform: translate(-50%, -50%); background-color: currentColor; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M3 8 C6 4 9 4 12 8 S18 12 21 8'/%3E%3Cpath d='M3 16 C6 12 9 12 12 16 S18 20 21 16'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M3 8 C6 4 9 4 12 8 S18 12 21 8'/%3E%3Cpath d='M3 16 C6 12 9 12 12 16 S18 20 21 16'/%3E%3C/svg%3E") center / contain no-repeat; }
+  html.sr-netz:not(.ph) #more-netz #net-reverse-btn::before { content: ""; position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; transform: translate(-50%, -50%); background-color: currentColor; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 8 H20 M16 4 L20 8 L16 12'/%3E%3Cpath d='M20 16 H4 M8 12 L4 16 L8 20'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 8 H20 M16 4 L20 8 L16 12'/%3E%3Cpath d='M20 16 H4 M8 12 L4 16 L8 20'/%3E%3C/svg%3E") center / contain no-repeat; }
+  html.sr-netz:not(.ph) #more-netz #net-reverse-btn[hidden] { display: none; }
+
+/* ================================================================================================================================================================
+   TRAILS AT 768PX AND UP (html.sr-trails:not(.ph))
+   what differs from the Spuren pane while the layout is OFF (C0b-5): the chip view takes the place of the Face Colors group (#face-colors-group, shown by sketch.js while the active sheet's Fill is on). The group's own
+   content - the title, the keyframe note, the status, the rule note, the list (the MODEL sketch.js keeps rendering) and the "unassigned" row - is parked hidden, never removed; the row host the engine makes
+   (.sr-host, the neutral class) holds the chip bar and the stepper row. C0b-6b: the group has a FIXED width of --canvas-size, its left edge on the canvas' left edge (auto margins: the page centres the canvas), and everything in
+   it is left aligned: a changing number of chips or the muted line does not move the stepper row or the group.
+   ================================================================================================================================================================ */
+  html.sr-trails:not(.ph) #face-colors-group > :not(.sr-host) { display: none; }
+  html.sr-trails:not(.ph) #face-colors-group { box-sizing: border-box; width: var(--canvas-size); max-width: 100%; margin-left: max(0px, calc((100% - var(--canvas-size)) / 2)); margin-right: max(0px, calc((100% - var(--canvas-size)) / 2)); padding: 0; align-items: flex-start; text-align: left; }
+  html.sr-trails:not(.ph) #face-colors-group > .sr-host { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-2); box-sizing: border-box; width: 100%; min-width: 0; }
+  html.sr-trails:not(.ph) .ph-chips-empty { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+/* ================================================================================================================================================================
+   TIMELINE (html.sr-timeline)
+   27 rules
+   ================================================================================================================================================================ */
+  html.sr-timeline #timeline-group > .icon-row, html.sr-timeline #timeline-group > #timeline-keyframe-list, html.sr-timeline #timeline-group > #timeline-net-state, html.sr-timeline #timeline-group > #timeline-status { display: none; }
+  html.sr-timeline #ph-tl-icons { display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: var(--sp-2); margin: 0; padding: 0; }
+  html.sr-timeline .ph-tl-btn { box-sizing: border-box; flex: none; width: var(--target); height: var(--target); border-radius: var(--radius); touch-action: manipulation; }
+  html.sr-timeline .ph-tl-sep { flex: none; width: 1px; height: 32px; margin: 0 var(--sp-1); background: var(--color-hairline); }
+  html.sr-timeline .ph-tl-trash { color: var(--danger); }
+  html.sr-timeline .ph-tl-btn[aria-disabled="true"] { color: var(--color-disabled); border-color: var(--color-hairline); cursor: not-allowed; }
+  html.sr-timeline #ph-tl-readout { display: block; box-sizing: border-box; height: 20px; margin: 0; padding: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 14px; line-height: 20px; color: var(--color-secondary); }
+  html.sr-timeline #timeline-pairing { display: none; }
+  html.sr-timeline .ph-tl-segment { box-sizing: border-box; flex: none; width: 84px; height: var(--target); margin: 0; padding: 0 var(--sp-4) 0 var(--sp-2); border: 1px solid var(--color-text); border-radius: var(--radius); background-color: var(--color-bg); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9 L12 15 L18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right var(--sp-2) center; background-size: 18px 18px; -webkit-appearance: none; appearance: none; color: var(--color-text); font: inherit; font-size: 16px; touch-action: manipulation; }
+  html.sr-timeline .ph-tl-segment[hidden] { display: none; }
+  html.sr-timeline .ph-tl-chips { display: flex; flex-direction: row; align-items: center; gap: var(--sp-2); flex: 1 1 0; min-width: 0; padding: var(--sp-1); margin: calc(-1 * var(--sp-1)); overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }   /* room for the focus ring of an edge chip */
+  html.sr-timeline .ph-tl-chips::-webkit-scrollbar { display: none; }
+  html.sr-timeline .ph-tl-chip { font: inherit; font-size: 16px; font-variant-numeric: tabular-nums; }
+  html.sr-timeline .ph-tl-moves, html.sr-timeline .ph-tl-variant { display: flex; flex-direction: row; align-items: center; gap: var(--sp-2); flex: none; margin: 0; padding: 0; }
+  html.sr-timeline .ph-tl-variant .ph-tl-sep { margin: 0; }
+  html.sr-timeline .ph-tl-vcount { flex: none; width: 34px; text-align: center; font-variant-numeric: tabular-nums; }
+  html.sr-timeline .ph-tl-listicon[hidden] { display: none; }
+  html.sr-timeline .ph-tl-listhead { display: flex; flex-direction: row; align-items: center; gap: var(--sp-2); flex: 1 1 0; min-width: 0; margin: 0; padding: 0; }
+  html.sr-timeline .ph-tl-listcount { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 14px; line-height: 20px; color: var(--color-secondary); }
+  html.sr-timeline .ph-tl-list { position: relative; display: flex; flex-direction: column; gap: var(--sp-2); flex: 1 1 0; min-width: 0; max-height: calc(80dvh - 182px); padding: var(--sp-1); margin: calc(-1 * var(--sp-1)); overflow-x: hidden; overflow-y: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  html.sr-timeline .ph-tl-list::-webkit-scrollbar { display: none; }
+  html.sr-timeline .ph-tl-lrow { box-sizing: border-box; flex: none; display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: var(--sp-2); width: 100%; height: var(--target); margin: 0; padding: 0 var(--sp-3); border: 1px solid var(--color-text); border-radius: var(--radius); background: var(--color-bg); color: var(--color-text); font: inherit; font-size: 16px; font-variant-numeric: tabular-nums; text-align: left; cursor: pointer; touch-action: manipulation; }
+  html.sr-timeline .ph-tl-lrow.active { background: var(--color-text); color: var(--color-bg); }
+  html.sr-timeline .ph-tl-lleft { display: flex; flex-direction: row; align-items: center; gap: var(--sp-2); min-width: 0; }
+  html.sr-timeline .ph-tl-ldef { font-size: 14px; opacity: 0.7; }
+  html.sr-timeline .ph-tl-lsum { flex: none; text-align: right; white-space: nowrap; }
+  @media (max-width: 354px) {
+    html.sr-timeline .ph-tl-variant .ph-tl-sep { display: none; }
+  }
+
+/* ================================================================================================================================================================
+   TIMELINE AT 768PX AND UP (html.sr-timeline:not(.ph))
+   what differs from the timeline sheet while the layout is OFF (C0b-6a the frame, C0b-6b the pairing view): the timeline group (#timeline-group, opened by the strip's "..." through ts-open) is the content itself - the
+   blocks of the sheet are built inside it (block 1: the icon row and the readout line; block 2: the pairing editor; block 3: the pairing list) - and sits under the canvas as before: a FIXED width of --canvas-size,
+   its left edge on the canvas' left edge (the page centres the canvas, so the box is centred with auto margins and its content starts at its left edge), every row left aligned: nothing in it moves when the editor or
+   the list opens (the blocks come in order below the icon row). The keyframe list, the net box, the status span and the text remove button and the old line-pairing editor (#timeline-pairing, the MODEL) are parked hidden by
+   the twins above, never removed. The pairing list is capped at 5 rows (the pointer token instead of a fixed 48px), scrolling inside itself; the phone's 80dvh cap does not apply.
+   ================================================================================================================================================================ */
+  html.sr-timeline:not(.ph) #timeline-group.ts-open.ph-sheet-rows { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: var(--sp-3); box-sizing: border-box; width: var(--canvas-size); max-width: 100%; margin-left: max(0px, calc((100% - var(--canvas-size)) / 2)); margin-right: max(0px, calc((100% - var(--canvas-size)) / 2)); padding: 0; text-align: left; }
+  html.sr-timeline:not(.ph) #timeline-group > .ph-sheet-block { order: -1; align-items: flex-start; }   /* the blocks come before the group's old (parked) children: the icon row, the readout, then the editor or the list */
+  html.sr-timeline:not(.ph) .ph-tl-list { max-height: calc(5 * var(--target) + 4 * var(--sp-2)); }
+
+
+/* ================================================================================================================================================================
+   MORPH (html.sr-morph; morph stage e2a; ui-morph.js, config.surfaces.morph)
+   The Morph button next to "..." in the three layer views (the strip's and the rail's action group: eye, diamond, "...", Morph, x; the table's foot: "+", "...", Morph) and the block it opens: a bottom sheet below 768px (the
+   engine moves #morph-group into ph-sheet-morph and builds the rows), a block under the canvas from 768px (html.sr-morph:not(.ph)). The controls are icon-only masks (data URIs, the UI's stroke icon style) and follow the
+   pointer token (var(--target)); the status line has a reserved height; nothing here changes the size of anything while a text or the angle row changes.
+   ================================================================================================================================================================ */
+#morph-group:not(.mo-open) { display: none; }
+.layer-table .lt-morph { grid-column: 3; }
+.lt-morph { position: relative; }
+.lt-morph::before, html.sr-morph .morph-toggle::before, html.sr-morph .morph-mode-btn::before { content: ""; position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; transform: translate(-50%, -50%); background-color: currentColor; }
+.lt-morph::before { -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M3%203%20H15%20V15%20H3%20Z'/%3E%3Cpath%20d='M9%203%20V15'/%3E%3Cpath%20d='M3%209%20H15'/%3E%3Cpath%20d='M9%209%20H21%20V21%20H9%20Z'/%3E%3Cpath%20d='M15%209%20V21'/%3E%3Cpath%20d='M9%2015%20H21'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M3%203%20H15%20V15%20H3%20Z'/%3E%3Cpath%20d='M9%203%20V15'/%3E%3Cpath%20d='M3%209%20H15'/%3E%3Cpath%20d='M9%209%20H21%20V21%20H9%20Z'/%3E%3Cpath%20d='M15%209%20V21'/%3E%3Cpath%20d='M9%2015%20H21'/%3E%3C/svg%3E") center / contain no-repeat; }
+html.sr-morph .morph-toggle::before { -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M12%203%20V12'/%3E%3Cpath%20d='M6.3%207%20a8%208%200%201%200%2011.4%200'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M12%203%20V12'/%3E%3Cpath%20d='M6.3%207%20a8%208%200%201%200%2011.4%200'/%3E%3C/svg%3E") center / contain no-repeat; }
+html.sr-morph #morph-mode-linear::before { -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M3%207%20H21%20V17%20H3%20Z'/%3E%3Cpath%20d='M7%2012%20H17'/%3E%3Cpath%20d='M14%209%20L17%2012%20L14%2015'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M3%207%20H21%20V17%20H3%20Z'/%3E%3Cpath%20d='M7%2012%20H17'/%3E%3Cpath%20d='M14%209%20L17%2012%20L14%2015'/%3E%3C/svg%3E") center / contain no-repeat; }
+html.sr-morph #morph-mode-radial::before { -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M10%2012%20a2%202%200%201%200%204%200%20a2%202%200%201%200%20-4%200'/%3E%3Cpath%20d='M6%2012%20a6%206%200%201%200%2012%200%20a6%206%200%201%200%20-12%200'/%3E%3Cpath%20d='M2%2012%20a10%2010%200%201%200%2020%200%20a10%2010%200%201%200%20-20%200'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M10%2012%20a2%202%200%201%200%204%200%20a2%202%200%201%200%20-4%200'/%3E%3Cpath%20d='M6%2012%20a6%206%200%201%200%2012%200%20a6%206%200%201%200%20-12%200'/%3E%3Cpath%20d='M2%2012%20a10%2010%200%201%200%2020%200%20a10%2010%200%201%200%20-20%200'/%3E%3C/svg%3E") center / contain no-repeat; }
+html.sr-morph #morph-mode-bilinear::before { -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M3%205%20a2%202%200%201%200%204%200%20a2%202%200%201%200%20-4%200'/%3E%3Cpath%20d='M17%205%20a2%202%200%201%200%204%200%20a2%202%200%201%200%20-4%200'/%3E%3Cpath%20d='M3%2019%20a2%202%200%201%200%204%200%20a2%202%200%201%200%20-4%200'/%3E%3Cpath%20d='M17%2019%20a2%202%200%201%200%204%200%20a2%202%200%201%200%20-4%200'/%3E%3Cpath%20d='M7%205%20H17'/%3E%3Cpath%20d='M7%2019%20H17'/%3E%3Cpath%20d='M5%207%20V17'/%3E%3Cpath%20d='M19%207%20V17'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='black'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'%3E%3Cpath%20d='M3%205%20a2%202%200%201%200%204%200%20a2%202%200%201%200%20-4%200'/%3E%3Cpath%20d='M17%205%20a2%202%200%201%200%204%200%20a2%202%200%201%200%20-4%200'/%3E%3Cpath%20d='M3%2019%20a2%202%200%201%200%204%200%20a2%202%200%201%200%20-4%200'/%3E%3Cpath%20d='M17%2019%20a2%202%200%201%200%204%200%20a2%202%200%201%200%20-4%200'/%3E%3Cpath%20d='M7%205%20H17'/%3E%3Cpath%20d='M7%2019%20H17'/%3E%3Cpath%20d='M5%207%20V17'/%3E%3Cpath%20d='M19%207%20V17'/%3E%3C/svg%3E") center / contain no-repeat; }
+  html.sr-morph.ph #morph-group, html.sr-morph.ph #morph-group:not(.mo-open) { display: contents; }   /* the sheet's content: it takes no box of its own, its blocks are the sheet's flex items */
+  html.sr-morph .morph-toggle, html.sr-morph .morph-mode-btn { position: relative; box-sizing: border-box; flex: none; width: var(--target); height: var(--target); min-width: var(--target); padding: 0; border-radius: var(--radius); font-size: 0; line-height: 0; touch-action: manipulation; }
+  html.sr-morph #morph-modes { display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: var(--sp-2); flex: none; margin: 0; padding: 0; }
+  html.sr-morph .morph-angle[aria-disabled="true"] { opacity: 0.4; pointer-events: none; }   /* radial and bilinear: the row keeps its place and height (nothing moves), dimmed, no pointer, no hover state */
+  html.sr-morph .morph-angle input { box-sizing: border-box; flex: none; align-self: stretch; width: var(--target); min-width: 44px; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--color-text); font: inherit; font-size: var(--size-base); font-variant-numeric: tabular-nums; text-align: center; cursor: default; }
+  html.sr-morph .morph-angle-icon { transform: rotate(var(--morph-angle, 0deg)); }   /* the arrow turns with the angle (a custom property: no layout, no shift) */
+  html.sr-morph #morph-status { display: block; box-sizing: border-box; height: 20px; margin: 0; padding: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 14px; line-height: 20px; color: var(--color-secondary); }
+  html.sr-morph .ph-sheet-row > #morph-status { flex: 1 1 0; min-width: 0; }
+/* from 768px: the block under the canvas, as the timeline group: a FIXED width of --canvas-size, its left edge on the canvas' left edge (auto margins: the page centres the canvas), every row left aligned */
+  html.sr-morph:not(.ph) #morph-group.mo-open.ph-sheet-rows { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: var(--sp-3); box-sizing: border-box; width: var(--canvas-size); max-width: 100%; margin-left: max(0px, calc((100% - var(--canvas-size)) / 2)); margin-right: max(0px, calc((100% - var(--canvas-size)) / 2)); padding: 0; text-align: left; }   /* the margins make the block ONE line of the controls container (a wrapping row: the layer "Mehr" block's groups would share its line and shift it left) and centre it on the canvas */

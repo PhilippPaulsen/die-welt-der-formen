@@ -1,0 +1,5716 @@
+// === WORLD OF FORMS – STABLE SKETCH ===============================
+// Core features restored with correct tiling & symmetry per shape.
+// - Nodes are clickable in the center tile.
+// - Tiling clones are drawn via local centroids (no global centroid bleed).
+// - Square uses 4-fold rotation, Triangle 3-fold, Hex 6-fold when chosen.
+// - Hex gets a center node when nodeCount == 1.
+// - Background always white; nodes black, hover red.
+//
+// Ported from die-welt-der-formen/p5_prototype/sketch.js, with the
+// shape-size, symmetry-mode, and line-color controls re-added on top
+// (dropped there in favor of a simpler public-site UI, but kept here
+// since this repo is the full-featured development environment).
+// This file is the UI shell: DOM/event wiring (setup), the render loop
+// (draw/mouseMoved), and interaction (mousePressed/addRandomConnection).
+// The generative engine itself (grid generation, state, symmetry,
+// curves, tiling, export) lives in core/, loaded separately - see
+// CLAUDE.md for the module map.
+
+// ----------------- HELPERS --------------------------------------
+function normSym(val) {
+    // Dropdown option values are already canonical tokens (see index.html),
+    // so this just validates against the set drawConnectionWithSymmetry()
+    // actually recognizes and falls back safely otherwise. (The original
+    // version of this function parsed human-readable option *text* like
+    // "3-fold + Reflection" - that never matched this dropdown's `value`
+    // attributes, so every option except "None"/"Reflection" silently
+    // collapsed to full 6-fold+reflection symmetry. Fixed here.)
+    const validModes = ['none', 'reflection_only', 'rotation3', 'rotation6', 'rotation_reflection3', 'rotation_reflection6'];
+    const v = (val || '').toLowerCase().trim();
+    return validModes.includes(v) ? v : 'rotation_reflection6';
+}
+
+// ---- Task 063 (G6b): the pattern transport v2 (URL and paste) -------------------------------------------------------------------------------------
+// v2 URL:   ?v=2&shape=&ordnung=&lage=&group=&lines=65a,12.11a,...[&layer=new]       v2 paste: {"version":2,"grid":{shape,ordnung,lage},"group","lines":[tokens]}
+// The v2 path is STRICT (core/orbits.js parseTransportV2): the version must be 2, all tokens are checked against the grid's line table BEFORE anything is
+// touched (nothing here mutates; the callers mutate only after a pattern came back), the tokens are sorted numerically, duplicates kept, lage 2 loads (task 072d),
+// an old-format field (orbitIds, order, symmetryMode) in a v2 input is refused. A refused input sets catalogTransportRejection = { code, detail } (code 'version'
+// or 'invalid'); the callers say it (note.catalog.* in ui-i18n.js) and fall back exactly as for any malformed link.
+let catalogTransportRejection = null;
+function catalogRejectionText(rej) {
+    const fallback = rej.code === 'version' ? 'This link or pattern was made for another version of the generator and cannot be loaded.' : 'This link or pattern is not valid for the current grid and cannot be loaded.';
+    return window.UI && UI.t ? (rej.code === 'version' ? UI.t('note.catalog.version') : UI.t('note.catalog.invalid')) : fallback;
+}
+
+function parseCatalogUrlV2(params) {
+    const reject = (code, detail) => { catalogTransportRejection = { code, detail }; return null; };
+    if (params.get('v') !== '2') return reject('version', 'v=' + String(params.get('v')).slice(0, 20));
+    for (const k of ['orbitIds', 'order', 'symmetryMode']) if (params.has(k)) return reject('invalid', k + ' belongs to the old format');
+    const ordnungRaw = params.get('ordnung'), lageRaw = params.get('lage'), linesRaw = params.get('lines');
+    if (!/^[1-9]\d{0,2}$/.test(ordnungRaw || '') || (lageRaw !== '1' && lageRaw !== '2') || !linesRaw) return reject('invalid', 'ordnung, lage or lines missing or malformed');
+    // task 079: size=XxY (optional, absent = square): two digits 1..9 and nothing else, then validateGridSize inside parseTransportV2 (before anything is touched)
+    let size;
+    if (params.getAll('size').length > 1) return reject('invalid', 'size given twice');
+    if (params.has('size')) { const m = /^([1-9])x([1-9])$/.exec(params.get('size')); if (!m) return reject('invalid', 'size must be XxY (two digits 1 to 9)'); size = { x: parseInt(m[1], 10), y: parseInt(m[2], 10) }; }
+    const r = parseTransportV2({ shape: params.get('shape'), ordnung: parseInt(ordnungRaw, 10), lage: parseInt(lageRaw, 10), group: params.get('group'), lines: linesRaw.split(','), size });
+    if (!r.ok) return reject(r.code, r.detail);
+    const layerRaw = params.get('layer');
+    let layer = null;
+    if (layerRaw === 'new') layer = 'new';
+    else if (layerRaw !== null) console.warn(`Unrecognized layer= value "${layerRaw}" in catalog URL - ignoring, loading as the base pattern instead.`);
+    return Object.assign({}, r.pattern, { layer });
+}
+
+function parseCatalogUrlParams(search) {
+    catalogTransportRejection = null;
+    const params = new URLSearchParams(search);
+    if (params.has('v')) return parseCatalogUrlV2(params);
+    // task 066 (G7b): the old format (?shape&order&symmetryMode&orbitIds, no v) is gone - refused with the version note, never loaded; any other query is an ordinary load
+    if (params.has('orbitIds')) catalogTransportRejection = { code: 'version', detail: 'old format (orbitIds) without v=2' };
+    return null;
+}
+
+// The clipboard payload (the catalog's "Copy pattern" writes v2: core/orbits.js formatTransportPasteV2): never throws, null for
+// anything that does not clearly describe a real pattern. Always targets a NEW layer (no `layer` field).
+function parseClipboardCatalogPattern(text) {
+    catalogTransportRejection = null;
+    let obj;
+    try {
+        obj = JSON.parse(text);
+    } catch (err) {
+        return null;
+    }
+    if (!obj || typeof obj !== 'object') return null;
+    const reject = (code, detail) => { catalogTransportRejection = { code, detail }; return null; };
+    if (obj.version === undefined) return Object.prototype.hasOwnProperty.call(obj, 'orbitIds') ? reject('version', 'old format (orbitIds) without version 2') : null;   // task 066: the old paste format is refused, other JSON stays a quiet null
+    if (obj.version !== 2) return reject('version', 'version ' + JSON.stringify(obj.version).slice(0, 20));
+    if (Object.keys(obj).some(k => !['version', 'grid', 'group', 'lines', 'size'].includes(k))) return reject('invalid', 'unknown field in a v2 pattern (an old-format field?)');
+    const g = obj.grid;
+    if (!g || typeof g !== 'object' || Object.keys(g).some(k => !['shape', 'ordnung', 'lage'].includes(k))) return reject('invalid', 'grid must be {shape, ordnung, lage}');
+    const r = parseTransportV2({ shape: g.shape, ordnung: g.ordnung, lage: g.lage, group: obj.group, lines: obj.lines, size: obj.size });
+    if (!r.ok) return reject(r.code, r.detail);
+    return r.pattern;
+}
+
+// Task 066 (G7b): the connections of a parsed v2 pattern: the representative pair of each line key in the grid's own lattice table (core/orbits.js transportConnectionsV2; a layer's ids
+// are the same lattice ids, so the base and a new layer resolve alike). Throws for a key the grid lacks - each caller's own try/catch reports it via console.warn.
+function resolveCatalogPatternConnections(pattern) {
+    return transportConnectionsV2(pattern);
+}
+
+// Applies a catalog pattern to the BASE sheet - only meaningful once
+// rebuildGrid(currentShape) has already run for the resolved
+// shape/order. Returns true/false so the caller knows whether to fall
+// back to addRandomConnection(); never throws out of setup().
+function applyCatalogPattern(pattern) {
+    try {
+        connections = resolveCatalogPatternConnections(pattern);
+        return true;
+    } catch (err) {
+        console.warn('Failed to load catalog pattern from URL - falling back to the default random connection:', err.message);
+        return false;
+    }
+}
+
+// Roadmap: catalog -> NEW LAYER back-link extension (layer=new URL
+// param, see parseCatalogUrlParams()). Targets a freshly-created
+// additionalLayers[] entry instead of the base globals -
+// addLayer() + updateActiveLayerGrid() are the EXACT same mechanism a
+// real new-layer action (layerApi.add) followed by manually changing its Shape/Node
+// Count controls would use (design session point 2: indistinguishable
+// from a real user action, not a special-cased silent write).
+// symmetryMode is written directly to the layer's own field, mirroring
+// how applyCatalogPattern() itself relies on the base's own global
+// having already been set (setup()'s own catalogUrlPattern handling,
+// further up) - this function never touches the base's globals/UI at
+// all, so the existing base-only link stays completely unaffected.
+// On semantic failure, the just-created layer is removed via the
+// existing removeLayer() - a clean, base-only fallback, not a dangling
+// empty layer.
+function applyCatalogPatternToNewLayer(pattern) {
+    addLayer();
+    const layerIndex = activeLayer;
+    try {
+        updateActiveLayerGrid({ shape: pattern.shape, nodeCount: pattern.order });
+        const layer = additionalLayers[layerIndex];
+        if (pattern.spec && pattern.spec.lage === 2) { const lr = setLayerLage(layer, 2); if (!lr.ok) throw new Error('lage 2 not set (' + lr.reason + ')'); }   // task 072d: the new layer carries the lage of the pattern
+        layer.symmetryMode = pattern.symmetryMode;
+        layer.connections = resolveCatalogPatternConnections(pattern);   // task 066: the keys resolve in the lattice table, the layer's own ids are the same
+        return true;
+    } catch (err) {
+        console.warn('Failed to load catalog pattern into a new layer from URL - removing the empty layer and falling back to the default random base connection:', err.message);
+        removeLayer(layerIndex);
+        return false;
+    }
+}
+
+// ----------------- SETUP ----------------------------------------
+// select() for an element that may not be on the page (the markup of a removed control whose mechanism is kept: the layer animation, the cross-layer compute
+// button and its status line): null when there is none. p5 1.9.0's own select() is a querySelector too: it returns null for a selector that matches nothing and
+// writes nothing to the console (source read and measured), so this helper only makes the optional lookup explicit at the call sites.
+function optionalSelect(sel) { return document.querySelector(sel) ? select(sel) : null; }
+
+// Layer "Mehr" (5d, step 1): does a HIDDEN layer control hold a non-default? True when the layer's offset or rotation is not zero, or its shape, symmetry mode, node count or
+// size differs from the base's current values (a new layer copies those four from the base). `base` = { shape, symmetryMode, nodeCount, shapeSizeFactor }. Drives the dot on the toggle.
+function layerHasNonDefaultSettings(layer, base) {
+    if (!layer || !base) return false;
+    return !!(layer.offsetX || layer.offsetY || layer.rotation ||
+        layer.shape !== base.shape || layer.symmetryMode !== base.symmetryMode || layer.nodeCount !== base.nodeCount || layer.shapeSizeFactor !== base.shapeSizeFactor ||
+        (base.lage !== undefined && layerGridSpecOf(layer).lage !== base.lage));   // task 068b: another lage is a non-default setting
+}
+
+function setup() {
+    // Canvas size (Hidden input, default 600)
+    const sizeSlider = select('#canvas-size-slider');
+    canvasW = parseInt(sizeSlider?.value()) || 600;
+    canvasH = canvasW;
+    createCanvas(canvasW, canvasH).parent('canvas-container');
+    noLoop();
+    installTapInput();
+    window.addEventListener('resize', canvasFitSync); window.addEventListener('orientationchange', canvasFitSync);   // task 078b
+    window.canvasSizeSync = canvasSizeSync;
+    window.sizeLockToggle = sizeLockToggle;   // task 080: the lock button of ui-form.js   // task 078: core/state.js calls it when canvasW / canvasH changed (a size, format or shape change of a non-square base)
+
+    // Shape selection via Icons (Common class .shape-icon-btn)
+    const shapeBtns = selectAll('.shape-icon-btn');
+    shapeBtns.forEach(btn => {
+        btn.mousePressed(() => {
+            // Task 068c3a: the ordnung stays across a shape change (clamped to the new shape's maximum, the lage stays); what the rebuild clears is said, and asked
+            // for first when it takes layers or the timeline with it. A click on the shape that is already active behaves as before.
+            const plan = shapeChangePlan(btn.attribute('data-shape'));
+            if (plan.same) { toggleBaseLage(); return; }   // task 068c3b: a click on the ACTIVE shape changes the lage (it used to rebuild the grid silently)
+            const doShapeChange = () => {
+            // Remove active class from all
+            shapeBtns.forEach(b => b.removeClass('active'));
+            // Add to current
+            btn.addClass('active');
+            // Set shape
+            currentShape = btn.attribute('data-shape');
+            // The ordnung of the shape we came from may exceed this shape's ceiling (square 12 -> hex 7): rebuildGrid() clamps it (gridSpecOnShape); the note says so
+            rebuildGrid(currentShape);
+            syncGridControls();   // the input's value and max, the shape buttons
+            sayShapeChange(plan);
+            renderLayerTabs(); // rebuildGrid() clears additionalLayers - the layer views follow on the next tick
+            updateOffsetControls();
+            updateTimelineControls(); // rebuildGrid() also clears timeline - see its own comment (core/state.js)
+            updateSymmetryModeControl(); // Roadmap 1.11: fold row only applies to hex - show/hide it and re-resolve symmetryMode for the new shape (function declaration, hoisted within setup() regardless of textual order below)
+            cancelAltNetConstruction(); // Roadmap 1.2-C: an in-progress P/Q click pair no longer means anything once the target shape/order changed underneath it
+            redraw();
+            };
+            if ((plan.loss.layers || plan.loss.timeline) && window.timelineConfirm && window.UI && UI.t) {
+                window.timelineConfirm({ title: UI.t('shape.confirm.title'), text: UI.t('shape.confirm.text', { what: shapeLossWhat(plan.loss) }), confirmLabel: UI.t('shape.confirm.go'), onConfirm: doShapeChange, returnFocus: () => { const a = shapeBtns.find(b => b.hasClass('active')); if (a && a.elt.focus) a.elt.focus(); } });
+                return;
+            }
+            doShapeChange();
+        });
+    });
+
+    // Shape size (Number Input)
+    const shapeInput = select('#shape-size-input');
+    if (shapeInput) {
+        shapeSizeFactor = parseInt(shapeInput.value()) || 5;
+        shapeInput.input(() => {
+            let v = parseInt(shapeInput.value());
+            if (isNaN(v)) return; // a half-typed value changes nothing (it used to set the size to NaN)
+            if (v < 1) v = 1; if (v > 9) v = 9; // Clamp
+            // Tasks 074/075/080: resizeBase() (core/state.js) is the one write of a size change (sizeChangeRun below): lines, free endpoints, layers, timeline, alt net and colours are carried along (scaled); what
+            // cannot be carried (colour groups whose faces merge or vanish) is asked first (a dry run says it) and said after. Locked (the default) the width sets X = Y; unlocked it is X against the held Y.
+            const t = sizeTargetFor('x', v);
+            if (t.clamped) sizeRatioNote();
+            sizeChangeRun(t.x, t.y, { sync: () => { shapeInput.value(gridSizeX()); } });
+        });
+    }
+
+    // Task 080: the height (Y) of an unlocked area - the same pattern, its own handler, the same one write (resizeBase). Locked, the field is aria-disabled and any value is put back.
+    const shapeYInput = select('#shape-size-y-input');
+    if (shapeYInput) {
+        shapeYInput.input(() => {
+            let v = parseInt(shapeYInput.value());
+            if (isNaN(v)) return;
+            if (!sizeLockIsOpen()) { shapeYInput.value(gridSizeY()); return; }
+            if (v < 1) v = 1; if (v > 9) v = 9;
+            const t = sizeTargetFor('y', v);
+            if (t.clamped) sizeRatioNote();
+            sizeChangeRun(t.x, t.y, { sync: () => { shapeYInput.value(gridSizeY()); } });
+        });
+    }
+
+    // Node count (Number Input). The ceiling depends on the shape (core/forms.js NODE_COUNT_MAX).
+    const nodeInput = select('#node-count-input');
+    function showNodeCountNote(text) { say('node-count', text, 'info'); }
+    // Sets the input's own max for currentShape (the HTML attribute is only the universal default of 7) and, when the
+    // current nodeCount is above it, clamps nodeCount and says so. `cause` names what triggered it.
+    function clampNodeCountToShape(cause) {
+        const maxN = gridMaxCount(currentShape, gridSpec.lage);   // task 068b: the limit of the base's own lage (the internal count; the input shows the ordnung, task 068c2)
+        if (nodeInput) nodeInput.elt.max = gridMaxOrdnung(currentShape, gridSpec.lage);
+        if (nodeCount > maxN) {
+            showNodeCountNote(`${cause} changed to ${currentShape}: Order ${ordnungForCount(currentShape, nodeCount)} is above its limit of ${gridMaxOrdnung(currentShape, gridSpec.lage)}, so it was set to ${gridMaxOrdnung(currentShape, gridSpec.lage)}.`);
+            projectGridSpec(gridSpecForCount(currentShape, maxN, gridSpec.lage));
+            if (nodeInput) nodeInput.value(gridSpec.ordnung);
+        }
+    }
+    if (nodeInput) {
+        projectGridSpec(gridSpecForOrdnung(currentShape, parseInt(nodeInput.value()) || 2, 1));   // task 068c2: the input holds the ordnung (default 2 = the old count 3)
+        nodeInput.input(() => {
+            let v = parseInt(nodeInput.value());
+            // Roadmap 1.1 (Group A, node-count limit raise): 5 -> 7, and
+            // then shape-dependent (square 13, triangle/hex 7 - see
+            // core/forms.js NODE_COUNT_MAX for the measurements). The same
+            // table bounds the v2 transport validation (validateGridSpec), the layer input
+            // and alignLayerToBase(). An over-limit value is clamped and
+            // the input and a note say so (it used to be silent).
+            const maxN = gridMaxOrdnung(currentShape, gridSpec.lage);   // task 068c2: the value is the ordnung
+            if (v < 1) v = 1;
+            if (v > maxN) {
+                showNodeCountNote(`Order ${v} is above the ${currentShape} limit of ${maxN}, so it was set to ${maxN}.`);
+                v = maxN;
+                nodeInput.value(v);
+            }
+            setGrid(gridSpecForOrdnung(currentShape, v, gridSpec.lage));   // task 068b: the base keeps its lage; task 068c2: v is the ordnung
+            renderLayerTabs();
+            updateOffsetControls();
+            updateTimelineControls();
+            redraw();
+        });
+    }
+
+    // Task 068b: the page's grid controls follow the state after setGrid / setBaseLage / setLayerLage (core/state.js calls this hook; no new elements).
+    function syncGridControls() {
+        if (nodeInput) {
+            nodeInput.elt.max = gridMaxOrdnung(currentShape, gridSpec.lage);
+            if (String(nodeInput.value()) !== String(gridSpec.ordnung)) nodeInput.value(gridSpec.ordnung);
+        }
+        shapeBtns.forEach(b => { if (b.attribute('data-shape') === currentShape) b.addClass('active'); else b.removeClass('active'); });
+        renderLayerTabs();
+        updateOffsetControls();
+        updateTimelineControls();
+    }
+    window.gridControlsSync = syncGridControls;
+
+    // Roadmap: catalog -> generator back-link (see parseCatalogUrlParams()/
+    // applyCatalogPattern() above for the full reasoning). Parsed once,
+    // here - after the shape/node-count controls exist and have their
+    // ordinary defaults, but before anything downstream (the symmetry-
+    // mode block, the final rebuildGrid() at the end of setup()) reads
+    // currentShape/nodeCount - so a valid catalog link overrides BOTH
+    // the internal state AND the controls a real user interaction would
+    // also update (point 3 of the design: not just connections, or the
+    // shape icons/node-count input would visually disagree with the
+    // actually-loaded grid). symmetryMode itself is applied further
+    // below, once modeBtns/foldBtns exist.
+    const catalogUrlPattern = parseCatalogUrlParams(location.search);
+    if (catalogTransportRejection) { console.warn(`Catalog link not loaded (${catalogTransportRejection.code}: ${catalogTransportRejection.detail})`); say('catalog', catalogRejectionText(catalogTransportRejection), 'warn'); }
+    if (catalogUrlPattern) {
+        currentShape = catalogUrlPattern.shape;
+        projectGridSpec(gridSpecForCount(currentShape, catalogUrlPattern.order, (catalogUrlPattern.spec && catalogUrlPattern.spec.lage) || 1));   // task 068b: the lage of the transport (task 072d: lage 1 or 2)
+        if (catalogUrlPattern.size) { setGridSize(catalogUrlPattern.size.x, catalogUrlPattern.size.y); if (shapeInput) shapeInput.value(gridSizeX()); }   // task 079: a link of a non-square area (validated in the parser, before this point)
+        shapeBtns.forEach(b => b.removeClass('active'));
+        const matchingShapeBtn = shapeBtns.find(b => b.attribute('data-shape') === currentShape);
+        if (matchingShapeBtn) matchingShapeBtn.addClass('active');
+        if (nodeInput) nodeInput.value(gridSpec.ordnung);
+    }
+    clampNodeCountToShape('Shape'); // sets the input's max for the starting shape (a validated catalog order is already within it)
+
+    // Symmetry Mode (Spiegeling/Drehling button group + hex-only fold
+    // sub-row) - see index.html's own comment on this control for the
+    // removal/reintroduction history. Category+fold state resolves to
+    // one of the six canonical raw mode strings via
+    // resolveSymmetryMode() - normSym() still validates the result
+    // (defensive, matches the function's existing role elsewhere)
+    // even though every reachable combination is already one of the
+    // six real values by construction.
+    // UI rework 4b: 'none' | 'drehling' | 'mirror' | 'spiegeling'. 'mirror' (mirror only -> reflection_only)
+    // is new as a UI state; the other three are the old ones. The mapping lives in core/symmetry-toggles.js
+    // (pure, tested); the two toggles in the Form nav row (ui-form.js) derive their state from this category.
+    let symmetryCategory = 'spiegeling'; // matches the pre-existing rotation_reflection6 default
+    let symmetryFold = 6; // 3 | 6 - hex only, ignored for triangle/square and while rotation is off
+
+    function resolveSymmetryMode(shape, category, fold) {
+        return symmetryModeFor(shape, category, fold); // core/symmetry-toggles.js (moved there unchanged, plus 'mirror')
+    }
+
+    // True only while the session restore's 'symmetry' hook drives the setters below: they then skip uiSync() and redraw(), because between
+    // the two setters (and until the apply code assigns the stored mode) symmetryMode is an intermediate one, and a sync or a draw would
+    // write gray-fill entries for THAT mode's trails into the restored store. The hook's caller syncs once, with the final state.
+    let restoringSymmetry = false;
+
+    function updateSymmetryModeControl() {
+        symmetryMode = normSym(resolveSymmetryMode(currentShape, symmetryCategory, symmetryFold));
+        const foldGroup = select('#mode-fold-group');
+        if (foldGroup) foldGroup.elt.hidden = currentShape !== 'hex';
+        if (window.uiSync && !restoringSymmetry) window.uiSync(); // the nav row's toggles follow the category
+    }
+
+    // One path for every change of the category - the old .mode-btn handlers and the nav row's toggles both go
+    // through it. The old buttons stay in the DOM (hidden, see index.html) and keep their 'active' class in step;
+    // 'mirror' has no old button, so none of them is active then.
+    function applySymmetryCategory(category) {
+        modeBtns.forEach(b => b.removeClass('active'));
+        const match = modeBtns.find(b => b.attribute('data-mode') === category);
+        if (match) match.addClass('active');
+        symmetryCategory = category;
+        updateSymmetryModeControl();
+        if (!restoringSymmetry) redraw();
+    }
+    function applySymmetryFold(fold) {
+        foldBtns.forEach(b => b.removeClass('active'));
+        const match = foldBtns.find(b => parseInt(b.attribute('data-fold')) === fold);
+        if (match) match.addClass('active');
+        symmetryFold = fold;
+        updateSymmetryModeControl();
+        if (!restoringSymmetry) redraw();
+    }
+    // What the nav row reads and drives (ui-form.js).
+    window.symmetryUi = {
+        category: () => symmetryCategory,
+        fold: () => symmetryFold,
+        setCategory: applySymmetryCategory,
+        setFold: applySymmetryFold,
+    };
+
+    // Roadmap 1.12 stage 5 (symmetryMode axis) part 3: the best-effort
+    // INVERSE of resolveSymmetryMode() directly above - reused by both
+    // the catalog-URL best-effort highlighting below and the per-layer
+    // Mode/Fold buttons further down (previously inlined once for the
+    // catalog case only; a second call site now needs the identical
+    // mapping). Exact for the four rotation-bearing raw modes and for
+    // 'none' (this table really is resolveSymmetryMode()'s own inverse
+    // there); approximate for 'reflection_only' (Z2), which has no
+    // category+fold combination that reaches it going forward - see the
+    // design session. currentFold is the caller's own fallback for
+    // whichever entries don't have a real fold of their own (none/Z2),
+    // so a fold click doesn't lose the user's last real fold choice.
+    // UI rework 4b: now exact for reflection_only too ('mirror'); the table moved to core/symmetry-toggles.js.
+    function bestEffortCategoryFold(mode, currentFold) {
+        return symmetryCategoryFoldFor(mode, currentFold);
+    }
+
+    const modeBtns = selectAll('.mode-btn');
+    modeBtns.forEach(btn => {
+        btn.mousePressed(() => applySymmetryCategory(btn.attribute('data-mode')));
+    });
+
+    const foldBtns = selectAll('.fold-btn');
+    foldBtns.forEach(btn => {
+        btn.mousePressed(() => applySymmetryFold(parseInt(btn.attribute('data-fold'))));
+    });
+
+    updateSymmetryModeControl(); // initial sync - keeps symmetryMode/fold-row-visibility correct on load without waiting for a click
+
+    // Roadmap: catalog -> generator back-link, continued from above - the
+    // raw symmetryMode from the URL wins outright over whatever
+    // updateSymmetryModeControl() just resolved from the default
+    // category/fold, since it's already the portable, authoritative
+    // value (point 1 of the design - no category/fold re-derivation
+    // needed or wanted). Button highlighting below is best-effort: exact
+    // for the four rotation-bearing raw modes (this table is literally
+    // resolveSymmetryMode()'s own inverse) and for 'none', approximate
+    // for 'reflection_only' (Z2) - Z2 has no category+fold combination
+    // that reaches it (see the design session), so Spiegeling is
+    // highlighted as the conceptually correct category (Ostwald's own
+    // term covers the full reflection-containing case, not just the
+    // dihedral groups) even though re-clicking it afterward would NOT
+    // reproduce Z2 - a known, deliberately-deferred gap, not something
+    // this feature tries to solve. symmetryCategory/symmetryFold
+    // themselves are updated too, not just the button classes, so a
+    // LATER updateSymmetryModeControl() call (e.g. a subsequent shape-
+    // icon click) resolves from a sane starting point instead of a
+    // stale pre-load default.
+    if (catalogUrlPattern) {
+        symmetryMode = catalogUrlPattern.symmetryMode;
+        const bestEffort = bestEffortCategoryFold(symmetryMode, symmetryFold);
+        if (bestEffort) {
+            symmetryCategory = bestEffort.category;
+            symmetryFold = bestEffort.fold;
+            modeBtns.forEach(b => b.removeClass('active'));
+            const matchingModeBtn = modeBtns.find(b => b.attribute('data-mode') === symmetryCategory);
+            if (matchingModeBtn) matchingModeBtn.addClass('active');
+            foldBtns.forEach(b => b.removeClass('active'));
+            const matchingFoldBtn = foldBtns.find(b => parseInt(b.attribute('data-fold')) === symmetryFold);
+            if (matchingFoldBtn) matchingFoldBtn.addClass('active');
+        }
+        if (window.uiSync) window.uiSync(); // the nav row's toggles show the loaded pattern's category
+    }
+
+    // Line Color (Color Picker)
+    const colorPicker = select('#line-color-picker');
+    if (colorPicker) {
+        lineColor = colorPicker.value() || '#000000';
+        colorPicker.input(() => {
+            lineColor = colorPicker.value();
+            redraw();
+        });
+    }
+
+    // Curve Toggle Button. Three-way mutually exclusive with the free-
+    // clothing toggle and the face-fill toggle below (Roadmap 1.10a
+    // design session, point 7 - straight-line-only face detection, now
+    // extended to 'free' too - core/faces.js's guard is already
+    // `kind !== 'straight'`, so it already excludes 'free' with no
+    // change needed there; this is only the UI-level three-way
+    // exclusion, generalizing the old two-way curve/faces logic).
+    const curveBtn = select('#btn-toggle-curve');
+    const freeBtn = select('#btn-toggle-free');
+    const faceBtn = select('#btn-toggle-faces');
+    // A locked toggle (a net transform is active) is aria-disabled, not natively disabled: it stays focusable and says why. Native disabled used to stop the mousedown that p5's
+    // mousePressed listens for; now the handlers below return first when their button is locked.
+    function btnLocked(b) { return !!b && (b.elt.disabled || b.elt.getAttribute('aria-disabled') === 'true'); }
+    function lockBtn(b, reason) {
+        if (window.UI && UI.setDisabled) UI.setDisabled(b.elt, reason);
+        else b.elt.disabled = !!reason;   // no UI layer (a page without ui.js): the native disabled, as before
+    }
+    if (curveBtn) {
+        curveBtn.mousePressed(() => {
+            if (btnLocked(curveBtn)) return;
+            if (curveType.kind === 'curve') {
+                curveType = { kind: 'straight' }; // Disable curve
+                curveBtn.removeClass('active');
+            } else {
+                // Roadmap (Group A): fold/strength now come from the
+                // live #curve-fold-input/#curve-strength-input controls
+                // (declared further below in this same setup() call -
+                // safe forward reference, this handler only actually
+                // runs on a later click, by which point setup() has
+                // already run those declarations once, same pattern
+                // updateCurveTypeControls() itself already relies on)
+                // instead of a fixed hardcoded pair - so re-activating
+                // curve mode resumes at whatever fold/strength the
+                // person last set, not always fold=1/strength=25. Their
+                // own untouched HTML defaults (1/25) still match the
+                // OLD hardcoded pair exactly for a first-ever activation
+                // on a fresh page load - byte-identical starting point,
+                // just no longer frozen after that.
+                curveType = {
+                    kind: 'curve',
+                    fold: curveFoldInput ? parseInt(curveFoldInput.value()) || 1 : 1,
+                    symmetric: true,
+                    leaning: 'left',
+                    strength: curveStrengthInput ? parseFloat(curveStrengthInput.value()) || 0 : 25,
+                };
+                curveBtn.addClass('active');
+                freeBtn && freeBtn.removeClass('active');
+                setActiveShowFaces(false);
+                faceBtn && faceBtn.removeClass('active');
+            }
+            updateCurveTypeControls();
+            redraw();
+        });
+    }
+
+    // Roadmap 1.5-B: 'free' clothing toggle - a separate button from
+    // the curve toggle above (not a redesign of it), same three-way
+    // exclusion. Activating 'free' auto-rolls a starting seed (via the
+    // SAME Math.random() call the reroll button uses below) rather than
+    // always starting from a fixed default - "try a variation" is the
+    // point from the very first activation, not just on reroll; the
+    // chosen seed then becomes a fixed, exported, deterministic value
+    // like any other curveType field (core/curves.js's buildCurvePieces()
+    // never calls random() itself - see the 1.5-A design).
+    if (freeBtn) {
+        freeBtn.mousePressed(() => {
+            if (btnLocked(freeBtn)) return;
+            if (curveType.kind === 'free') {
+                curveType = { kind: 'straight' }; // Disable free clothing
+                freeBtn.removeClass('active');
+            } else {
+                curveType = {
+                    kind: 'free',
+                    seed: Math.floor(Math.random() * 2147483648),
+                    roughness: 1,
+                    // Roadmap (Group A): strength now shares the SAME
+                    // live #curve-strength-input - curveType.strength was
+                    // already read identically for 'curve' and 'free' in
+                    // core/curves.js (one field, two kinds) - unified
+                    // here into one control to match, rather than a
+                    // second, separately-hardcoded 20 that a shared
+                    // slider couldn't represent alongside curve's own
+                    // 25 anyway. On a fresh page load where 'free' is
+                    // activated before 'curve' ever has been, this
+                    // starts at the slider's own HTML default (25, not
+                    // the old 20) - a small, deliberate, documented
+                    // behavior change, not an oversight.
+                    strength: curveStrengthInput ? parseFloat(curveStrengthInput.value()) || 0 : 20,
+                    leaning: 'left',
+                    visible: false
+                };
+                freeBtn.addClass('active');
+                curveBtn && curveBtn.removeClass('active');
+                setActiveShowFaces(false);
+                faceBtn && faceBtn.removeClass('active');
+            }
+            updateCurveTypeControls();
+            updateFreeVisibleToggleIcon();
+            redraw();
+        });
+    }
+
+    // Face-Fill Toggle Button (Roadmap 1.10a). Contextual to the active
+    // layer (base or a specific additional layer - see
+    // activeShowFaces()/setActiveShowFaces()), and mutually exclusive
+    // with curve/free mode the same way those two are with this one and
+    // with each other. updateFaceToggleControl() keeps the button's
+    // visual state in sync whenever the active layer changes (same call
+    // sites as updateOffsetControls() below).
+    function updateFaceToggleControl() {
+        if (!faceBtn) return;
+        if (activeShowFaces()) faceBtn.addClass('active');
+        else faceBtn.removeClass('active');
+    }
+    if (faceBtn) {
+        faceBtn.mousePressed(() => {
+            if (btnLocked(faceBtn)) return;
+            const next = !activeShowFaces();
+            setActiveShowFaces(next);
+            if (next) {
+                curveType = { kind: 'straight' };
+                curveBtn && curveBtn.removeClass('active');
+                freeBtn && freeBtn.removeClass('active');
+            }
+            updateFaceToggleControl();
+            updateCurveTypeControls();
+            redraw();
+        });
+    }
+
+    initFaceColorsPanel();
+
+    // ---- Roadmap 1.6 / Group E phase 2: net transform controls (base sheet, square only) ----
+    // UI state -> baseNetTransform (core/state.js): sinus/tangens = {kind:'trig', w: -/+strength},
+    // geometric = {kind:'geometric', w: +/-strength*ln(NET_R_MAX)} (w = ln R, R = last/first mesh),
+    // 'Both' axes = y:'same'. Strength 0 (or Regular) is the identity: no warp, nothing locked.
+    // Session restore: sets the net panel's own state (the `ui` object inside initNetControls) from baseNetTransform - the inverse of
+    // axisSpec() - without going through commit(). Stays null if the panel does not exist.
+    let adoptNetState = null;
+    (function initNetControls() {
+        const group = select('#net-group');
+        if (!group) return;
+        const NET_R_MAX = 8;
+        const kindBtns = selectAll('.net-kind-btn'), axesBtns = selectAll('.net-axes-btn');
+        const strengthInput = select('#net-strength-input'), strengthValue = select('#net-strength-value'), strengthRow = select('#net-strength-row');
+        const focusRow = select('#net-focus-row'), focusInput = select('#net-focus-input'), focusValue = select('#net-focus-value'), focusHint = select('#net-focus-hint');
+        const geoRow = select('#net-geo-row'), reverseBtn = select('#net-reverse-btn'), alternateBtn = select('#net-alternate-btn');
+        const fresh = () => ({ mode: 'regular', strength: 0.5, reverse: false, alternate: false, focus: 0 });
+        const ui = { axes: 'both', domain: 'single', macro: undefined, x: fresh(), y: fresh() };
+        const sizeHint = select('#net-size-hint');
+        // Domain (Single | Tiled | Field): ui.domain mirrors the state (baseNetTransform.domain / .repeat). Field is only valid
+        // for an odd Shape Size 3..9 (netDomainEffective); an even one resets it to Single, visibly.
+        const domainBtns = selectAll('.net-domain-btn'), fieldBtn = select('#net-field-btn'), fieldHint = select('#net-field-hint'), fieldInfo = select('#net-field-info');
+        const showFieldNote = text => { say('net-field', text, 'info'); };
+        const is3C = () => !!baseNetTransform && baseNetTransform.kind === 'projective';   // task 122: the Moebius net (core/netwarp.js) is not a Netzart 1 spec: the guards below keep this panel from reading or rewriting it
+        let memo = null, was3C = null;   // task 122: the Netzart 1 panel state while "-" or 3C is chosen (netArtSet)
+        const stateDomain = () => baseNetTransform ? (baseNetTransform.domain === 'field' ? 'field' : baseNetTransform.domain === 'tiled' ? 'tiled' : baseNetTransform.domain === 'single' ? 'single' : (baseNetTransform.repeat ? 'tiled' : 'single')) : null;
+        const setDomain = d => { ui.domain = d; if (baseNetTransform && !is3C()) { baseNetTransform.domain = d === 'field' ? 'field' : undefined; baseNetTransform.repeat = d === 'tiled'; } };
+        // Macro cells (nested net): ui.macro = the chosen macro count, undefined = smooth (macro = E). The state's
+        // baseNetTransform.macro is kept equal to it; the row lists the valid divisors of E = nodeCount - 1.
+        const macroRow = select('#net-macro-row'), macroBtns = select('#net-macro-buttons'), macroHint = select('#net-macro-hint');
+        let macroSig = null;
+        const setMacro = v => { ui.macro = v; if (baseNetTransform && !is3C()) baseNetTransform.macro = v; };
+        const showMacroNote = text => { say('net-macro', text, 'info'); };
+        const target = () => (ui.axes === 'y' ? ui.y : ui.x);
+        const axisSpec = c => c.mode === 'regular' ? { kind: 'uniform', w: 0 }
+            : c.mode === 'sinus' ? (c.focus ? { kind: 'trig', w: -c.strength, focus: c.focus, alternate: c.alternate } : { kind: 'trig', w: -c.strength })
+            : c.mode === 'tangens' ? (c.focus ? { kind: 'trig', w: c.strength, focus: c.focus, alternate: c.alternate } : { kind: 'trig', w: c.strength })
+            : { kind: 'geometric', w: (c.reverse ? -1 : 1) * c.strength * Math.log(NET_R_MAX), alternate: c.alternate };
+        // UI rework 4c: a value on the 0.1 grid shows one decimal (0.8), any other value two (0.86) - the stored value is
+        // never rounded, the display just says what it is.
+        function fmtNetValue(v) { return Math.abs(v * 10 - Math.round(v * 10)) < 1e-9 ? v.toFixed(1) : v.toFixed(2); }
+        // UI rework 4c: what happens when a kind is chosen. A net switched on from "Aus" starts as Both axes + Field (the
+        // defaults are not shown; More has the other choices). Field needs an odd Shape Size 3..9 - with an even one it stays
+        // Single and SAYS so; the Shape Size itself is never changed. Sin and Tan need at least 4 nodes (at 3 the law sits
+        // on its fixed points and shows no effect): a lower Node Count is raised to 4, and that is said too.
+        function applyNetKindChoice(kind, fromRegular) {
+            const notes = [];
+            if (fromRegular) {
+                ui.axes = 'both';
+                const Rs = typeof netSizeFactors === 'function' ? netSizeFactors() : { x: shapeSizeFactor, y: shapeSizeFactor }, R = Rs.x === Rs.y ? Rs.x : Rs.x + '/' + Rs.y;   // task 086: the tile counts {x, y}
+                if (netDomainEffective({ domain: 'field' }, Rs, currentShape).ignored === null) setDomain('field');
+                else { setDomain('single'); const noNet = currentShape !== 'square', evenShape = currentShape === 'square' || currentShape === 'triangle' || currentShape === 'hex';   // task 092: the triangle and the hexagon have no Single net: there is no net at that size (task 106: the square's Field takes every size 3..9, so only a size below 3 gets here)
+                    notes.push(window.UI && UI.t ? UI.t(noNet ? (evenShape ? 'note.net.fieldMinSizeNoNet' : 'note.net.fieldOddSizeNoNet') : 'note.net.fieldMinSize', { size: R, kept: R }) : (noNet ? (evenShape ? `Feld braucht in X und Y mindestens Größe 3; bei ${R} gibt es hier kein Netz. Die Größe bleibt ${R}.` : `Feld braucht ungerade Größen in X und Y (3, 5, 7, 9); bei ${R} gibt es hier kein Netz. Die Größe bleibt ${R}.`) : `Feld braucht in X und Y mindestens Größe 3; ${R} passt nicht, deshalb Einzelnetz. Die Größe bleibt ${R}.`)); }
+            }
+            if ((kind === 'sinus' || kind === 'tangens') && nodeCount < 4) {   // E >= 3, i.e. the legacy count 4 = ordnung 3 (triangle, square) / 4 (hex), task 068c2
+                const minO = gridMinOrdnungTrig(currentShape);
+                notes.push(window.UI && UI.t ? UI.t('note.net.minNodes', { from: gridSpec.ordnung, to: minO }) : `Sin und Tan brauchen mindestens Ordnung ${minO}; Ordnung von ${gridSpec.ordnung} auf ${minO} gesetzt.`);
+                if (nodeInput) { nodeInput.value(minO); nodeInput.elt.dispatchEvent(new Event('input', { bubbles: true })); }
+            }
+            if (notes.length && window.UI) UI.toast(notes.join(' '), 6000);
+        }
+        function afterAuthorEdit() {
+            if (baseNetAnimation && baseNetAnimation.live && !baseNetAnimation.playing) baseNetAnimation.live = false;
+            if (timeline && timeline.netLive && !timeline.playing) timeline.netLive = false;
+            render(); netControlsSync(); redraw(); if (window.syncNetAnimationDisplay) window.syncNetAnimationDisplay();
+            if (window.syncTimelineNetUi) window.syncTimelineNetUi();
+        }
+        function commit() {
+            if (is3C()) { afterAuthorEdit(); return; }   // task 122: a Netzart 1 control must not replace a 3C spec
+            if (ui.axes === 'both') ui.y = Object.assign({}, ui.x);
+            const allRegular = ui.x.mode === 'regular' && ui.y.mode === 'regular';
+            if (baseNetTransform && baseNetTransform.macro !== ui.macro) ui.macro = baseNetTransform.macro; // adopt a macro set from the state
+            const sd = stateDomain(); if (sd && sd !== ui.domain) ui.domain = sd;   // adopt a domain set from the state
+            baseNetTransform = allRegular ? null : { x: axisSpec(ui.x), y: ui.axes === 'both' ? 'same' : axisSpec(ui.y), repeat: ui.domain === 'tiled', macro: ui.domain === 'field' ? undefined : ui.macro, domain: ui.domain === 'field' ? 'field' : undefined };
+            // An author edit while the animation is only paused/scrubbed shows the author net again; while it is PLAYING the frame keeps
+            // running and the edit lands in the author spec only (baseNetTransform is never overwritten by the frame).
+            if (baseNetAnimation && baseNetAnimation.live && !baseNetAnimation.playing) baseNetAnimation.live = false;
+            if (timeline && timeline.netLive && !timeline.playing) timeline.netLive = false;   // the same for a Timeline-driven net
+            render(); netControlsSync(); redraw(); if (window.syncNetAnimationDisplay) window.syncNetAnimationDisplay();
+            if (window.syncTimelineNetUi) window.syncTimelineNetUi();   // the automatic "Include net" value and the warning follow the author net
+        }
+        function render() {
+            const c = target();
+            kindBtns.forEach(b => b.elt.classList.toggle('active', b.elt.dataset.kind === c.mode));
+            axesBtns.forEach(b => b.elt.classList.toggle('active', b.elt.dataset.axes === ui.axes));
+            strengthRow.elt.hidden = c.mode === 'regular';
+            strengthInput.value(Math.round(c.strength * 100));
+            strengthValue.html(c.mode === 'geometric' ? '\u00d7' + Math.pow(NET_R_MAX, c.strength).toFixed(1) : fmtNetValue(c.strength));
+            // Focus (trig laws, Single/Tiled): moves the widest (sinus) / narrowest (tangens) mesh off the tile centre; not in a Field
+            const trig = c.mode === 'sinus' || c.mode === 'tangens', geo = c.mode === 'geometric';
+            focusRow.elt.hidden = !trig;
+            focusInput.value(Math.round((c.focus || 0) * 100)); focusValue.html(fmtNetValue(c.focus || 0));
+            const anyFocus = [ui.x, ui.axes === 'both' ? ui.x : ui.y].some(a => (a.mode === 'sinus' || a.mode === 'tangens') && a.focus);
+            focusHint.elt.hidden = !anyFocus;
+            if (!focusHint.elt.hidden) focusHint.html(ui.domain === 'field'
+                ? 'Focus moves the widest (sinus) / narrowest (tangens) TILE off the field centre; every tile stays an exact scaled copy, so face fills stay exact. The whole image loses its 90\u00b0/180\u00b0 rotation and axis-mirror symmetry; the diagonal mirror stays only while X and Y share the same focus.'
+                : 'Focus breaks the 90\u00b0/180\u00b0 rotation and the axis-mirror symmetry of the warped image; the diagonal mirror stays only while X and Y share the same focus. Macro 2 becomes meaningful (see Macro cells).');
+            geoRow.elt.hidden = !(geo || (trig && c.focus && ui.domain === 'tiled'));   // Alternate tiles: geometric, or a trig law with a focus in Tiled (inert at focus 0, and in Single/Field there are no seams)
+            reverseBtn.elt.hidden = !geo;
+            domainBtns.forEach(b => b.elt.classList.toggle('active', b.elt.dataset.domain === ui.domain));
+            alternateBtn.elt.hidden = ui.domain !== 'tiled'; // tile-seam parity only exists between repeated (Tiled) tiles
+            reverseBtn.elt.classList.toggle('active', c.reverse);
+            alternateBtn.elt.classList.toggle('active', c.alternate);
+        }
+        kindBtns.forEach(b => b.mousePressed(() => {
+            const kind = b.elt.dataset.kind, fromRegular = ui.x.mode === 'regular' && ui.y.mode === 'regular';
+            target().mode = kind;
+            if (kind !== 'regular') applyNetKindChoice(kind, fromRegular);
+            commit();
+        }));
+        axesBtns.forEach(b => b.mousePressed(() => {
+            const next = b.elt.dataset.axes;
+            if (next !== 'both' && ui.axes === 'both') ui.y = Object.assign({}, ui.x); // start X and Y from the shared law
+            ui.axes = next; commit();
+        }));
+        focusInput.input(() => { target().focus = parseInt(focusInput.value()) / 100; commit(); });
+        strengthInput.input(() => { target().strength = parseInt(strengthInput.value()) / 100; commit(); });
+        domainBtns.forEach(b => b.mousePressed(() => {
+            const d = b.elt.dataset.domain;
+            if (d === 'field' && b.elt.disabled) return;
+            if (window.UI) UI.notifyClear('net-field'); setDomain(d); commit();
+        }));
+        const linesBtn = select('#net-lines-btn');
+        linesBtn.mousePressed(() => { netLinesOn = !netLinesOn; linesBtn.elt.classList.toggle('active', netLinesOn); redraw(); });
+        reverseBtn.mousePressed(() => { target().reverse = !target().reverse; commit(); });
+        alternateBtn.mousePressed(() => { target().alternate = !target().alternate; commit(); });
+
+        const locked = [curveBtn, freeBtn, faceBtn].filter(Boolean);
+        locked.forEach(b => { b.elt.dataset.title = b.elt.title; });
+        let wasActive = null;
+        const htmlWritten = new WeakMap();   // task 084: the three hint texts below are written only when their text changes
+        const htmlOnce = (el, text) => { if (htmlWritten.get(el.elt) !== text) { htmlWritten.set(el.elt, text); el.html(text); } };
+        netControlsSync = function () {
+            const groupHide = !((currentShape === 'square' || currentShape === 'triangle' || currentShape === 'hex') && activeLayer === 'base');   // task 088/089: the triangle and the hexagon have the Netz row too (a Field only)   // task 084: a hidden flag or title is written only when its value changes (this runs on every draw)
+            if (group.elt.hidden !== groupHide) group.elt.hidden = groupHide;
+            const active = netWarpActive(), on3C = is3C();
+            if (was3C !== on3C) { was3C = on3C; group.elt.classList.toggle('net-3c-on', on3C); }   // task 122: the group knows 3C (class), written only when it changes
+            if (on3C) {   // task 122: the Moebius net: no Field / Macro / Focus notes, faces allowed like on a Field (base sheet and layers on the base grid), curve and free off
+                [fieldHint, fieldInfo, macroRow, macroHint, sizeHint, focusRow, geoRow].forEach(el => { if (!el.elt.hidden) el.elt.hidden = true; });
+                if (curveType.kind !== 'straight') { curveType = { kind: 'straight' }; curveBtn && curveBtn.removeClass('active'); freeBtn && freeBtn.removeClass('active'); updateCurveTypeControls(); }
+                const faceOk3 = active && (activeLayer === 'base' || layerGridMatchesBase(additionalLayers[activeLayer])), sig3 = `3c|${active}|${faceOk3}`;
+                if (sig3 !== wasActive) {
+                    [curveBtn, freeBtn].filter(Boolean).forEach(b => lockBtn(b, active ? 'Off while a net transform is active. Set the net back to Regular (Base sheet, square) to use curves again.' : null));
+                    if (faceBtn) lockBtn(faceBtn, faceOk3 ? null : (window.UI && UI.t ? UI.t('net.3c.lock.face') : 'Face fills on a 3C net: the base sheet and layers on the base grid (same shape and size, no offset, no rotation) only'));   // task 123: in the language of the UI
+                    wasActive = sig3;
+                }
+                return;
+            }
+            // Domain: adopt one set from the state; Field needs an odd Shape Size 3..9 - an even one is reset to Single, visibly
+            const sd = stateDomain(); if (sd && sd !== ui.domain) { ui.domain = sd; render(); }
+            const Rs = typeof netSizeFactors === 'function' ? netSizeFactors() : { x: shapeSizeFactor, y: shapeSizeFactor }, R = Rs.x === Rs.y ? Rs.x : Rs.x + ' \u00d7 ' + Rs.y, Rmin = Math.min(Rs.x, Rs.y), fieldOk = netDomainEffective({ domain: 'field' }, Rs, currentShape).ignored === null, sqShape = currentShape === 'square', evenShape = sqShape || currentShape === 'triangle' || currentShape === 'hex';   // task 106 / 108: the shape decides which sizes a Field takes (evenShape: any size 3..9 - the square and the triangle)
+            if (ui.domain === 'field' && !fieldOk) {
+                setDomain('single'); render();
+                showFieldNote(`Shape Size ${R} ${!evenShape && Rs.x === Rs.y && Rs.x % 2 === 0 ? 'is even' : 'is not a valid field size'}${!evenShape ? ': the field net applies only at odd sizes (3, 5, 7, 9) in X and Y, so there is no net here.' : !sqShape ? ': the field net applies only from size 3 in X and Y, so there is no net here.' : ', so Field was reset to Single (Field needs Shape Size 3 or more in X and Y).'}`);   // task 092: no Single net on the triangle and the hexagon
+            }
+            if (fieldBtn.elt.disabled !== !fieldOk) fieldBtn.elt.disabled = !fieldOk;
+            domainBtns.forEach(b => { if (b.elt.dataset.domain !== 'field') { const dis = currentShape === 'triangle' || currentShape === 'hex'; if (b.elt.disabled !== dis) b.elt.disabled = dis; } });   // task 088: only a Field applies to the triangle
+            const fieldTitle = fieldOk ? (evenShape && window.UI && UI.t ? UI.t(sqShape ? 'net.domain.field.titleSq' : 'net.domain.field.titleEven') : fieldBtn.elt.dataset.title) : (evenShape ? 'Field needs Shape Size 3 or more in X and Y' : 'Field needs an odd Shape Size in X and Y (3, 5, 7, 9)');   // task 106
+            if (fieldBtn.elt.title !== fieldTitle) fieldBtn.elt.title = fieldTitle;
+            { const hk = evenShape ? 'net.hint.fieldMin' : 'net.hint.fieldOdd';   // task 106: the hint under the domain buttons names the sizes of the CURRENT shape (data-i18n follows, so a language change re-translates it)
+              if (fieldHint.elt.dataset.i18n !== hk) { fieldHint.elt.dataset.i18n = hk; fieldHint.elt.textContent = window.UI && UI.t ? UI.t(hk) : (evenShape ? 'Feld braucht in X und Y mindestens Größe 3.' : 'Feld braucht ungerade Größen in X und Y (3, 5, 7, 9).'); } }
+            if (fieldHint.elt.hidden !== fieldOk) fieldHint.elt.hidden = fieldOk;
+            const isField = ui.domain === 'field', E0 = baseGridDivisions();
+            if (fieldInfo.elt.hidden !== !(active && isField)) fieldInfo.elt.hidden = !(active && isField);
+            const optHint = sqShape && window.UI && UI.t && (Rs.x * Rs.y < 7 || Rs.x * Rs.y > 12) ? ' ' + UI.t('net.hint.optimum', { w: Rs.x * Rs.y }) : '';   // task 106: the optimum of Hinterreiter II p. 17 (7 to 12 meshes for squares) as a hint only, here and not in the readout
+            const famHint = evenShape && window.UI && UI.t ? ' ' + UI.t({ square: 'net.family.info.square', triangle: 'net.family.info.triangle', hex: 'net.family.info.hex' }[currentShape]) : '';   // task 111: the net family of the shape (Hinterreiter vol. II), after the optimum hint
+            if (active && isField) htmlOnce(fieldInfo, `Field: macro = R = ${R} tiles, micro = E = ${E0} per tile. Face fills are exact on a Field and work for the base sheet and for layers on the base grid (same shape and size, no offset, no rotation - every timeline playback layer); other layers are not filled.${optHint}${famHint}`);
+            // The Shape Size hint says what Shape Size does in the CURRENT mode
+            const hintText = !active ? null
+                : ui.domain === 'single' ? (Rmin > 1 ? 'Single: one closed net. Shape Size 1 fills the canvas, larger sizes give a smaller net; Field (Shape Size 3-9) spreads the law over all the tiles instead.' : null)
+                : ui.domain === 'tiled' ? `Tiled: the warped tile is repeated ${Rmin} times across the canvas, every copy alike.`
+                : `Field: Shape Size is the number of macro cells (tiles) per axis; the net always fills the canvas.`;
+            if (sizeHint.elt.hidden !== (hintText === null)) sizeHint.elt.hidden = hintText === null; if (hintText !== null) htmlOnce(sizeHint, hintText);
+            // Macro cells: a chosen macro that no longer divides E (Node Count changed) is reset to smooth, visibly -
+            // never silently snapped to another divisor (the core would ignore it anyway: netMacroEffective()).
+            const E = baseGridDivisions();
+            if (ui.macro !== undefined && !netMacroEffective(ui.macro, E).valid) {
+                const was = ui.macro; setMacro(undefined);
+                showMacroNote(`Macro ${was} does not divide E = ${E} (Node Count ${nodeCount}), so the net was reset to smooth (${E}\u00d71).`);
+            }
+            // Law-aware: Macro 2 is offered only for the geometric law (for a trig law it is a no-op), see netMacroOptions().
+            const options = netMacroOptions(E, baseNetTransform), nested = options.length >= 2;
+            if (ui.macro !== undefined && ui.macro !== E && netMacroEffective(ui.macro, E).valid && !options.includes(ui.macro)) {
+                const was = ui.macro; setMacro(undefined);   // a valid divisor the current law no longer offers (Macro 2 after Geometric -> Sinus/Tangens/mixed)
+                showMacroNote(`Macro ${was} has no effect for this law (a trig law's macro points sit on its fixed points), so the net was reset to smooth (${E}\u00d71).`);
+            }
+            if (macroRow.elt.hidden !== !(active && nested && !isField)) macroRow.elt.hidden = !(active && nested && !isField);   // in a Field the micro grid is the clicked tile's own (see fieldInfo)
+            if (macroHint.elt.hidden !== !(active && !nested && !isField)) macroHint.elt.hidden = !(active && !nested && !isField);
+            if (active && !nested && !isField) { const geo = netSpecMacro2Real(baseNetTransform); htmlOnce(macroHint, `Macro cells: not available for E = ${E} (Node Count ${nodeCount}) - E needs a divisor from ${geo ? 2 : 3} up to E \u2212 1, e.g. E = ${geo ? '4, 6, 8, 9, 10, 12' : '6, 8, 9, 10, 12'}.`); }
+            const sig = `${E}|${ui.macro}|${active && nested && !isField}|${options.join(',')}`;
+            if (sig !== macroSig) {
+                macroSig = sig; macroBtns.elt.innerHTML = '';
+                if (active && nested && !isField) options.forEach(m => {
+                    const b = document.createElement('button'); b.className = 'layer-btn';
+                    const smooth = m === E; b.textContent = `${m}\u00d7${E / m}`;
+                    b.title = smooth ? `${E} macro cells of 1: smooth, no nesting (default)` : `${m} unequal macro cells, each split uniformly into ${E / m}`;
+                    if ((smooth && ui.macro === undefined) || ui.macro === m) b.classList.add('active');
+                    b.addEventListener('click', () => { if (window.UI) UI.notifyClear('net-macro'); setMacro(smooth ? undefined : m); commit(); });
+                    macroBtns.elt.appendChild(b);
+                });
+            }
+            if (active && curveType.kind !== 'straight') { // a curve built on a warped chord is not the warp of a curve
+                curveType = { kind: 'straight' };
+                curveBtn && curveBtn.removeClass('active'); freeBtn && freeBtn.removeClass('active');
+                updateCurveTypeControls();
+            }
+            // Locks: curve and free clothing are off under ANY warp (a curve on a warped chord is not the warp of a curve);
+            // face fill is off too - except on a FIELD warp for the BASE sheet, where the faces are exact (affine per tile).
+            const faceOk = isField && active && (activeLayer === 'base' || layerGridMatchesBase(additionalLayers[activeLayer]));
+            const lockSig = `${active}|${faceOk}|${isField && active}`;
+            if (lockSig !== wasActive) {
+                [curveBtn, freeBtn].filter(Boolean).forEach(b => lockBtn(b, active ? 'Off while a net transform is active. Set the net back to Regular (Base sheet, square) to use curves again.' : null));
+                if (faceBtn) lockBtn(faceBtn, !active || faceOk ? null : (isField ? 'Face fills on a Field: the base sheet and layers on the base grid (same shape and size, no offset, no rotation) only' : 'Off while a net transform is active (faces are exact only on a Field)'));
+                wasActive = lockSig;
+            }
+        };
+        // The inverse of axisSpec(): every field of a stored axis spec goes back into a panel axis ({mode, strength, reverse, alternate, focus}).
+        // trig: w < 0 is sinus, otherwise tangens (a w of 0 is ambiguous and reads as tangens); geometric: w = +/- strength * ln(NET_R_MAX).
+        // The geometric strength is snapped to the slider's 0.01 grid when that reproduces w exactly, so a later commit() rebuilds the same bits.
+        function axisFromSpec(spec) {
+            const c = fresh();
+            if (!spec || spec.kind === 'uniform') return c;
+            if (spec.kind === 'trig') { c.mode = spec.w < 0 ? 'sinus' : 'tangens'; c.strength = Math.abs(spec.w); }
+            else {
+                const a = Math.abs(spec.w), ln = Math.log(NET_R_MAX), s = a / ln, snapped = Math.round(s * 100) / 100;
+                c.mode = 'geometric'; c.reverse = spec.w < 0; c.strength = snapped * ln === a ? snapped : s;
+            }
+            c.focus = spec.focus || 0; c.alternate = !!spec.alternate;
+            return c;
+        }
+        adoptNetState = function () {
+            if (is3C()) { render(); return; }   // task 122: a restored 3C net keeps the Netzart 1 memory of this panel
+            const spec = baseNetTransform;
+            if (!spec) { ui.axes = 'both'; ui.domain = 'single'; ui.macro = undefined; ui.x = fresh(); ui.y = fresh(); }
+            else {
+                ui.x = axisFromSpec(spec.x);
+                if (spec.y === 'same') { ui.axes = 'both'; ui.y = Object.assign({}, ui.x); }
+                else { ui.axes = 'x'; ui.y = axisFromSpec(spec.y); }
+                ui.domain = stateDomain(); ui.macro = spec.macro;
+            }
+            render();
+        };
+        // task 122: the Netzart stepper of the Netz row (ui-net.js) chooses with this: art = 'off' | 'n1' | '3c' (par = {a, b, format} for '3c'). Netzart 1 keeps its law, strength, focus, domain and macro while
+        // "-" or 3C is chosen (memo / ui) and comes back; a 3C change only writes a spec of core/netwarp.js, never a Netzart 1 one.
+        window.netArtSet = function (art, par) {
+            if (ui.x.mode !== 'regular' || ui.y.mode !== 'regular') memo = { axes: ui.axes, domain: ui.domain, macro: ui.macro, x: Object.assign({}, ui.x), y: Object.assign({}, ui.y) };
+            if (art === '3c') { baseNetTransform = netProjectiveSpec(par.a, par.b, par.format, netProjectiveFamilyFor(currentShape)); afterAuthorEdit(); return; }   // task 124: the family follows the shape (square-N, triangle-N), never a choice
+            if (art === 'off') { ui.x = fresh(); ui.y = fresh(); baseNetTransform = null; commit(); return; }
+            if (memo) { ui.axes = memo.axes; ui.domain = memo.domain; ui.macro = memo.macro; ui.x = memo.x; ui.y = memo.y; }
+            if (ui.x.mode === 'regular' && ui.y.mode === 'regular') { ui.axes = 'both'; ui.x.mode = 'sinus'; ui.y = Object.assign({}, ui.x); applyNetKindChoice('sinus', true); }
+            baseNetTransform = null; commit();
+        };
+        fieldBtn.elt.dataset.title = fieldBtn.elt.title;   // restored when Field becomes available again
+        // (The standalone net animation's controls - Set Start / Set End / Play / progress - were removed from the UI: see the comment above
+        // ensureNetAnimation(). Its window.sync* / setNetAnimStatusText hooks are therefore not defined any more; every caller guards for that.)
+        render();
+    })();
+
+    // Roadmap 1.5-B: kind:'free' controls (roughness/visible/reroll) -
+    // a plate-wide curveType setting, not per-layer (see index.html's
+    // own comment on these groups), so no layer-switch call site needs
+    // to re-sync this the way updateOffsetControls() does for layer-
+    // specific state. Shown only while curveType.kind === 'free'.
+    // Roadmap (Group A): also owns fold/strength (kind:'curve', and
+    // strength also kind:'free' - see index.html's own comment on these
+    // two groups) - renamed from updateFreeControls() to
+    // updateCurveTypeControls() since it's no longer 'free'-only; every
+    // one of its 4 call sites (curveBtn/freeBtn/faceBtn handlers, plus
+    // setup()'s own initial call below) already runs at exactly the
+    // moments curveType.kind can change, so no new call site is needed.
+    // curveFoldGroup/curveFoldInput/curveStrengthGroup/curveStrengthInput
+    // are named with a `curve` prefix specifically to avoid colliding
+    // with the UNRELATED #mode-fold-group/#layer-fold-group ("3-fold"/
+    // "6-fold" HEX SYMMETRY buttons, an entirely different "fold"
+    // concept - see updateSymmetryModeControl()'s own foldGroup local
+    // and the layer panel's own top-level foldGroup const further below
+    // in this file) - caught as a real `const` redeclaration error
+    // before this shipped, not a hypothetical concern.
+    const roughnessGroup = select('#free-roughness-group');
+    const roughnessInput = select('#free-roughness-input');
+    const roughnessValueEl = select('#free-roughness-value');
+    const freeControlsGroup = select('#free-controls-group');
+    const freeVisibleBtn = select('#btn-toggle-free-visible');
+    const rerollBtn = select('#btn-free-reroll-seed');
+    const curveFoldGroup = select('#curve-fold-group');
+    const curveFoldInput = select('#curve-fold-input');
+    const curveFoldValueEl = select('#curve-fold-value');
+    const curveStrengthGroup = select('#curve-strength-group');
+    const curveStrengthInput = select('#curve-strength-input');
+    const curveStrengthValueEl = select('#curve-strength-value');
+
+    function updateCurveTypeControls() {
+        const isFree = curveType.kind === 'free';
+        const isCurve = curveType.kind === 'curve';
+        if (roughnessGroup) roughnessGroup.elt.hidden = !isFree;
+        if (freeControlsGroup) freeControlsGroup.elt.hidden = !isFree;
+        if (isFree && roughnessInput) {
+            roughnessInput.value(curveType.roughness);
+            if (roughnessValueEl) roughnessValueEl.html(curveType.roughness);
+        }
+        // fold: kind:'curve' only - core/curves.js never reads it for 'free'.
+        if (curveFoldGroup) curveFoldGroup.elt.hidden = !isCurve;
+        if (isCurve && curveFoldInput) {
+            curveFoldInput.value(curveType.fold);
+            if (curveFoldValueEl) curveFoldValueEl.html(curveType.fold);
+        }
+        // strength: kind:'curve' OR kind:'free' - core/curves.js reads
+        // curveType.strength identically for both (see buildCurvePieces()'s
+        // shared `mag` computation, before the kind-specific branches).
+        const hasStrength = isCurve || isFree;
+        if (curveStrengthGroup) curveStrengthGroup.elt.hidden = !hasStrength;
+        if (hasStrength && curveStrengthInput) {
+            curveStrengthInput.value(curveType.strength);
+            if (curveStrengthValueEl) curveStrengthValueEl.html(curveType.strength);
+        }
+    }
+
+    if (roughnessInput) {
+        roughnessInput.input(() => {
+            if (curveType.kind !== 'free') return;
+            let v = parseFloat(roughnessInput.value());
+            if (isNaN(v) || v < 0) v = 0;
+            if (v > 5) v = 5;
+            curveType.roughness = v;
+            if (roughnessValueEl) roughnessValueEl.html(v);
+            redraw();
+        });
+    }
+
+    // Roadmap (Group A): fold - kind:'curve' only. A stepped integer
+    // control (index.html's own step="1"); buildCurvePieces() throws if
+    // fold isn't a positive integer, so the clamp/rounding here is
+    // defensive (the HTML range's own step/min/max already constrain a
+    // normal drag), not load-bearing for a plain slider interaction.
+    if (curveFoldInput) {
+        curveFoldInput.input(() => {
+            if (curveType.kind !== 'curve') return;
+            let v = Math.round(parseFloat(curveFoldInput.value()));
+            if (isNaN(v) || v < 1) v = 1;
+            if (v > 12) v = 12;
+            curveType.fold = v;
+            if (curveFoldValueEl) curveFoldValueEl.html(v);
+            redraw();
+        });
+    }
+
+    // Roadmap (Group A): strength - kind:'curve' OR kind:'free' (one
+    // shared curveType field, one shared control - see
+    // updateCurveTypeControls()'s own comment). min=0 deliberately, not
+    // symmetric around 0: a negative value would trip
+    // buildCurvePieces()'s own `mag < 0.0001` degenerate check for ANY
+    // negative magnitude, silently rendering a plain straight line
+    // rather than a mirrored bulge - bulge DIRECTION is curveType.leaning's
+    // job (see core/curves.js's mirrorCurveType()), not strength's sign,
+    // so this control correctly has no negative range to offer.
+    if (curveStrengthInput) {
+        curveStrengthInput.input(() => {
+            if (curveType.kind !== 'curve' && curveType.kind !== 'free') return;
+            let v = parseFloat(curveStrengthInput.value());
+            if (isNaN(v) || v < 0) v = 0;
+            if (v > 200) v = 200;
+            curveType.strength = v;
+            if (curveStrengthValueEl) curveStrengthValueEl.html(v);
+            redraw();
+        });
+    }
+
+    // "heimliches Gesetz" ("hidden law") toggle - curveType.visible.
+    // Same eye/eye-off icon-swap convention as #btn-toggle-nodes
+    // (sketch.js below), a genuinely separate control for a separate
+    // thing: this hides the underlying theme-line WITHIN kind:'free',
+    // not the node markers showNodes controls.
+    function updateFreeVisibleToggleIcon() {
+        if (!freeVisibleBtn) return;
+        if (curveType.visible) {
+            freeVisibleBtn.addClass('active');
+            freeVisibleBtn.html('<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 17 L12 8 L18 15"/></svg>');
+        } else {
+            freeVisibleBtn.removeClass('active');
+            freeVisibleBtn.html('<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 17 L12 8 L18 15"/><path d="M3 3 L21 21"/></svg>');
+        }
+    }
+    if (freeVisibleBtn) {
+        freeVisibleBtn.mousePressed(() => {
+            if (curveType.kind !== 'free') return;
+            curveType.visible = !curveType.visible;
+            updateFreeVisibleToggleIcon();
+            redraw();
+        });
+    }
+
+    // Reroll, not a raw seed number input - see the 1.5-B design
+    // session for why (a seed has no meaningful order to "tune" the way
+    // shape size/node count do; "try another variation" is the actual
+    // mental model). Only this click uses Math.random() - the render
+    // path (core/curves.js's buildCurvePieces()) stays a pure function
+    // of the stored seed, so the result is fully reproducible/exported
+    // from the moment it's rolled.
+    if (rerollBtn) {
+        rerollBtn.mousePressed(() => {
+            if (curveType.kind !== 'free') return;
+            curveType.seed = Math.floor(Math.random() * 2147483648);
+            redraw();
+        });
+    }
+
+    // Free Endpoints Toggle Button
+    const freeEndpointsBtn = select('#btn-toggle-free-endpoints');
+    if (freeEndpointsBtn) {
+        freeEndpointsBtn.mousePressed(() => {
+            freeEndpointsEnabled = !freeEndpointsEnabled;
+            if (freeEndpointsEnabled) freeEndpointsBtn.addClass('active');
+            else freeEndpointsBtn.removeClass('active');
+        });
+    }
+
+    // Roadmap 1.2-C: alternative net construction toggle - one-shot
+    // tool-like activation (armed by toggling on, auto-deactivates on
+    // confirm - see handleAltNetClick()). Toggling OFF while a
+    // construction is in progress cancels it (cancelAltNetConstruction()),
+    // which is the only cancel mechanism - no separate Escape handling.
+    const altNetBtn = select('#btn-alternative-net');
+    if (altNetBtn) {
+        altNetBtn.mousePressed(() => {
+            altNetActive = !altNetActive;
+            altNetPending = null;
+            if (altNetActive) altNetBtn.addClass('active');
+            else altNetBtn.removeClass('active');
+            redraw();
+        });
+    }
+
+    // ----------------- LAYER CONTROLS (Roadmap 1.9) -----------------
+    // The layers' controls are the layer table, rail and strip (ui-layers.js, through window.layerApi below) and the timeline's are the timeline strip (ui-timeline.js) and the
+    // layers' diamonds; the old layer row (Base, the tabs, "+ Layer") and the old timeline buttons are gone. Offset inputs are contextual to whichever tab is active (one X/Y pair,
+    // not one per layer, per the 1.9 design session) - updateOffsetControls() shows/hides and (re)populates them. Both it and renderLayerTabs() are `function` declarations
+    // (not `const`) so they're hoisted and safely callable from the shape/size/node-count handlers above, which are defined earlier in this same setup().
+    // Roadmap: catalog -> clipboard "Paste Pattern" action - it adds a layer, sourced from a gallery.html "Copy pattern" click via the clipboard. See
+    // applyCatalogPatternToNewLayer()'s own comment for why this reuses it unmodified.
+    const pastePatternBtn = select('#btn-paste-pattern');
+    // Roadmap 1.8 Stage C: the timeline is NOT contextual to whichever tab is active, since it spans multiple layers rather than belonging to one. Its controls are the
+    // timeline strip (Play, the scrub bar, Include net, "Mehr") and the layers' diamonds; behind "Mehr" the group #timeline-group holds the keyframe list, the net status, the
+    // pairing editor and the status line, with pieces shown/hidden by updateTimelineControls() based on whether `timeline` exists.
+    // Case B1: "Include net" - null = automatic (ON exactly when a net warp is active), true/false = chosen; the shown value is timelineIncludeNetValue(). The switch is
+    // in the timeline strip and goes through layerApi.toggleIncludeNet().
+    const netStateEl = select('#timeline-net-state');
+    let includeNetOverride = null;
+    window.timelineIncludeNet = () => timelineIncludeNetValue(includeNetOverride);
+    let netUiSig = null;
+    // The persistent Timeline-net indicator (#timeline-net-state); cheap, called whenever its input can change
+    window.syncTimelineNetUi = () => {
+        const sum = timelineNetSummary();
+        const sig = sum ? sum.state + sum.text + (window.UI ? UI.lang : '') : '';   // task 123: the language is part of the signature (the 3C texts are translated)
+        if (sig === netUiSig) return;
+        netUiSig = sig;
+        if (netStateEl) {
+            netStateEl.elt.hidden = !sum;
+            if (sum) { netStateEl.html(window.netArt && window.UI && UI.t ? netArt.tlText(sum.text, UI.t) : sum.text); netStateEl.elt.dataset.state = sum.state; }   // task 123: a 3C reason in the language of the UI
+        }
+    };
+    const timelineKeyframeList = select('#timeline-keyframe-list');
+    const timelineStatusEl = select('#timeline-status');
+    // Roadmap 1.8 Stage D phase (i): manual line-pairing editor.
+    const timelinePairingPanel = select('#timeline-pairing');
+    const timelinePairingSegmentSelect = select('#timeline-pairing-segment');
+    const timelinePairingList = select('#timeline-pairing-list');
+    const timelinePairingMetric = select('#timeline-pairing-metric');
+    const timelinePairingResetBtn = select('#btn-timeline-pairing-reset');
+    let timelinePairingSegment = 0;
+    // Roadmap 1.8 Stage D phase (ii): "Browse all" list state.
+    const timelinePairingBrowseBtn = select('#btn-timeline-pairing-browse');
+    const timelinePairingBrowser = select('#timeline-pairing-browser');
+    const timelinePairingSortSelect = select('#timeline-pairing-sort');
+    const timelinePairingFilterInput = select('#timeline-pairing-filter');
+    const timelinePairingBrowserCount = select('#timeline-pairing-browser-count');
+    const timelinePairingBrowserList = select('#timeline-pairing-browser-list');
+    let timelinePairingBrowseOpen = false;
+    const conclusiveBox = select('#timeline-pairing-conclusive');       // d3 K3: the model's "only conclusive pairings" button; it MIRRORS the one state variable below (the phone view forwards its icon's click to it)
+    const conclusiveNote = select('#timeline-pairing-conclusive-note');
+    let timelinePairingConclusive = true;                                // the filter switch: ON at load, session-only (not saved, not exported)
+    let timelinePairingBrowseJustOpened = false; // scroll the current row into view only when the list was just opened
+    const offsetXGroup = select('#layer-offset-x-group');
+    const offsetYGroup = select('#layer-offset-y-group');
+    const meshPresetGroup = select('#layer-mesh-preset-group');
+    const offsetXInput = select('#layer-offset-x-input');
+    const offsetYInput = select('#layer-offset-y-input');
+    // Roadmap 1.12 stage 1 pass 2: this layer's own order/size - same
+    // contextual show/hide + populate-on-switch handling as the offset
+    // controls above, folded into this same function (not a separate
+    // one) since both are "sync every layer-contextual control" and are
+    // already called together from every one of updateOffsetControls()'s
+    // existing call sites (layer switch/add/remove, shape/size/node-
+    // count change).
+    const nodeCountGroup = select('#layer-node-count-group');
+    const shapeSizeGroup = select('#layer-shape-size-group');
+    const layerNodeCountInput = select('#layer-node-count-input');
+    function showLayerNodeCountNote(text) { say('layer-node-count', text, 'info'); }
+    const layerShapeSizeInput = select('#layer-shape-size-input');
+    // Roadmap 1.12 stage 4 (UI): this layer's own shape - same
+    // contextual show/hide handling as the fields above, PLUS an
+    // active-state sync (which of the three buttons reflects
+    // layer.shape) since this is a button group, not a value input.
+    const shapeGroup = select('#layer-shape-group');
+    const layerShapeBtns = selectAll('.layer-shape-icon-btn');
+    // Roadmap 1.12 stage 5 (symmetryMode axis) part 3: this layer's own
+    // symmetryMode - same contextual show/hide + active-state-sync
+    // handling as shapeGroup/layerShapeBtns directly above (dedicated
+    // .layer-mode-btn/.layer-fold-btn buttons, not the base's own
+    // #btn-mode-*/#btn-fold-* set, for the identical "one shared button
+    // group can't show two different active states" reason). foldGroup's
+    // visibility gets a SECOND, more specific refinement inside
+    // updateOffsetControls() below (keyed to THIS layer's own shape,
+    // not currentShape) - the line here only handles the base showOffsets
+    // toggle, same two-tier pattern the base's own mode-fold-group has
+    // (always hex-gated) layered on top of "only when a layer is
+    // active" (layers only).
+    const modeGroup = select('#layer-mode-group');
+    const foldGroup = select('#layer-fold-group');
+    const layerModeBtns = selectAll('.layer-mode-btn');
+    const layerFoldBtns = selectAll('.layer-fold-btn');
+    // Roadmap 1.12 "Align to base": same contextual show/hide as the
+    // fields above, PLUS a disabled-state sync (same-shape-only, per
+    // this feature's scope) and clearing any stale "not achievable"
+    // message on every switch, so it never lingers across a layer
+    // change or shape change it no longer applies to.
+    const alignGroup = select('#layer-align-group');
+    const alignBtn = select('#btn-align-to-base');
+    // Roadmap 1.12 stage 3: this layer's own rotation - same contextual
+    // show/hide + populate-on-switch handling as the fields above,
+    // folded into this same function for the same reason.
+    const rotationGroup = select('#layer-rotation-group');
+    const layerRotationInput = select('#layer-rotation-input');
+    // Roadmap 1.8 Stage A: this layer's own animation controls - same
+    // contextual show/hide as the fields above. Populate-on-switch is
+    // split into its own syncLayerAnimationDisplay() function (below,
+    // also exposed on window like updateOffsetControls/renderLayerTabs
+    // are - see their own comment) rather than inlined here, since
+    // draw() also needs to call it every frame during active playback
+    // to keep the progress slider/play-icon live, not just on a tab
+    // switch or explicit control interaction.
+    // The layer animation's markup was removed from index.html (its mechanism is kept below, unreachable from the UI): these are null now, every use of them
+    // is behind an `if (x)` (optionalSelect(), top of the file). Put the markup back and the wiring below works again.
+    const animationGroup = optionalSelect('#layer-animation-group');
+    const setAnimStartBtn = optionalSelect('#btn-layer-anim-set-start');
+    const setAnimEndBtn = optionalSelect('#btn-layer-anim-set-end');
+    const animDurationInput = optionalSelect('#layer-anim-duration-input');
+    const animPlayBtn = optionalSelect('#btn-layer-anim-play');
+    const animProgressInput = optionalSelect('#layer-anim-progress-input');
+    // Roadmap 1.8 Stage B (connections morph): status line for a
+    // refused Set Start/End line-count mismatch - a plain <span>, not a
+    // notice (the layer animation has no UI). Exposed on window (mirroring
+    // updateOffsetControls/syncLayerAnimationDisplay just below) since
+    // setActiveLayerAnimationStart()/End() are top-level functions, not
+    // declared inside this setup() closure.
+    const animConnectionsStatus = optionalSelect('#layer-anim-connections-status');
+    // Roadmap 1.8 Stage B: which layer the CURRENTLY shown message
+    // belongs to - Set Start/End's own click handlers call
+    // updateOffsetControls() right after setActiveLayerAnimationStart()/
+    // End() (a pre-existing "refresh the whole panel" pattern, unrelated
+    // to this feature), so updateOffsetControls()'s own populate-on-
+    // switch block can't unconditionally clear this status the way
+    // the align notice's own reset does (alignBtn's own handler never calls
+    // updateOffsetControls() itself, so it never hits this) - doing so
+    // would immediately wipe out the very message Set Start/End just
+    // set, before the person ever sees it (caught via a real Set-Start
+    // mismatch click in this stage's browser test). Tracked here instead
+    // so updateOffsetControls() only clears it on an ACTUAL tab switch
+    // (activeLayer different from whichever layer last wrote a message),
+    // never on a same-layer refresh.
+    let layerAnimConnectionsStatusOwner = null;
+    function setLayerAnimConnectionsStatus(msg) {
+        if (animConnectionsStatus) animConnectionsStatus.html(msg || '');
+        layerAnimConnectionsStatusOwner = msg ? activeLayer : null;
+    }
+    window.setLayerAnimConnectionsStatus = setLayerAnimConnectionsStatus;
+
+    // Layer "Mehr" (5d, step 1): the wrapper and the dot. The open / closed state is a plain variable: kept across layer switches, not saved by the autosave, closed after a reload;
+    // the "..." of the layer table, rail and strip flips it (layerApi.toggleMore) and reads it back (layerApi.moreState). syncLayerMore() is the ONLY writer of the wrapper's
+    // `hidden`; the groups inside keep their own `hidden`, written by updateOffsetControls() as before, so a group shows only when both are off.
+    const layerMorePanel = document.getElementById('layer-more-panel');
+    let layerMoreOpen = false;
+    // The dot of the layer "Mehr": the ONE place that computes it (layerApi.moreState hands it to the layer views).
+    function layerMoreDot() {   // (not "dot": p5's friendly-error reader reports a let/const named like a p5 member in setup() / draw())
+        return activeLayer !== 'base' && !!additionalLayers[activeLayer] && layerHasNonDefaultSettings(additionalLayers[activeLayer], { shape: currentShape, symmetryMode, nodeCount, shapeSizeFactor, lage: typeof baseGridSpecNow === 'function' ? baseGridSpecNow().lage : undefined });
+    }
+    function syncLayerMore() {
+        if (!layerMorePanel) return;
+        const showPanel = activeLayer !== 'base' && !!additionalLayers[activeLayer] && layerMoreOpen;
+        if (layerMorePanel.hidden === showPanel) layerMorePanel.hidden = !showPanel;
+    }
+    window.syncLayerMore = syncLayerMore;
+
+    function updateOffsetControls() {
+        const showOffsets = activeLayer !== 'base';
+        if (offsetXGroup) offsetXGroup.elt.hidden = !showOffsets;
+        if (offsetYGroup) offsetYGroup.elt.hidden = !showOffsets;
+        if (meshPresetGroup) meshPresetGroup.elt.hidden = !showOffsets;
+        if (shapeGroup) shapeGroup.elt.hidden = !showOffsets;
+        if (modeGroup) modeGroup.elt.hidden = !showOffsets;
+        if (foldGroup) foldGroup.elt.hidden = !showOffsets; // refined below to this layer's own shape once showOffsets is true
+        if (alignGroup) alignGroup.elt.hidden = !showOffsets;
+        if (nodeCountGroup) nodeCountGroup.elt.hidden = !showOffsets;
+        if (shapeSizeGroup) shapeSizeGroup.elt.hidden = !showOffsets;
+        if (rotationGroup) rotationGroup.elt.hidden = !showOffsets;
+        if (animationGroup) animationGroup.elt.hidden = !showOffsets;
+        if (showOffsets) {
+            const layer = additionalLayers[activeLayer];
+            if (offsetXInput) offsetXInput.value(layer.offsetX);
+            if (offsetYInput) offsetYInput.value(layer.offsetY);
+            if (layerNodeCountInput) { layerNodeCountInput.value(layerGridSpecOf(layer).ordnung); layerNodeCountInput.elt.max = gridMaxOrdnung(layer.shape, layerGridSpecOf(layer).lage); }   // task 068c2: the ordnung
+            if (layerShapeSizeInput) layerShapeSizeInput.value(Math.round(layer.shapeSizeFactor));
+            if (layerRotationInput) layerRotationInput.value(layer.rotation || 0);
+            syncLayerAnimationDisplay(layer);
+            // Roadmap 1.12 stage 4 (UI): active-state sync for the
+            // layer-shape button group, mirroring how the base's own
+            // .shape-icon-btn set tracks currentShape - this is the
+            // "populate on switch" step for a button group instead of a
+            // value input.
+            layerShapeBtns.forEach(b => {
+                if (b.attribute('data-shape') === layer.shape) b.addClass('active');
+                else b.removeClass('active');
+            });
+            // Roadmap 1.12 stage 5 (symmetryMode axis) part 3: fold row
+            // visibility keyed to THIS layer's own shape (not
+            // currentShape) - mirrors layer-shape-group's own layer-
+            // scoped logic exactly, just for a further-nested control.
+            // Active-state sync for both button groups derives its
+            // category/fold from layer.symmetryMode via
+            // bestEffortCategoryFold() (defined above) - the single
+            // source of truth stays the raw symmetryMode string, not a
+            // separately-tracked per-layer category/fold pair, so this
+            // is always consistent with whatever the last write (click,
+            // or a future non-UI code path) actually set.
+            if (foldGroup) foldGroup.elt.hidden = layer.shape !== 'hex';
+            const layerBestEffort = bestEffortCategoryFold(layer.symmetryMode, 6) || {};
+            layerModeBtns.forEach(b => {
+                if (b.attribute('data-mode') === layerBestEffort.category) b.addClass('active');
+                else b.removeClass('active');
+            });
+            layerFoldBtns.forEach(b => {
+                if (parseInt(b.attribute('data-fold')) === layerBestEffort.fold) b.addClass('active');
+                else b.removeClass('active');
+            });
+            // Roadmap 1.12 "Align to base": same-shape-only, per this
+            // feature's scope (triangle-hex/square-anything exact
+            // alignment needs a decoupled, non-integer sizing input -
+            // out of scope, a later session). Disabled (not hidden) so
+            // the button stays a consistent visual anchor; the tooltip
+            // explains why when it's unavailable.
+            if (alignBtn) {
+                const shapeMatches = layer.shape === currentShape;
+                alignBtn.elt.disabled = !shapeMatches;
+                alignBtn.attribute('title', shapeMatches ? 'Align to base' : "Only available when this layer's shape matches the base's");
+            }
+            if (window.UI) UI.notifyClear('align');
+            // Roadmap 1.8 Stage B: a mismatch message belongs to whichever
+            // layer produced it - clear it only on an ACTUAL tab switch
+            // (see layerAnimConnectionsStatusOwner's own comment above for
+            // why this can't be an unconditional clear the way the align
+            // notice's own reset above is).
+            if (layerAnimConnectionsStatusOwner !== null && layerAnimConnectionsStatusOwner !== activeLayer) {
+                setLayerAnimConnectionsStatus('');
+            }
+        }
+        syncLayerMore();   // the wrapper follows the active layer (after the groups above have their own `hidden`)
+    }
+
+    // Roadmap 1.8 Stage A: populates the animation controls (duration/
+    // progress/play-icon) for the given layer - split out of
+    // updateOffsetControls() itself (unlike the other populate-on-switch
+    // steps above) because draw() also needs to call it every frame
+    // during active playback, not only on a tab switch or explicit
+    // control interaction, to keep the progress slider/play-icon live.
+    // Renders a sensible default (duration 2000, progress 0, Play icon)
+    // when this layer has no animation object yet (Set Start/End not
+    // clicked) - those controls stay fully usable in that state, they
+    // just haven't captured a start/end pair to interpolate between.
+    function syncLayerAnimationDisplay(layer) {
+        const anim = layer.animation;
+        if (animDurationInput) animDurationInput.value(anim ? anim.durationMs : 2000);
+        const progress = anim && anim.durationMs > 0
+            ? (anim.playing ? Math.max(0, Math.min(anim.durationMs, millis() - anim.startTime)) : anim.elapsedMs) / anim.durationMs
+            : 0;
+        if (animProgressInput) animProgressInput.value(progress);
+        if (animPlayBtn) {
+            const playing = !!(anim && anim.playing);
+            UI.name(animPlayBtn.elt, playing ? 'Pause' : 'Play');
+            animPlayBtn.html(playing
+                ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="6" y="5" width="4" height="14" /><rect x="14" y="5" width="4" height="14" /></svg>'
+                : '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M7 5 L19 12 L7 19 Z" /></svg>');
+        }
+    }
+    // Roadmap 1.2-C: exposed as a global - updateOffsetControls()/
+    // renderLayerTabs() are declared here (closing over setup()-local DOM
+    // refs like offsetXInput), so they're invisible
+    // from handleAltNetClick() (a top-level function, same scope
+    // mousePressed()/mouseMoved() must be in for p5's global mode - see
+    // CLAUDE.md). Every OTHER call site is itself inside setup()'s own
+    // closure, which is why this gap wasn't hit before. window.x = x
+    // exposes the function globally while keeping its original closure
+    // over the setup()-local DOM references intact. Roadmap 1.8 Stage A:
+    // syncLayerAnimationDisplay() needs the identical treatment - draw()
+    // (a top-level function) calls it every frame during playback.
+    window.updateOffsetControls = updateOffsetControls;
+    window.syncLayerAnimationDisplay = syncLayerAnimationDisplay;
+
+    // The sync point after every layer change (about twenty callers, and the session restore's 'layers' step). It used to rebuild the old tab strip; the layer table, rail and
+    // strip rebuild themselves from the model on the next tick (ui-layers.js reads additionalLayers and activeLayer), so it does nothing now. It stays as the one named place
+    // those callers and the restore sequence share.
+    function renderLayerTabs() { }
+    window.renderLayerTabs = renderLayerTabs; // see updateOffsetControls()'s own comment above
+
+    // Roadmap 1.8 Stage C: status line for a refused add of a layer to the
+    // timeline (the diamond; shape/order/symmetryMode or line-count mismatch), a live
+    // mismatch discovered during playback, or (phase (ii)) a plain
+    // "which segment am I looking at" readout - same plain-<span>
+    // convention as #layer-anim-connections-status. Exposed on window
+    // since addLayerToTimeline()/applyTimelineFrame()/removeLayer() are
+    // top-level functions.
+    // say(key, text, kind): the one route from an action message to the notices (ui.js). notifyClear first: a repeated message replaces the showing one with a fresh timer and the
+    // "once per condition" suppression never hides action feedback. Guarded: sketch.js loads before ui.js, every caller runs after load.
+    function say(key, text, kind) {
+        if (!window.UI || !UI.notify) return;
+        UI.notifyClear(key);
+        UI.notify(text, { key: key, kind: kind });
+    }
+    window.say = say;
+    // kind: 'readout' (the default: the span only - the segment readout and the clears), 'refusal' (the span plus a warn notice: an action was refused), 'condition' (the span plus a warn notice
+    // ONCE per text; any readout call - the readout resuming, or a clear - ends it). The span is written once per call as before.
+    let timelineConditionSaid = null;
+    function setTimelineStatus(msg, kind) {
+        if (window.netArt && window.UI && UI.t && msg) msg = netArt.tlText(msg, UI.t);   // task 123: the 3C reason of the frame note (written in applyTimelineFrame, a protected function) in the language of the UI
+        if (timelineStatusEl) timelineStatusEl.html(msg || '');
+        if (kind === 'refusal' && msg) say('timeline-refusal', msg, 'warn');
+        else if (kind === 'condition' && msg) { if (msg !== timelineConditionSaid) { timelineConditionSaid = msg; say('timeline-condition', msg, 'warn'); } }
+        else if (kind !== 'refusal' && kind !== 'condition' && timelineConditionSaid !== null) { timelineConditionSaid = null; if (window.UI) UI.notifyClear('timeline-condition'); }
+    }
+    window.setTimelineStatus = setTimelineStatus;
+
+    // Roadmap 1.8 Stage C phase (ii): the simple ordered keyframe list
+    // (design session point 5) - "1. Layer 2", "2. Layer 5", ... in
+    // sequence order, each with its own small remove button
+    // (removeKeyframeFromTimeline() - takes the keyframe OUT of the
+    // sequence, restoring that layer's own visibility, WITHOUT deleting
+    // the layer itself, unlike its tab's own "x"). Reuses the exact
+    // .layer-tab/.layer-remove-btn chrome (the old layer tabs' look,
+    // kept for this list). No drag-reorder in this phase (design session
+    // point 5) - order is authored by the sequence the diamonds were
+    // clicked in; reorder today by removing and re-adding in the wanted
+    // order. Rebuilt fresh on every call (container.innerHTML = ''),
+    // so there are no stale entries.
+    function renderTimelineKeyframeList() {
+        if (!timelineKeyframeList) return;
+        const container = timelineKeyframeList.elt;
+        container.innerHTML = '';
+        if (!timeline) return;
+        timeline.keyframeLayerIds.forEach((layerIndex, pos) => {
+            const tab = document.createElement('span');
+            tab.className = 'layer-tab';
+
+            const label = document.createElement('span');
+            const hasNet = !!(timeline.netStates && timeline.netStates[pos]);
+            label.textContent = `${pos + 1}. Layer ${layerIndex + 1} \u00b7 ` + (hasNet ? 'net' : 'no net');
+            label.className = hasNet ? 'kf-net' : 'kf-net kf-no-net';
+            label.style.fontSize = '13px';
+
+            // Case B1: captures the current AUTHOR net for this keyframe (refused when it cannot be interpolated with a neighbour's)
+            const netBtn = document.createElement('button');
+            netBtn.className = 'layer-remove-btn';
+            netBtn.textContent = 'Net';
+            netBtn.style.fontSize = '11px';
+            netBtn.title = `Capture the current net for keyframe ${pos + 1} (the timeline drives the net once every keyframe has one)`;
+            netBtn.addEventListener('click', () => { recaptureTimelineKeyframeNet(pos); });
+
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'layer-remove-btn';
+            removeBtn.textContent = '×';
+            UI.name(removeBtn, `Remove Layer ${layerIndex + 1} from the timeline (keeps the layer itself)`);
+            removeBtn.addEventListener('click', () => {
+                removeKeyframeFromTimeline(layerIndex);
+            });
+
+            tab.appendChild(label);
+            tab.appendChild(netBtn);
+            tab.appendChild(removeBtn);
+            container.appendChild(tab);
+        });
+    }
+    window.renderTimelineKeyframeList = renderTimelineKeyframeList;
+
+    // Roadmap 1.8 Stage D phase (i): the manual line-pairing editor -
+    // for the selected segment, lists every Start line with the End line
+    // currently assigned to it (row order = the pairing), with up/down
+    // buttons that swap a row's End assignment with its neighbour's
+    // (moveTimelinePairing()), plus the sum-of-squared-endpoint-
+    // displacement readout for the current vs. default pairing. Rebuilt
+    // fresh on every call, same "no stale rows" discipline as
+    // renderTimelineKeyframeList(). A stored pairing that has gone stale
+    // (line count changed since - see isValidPairing()) is discarded here.
+    function renderTimelinePairingEditor() {
+        if (!timelinePairingPanel) return;
+        const segCount = timeline ? timeline.segmentDurationsMs.length : 0;
+        timelinePairingPanel.elt.hidden = segCount === 0;
+        if (segCount === 0) return;
+        timelinePairingSegment = Math.max(0, Math.min(segCount - 1, timelinePairingSegment));
+        const seg = timelinePairingSegment;
+        // the filter switch: one state, mirrored by the model's button (pressed = on; disabled = it cannot apply: the segment does not resolve or a layer has free line ends)
+        const conclusiveCtx = timelineConclusiveContext(seg);
+        const conclusiveFree = !!conclusiveCtx && timelineConclusiveFree(conclusiveCtx);
+        const conclusiveActive = timelinePairingConclusive && !!conclusiveCtx && !conclusiveFree;
+        if (conclusiveBox) { conclusiveBox.elt.setAttribute('aria-pressed', timelinePairingConclusive ? 'true' : 'false'); conclusiveBox.elt.disabled = !conclusiveCtx || conclusiveFree; }
+
+        const sel = timelinePairingSegmentSelect.elt;
+        sel.innerHTML = '';
+        for (let i = 0; i < segCount; i++) {
+            const opt = document.createElement('option');
+            opt.value = String(i);
+            opt.textContent = `Segment ${i + 1}: Layer ${timeline.keyframeLayerIds[i] + 1} \u2192 Layer ${timeline.keyframeLayerIds[i + 1] + 1}`;
+            sel.appendChild(opt);
+        }
+        sel.value = String(seg);
+
+        const list = timelinePairingList.elt;
+        list.innerHTML = '';
+        const info = timelineSegmentInfo(seg);
+        if (!info || !info.ok) {
+            timelinePairingMetric.html(info ? info.reason : '');
+            timelinePairingResetBtn.elt.hidden = true;
+            renderTimelinePairingBrowser(null, seg);
+            return;
+        }
+        if (timeline.segmentPairings[seg] && info.permIsDefault) timeline.segmentPairings[seg] = null;
+        if (timeline.segmentFlips && timeline.segmentFlips[seg] && !info.flipsAny) timeline.segmentFlips[seg] = null;
+        if (timeline.segmentMembers && timeline.segmentMembers[seg] && !info.membersAny) timeline.segmentMembers[seg] = null;
+        info.perm.forEach((endIdx, row) => {
+            const r = document.createElement('div');
+            r.className = 'pairing-row';
+            const label = document.createElement('span');
+            label.className = 'pairing-label';
+            // Stage D phase (iii): a flipped End line is shown with its
+            // node pair reversed (the order it is actually read in).
+            const endLabel = info.toLabels[endIdx] || '?';
+            const flipped = info.flips[endIdx];
+            label.textContent = `Start ${row + 1} (${info.fromLabels[row] || '?'}) \u2192 End ${endIdx + 1} (${flipped ? endLabel.split('\u2013').reverse().join('\u2013') : endLabel})${flipped ? ' \u21C4' : ''}`;
+            const up = document.createElement('button');
+            up.className = 'layer-btn pairing-move-btn';
+            up.textContent = '\u25B2';
+            UI.name(up, 'Swap this End assignment with the row above');
+            up.disabled = row === 0;
+            up.addEventListener('click', () => moveTimelinePairing(seg, row, -1));
+            const down = document.createElement('button');
+            down.className = 'layer-btn pairing-move-btn';
+            down.textContent = '\u25BC';
+            UI.name(down, 'Swap this End assignment with the row below');
+            down.disabled = row === info.n - 1;
+            down.addEventListener('click', () => moveTimelinePairing(seg, row, 1));
+            // Stage D phase (iii): per-row orientation toggle - reverses
+            // THIS row's assigned End line (indexed by End line, so it
+            // stays with that line when rows are reordered).
+            const flip = document.createElement('button');
+            flip.className = 'layer-btn pairing-move-btn pairing-flip-btn' + (flipped ? ' active' : '');
+            flip.textContent = '\u21C4';
+            UI.name(flip, flipped ? 'This End line is reversed - click to restore its stored direction' : 'Reverse this End line (swap which End endpoint each Start endpoint moves to)');
+            flip.addEventListener('click', () => setTimelineFlip(seg, endIdx));
+            // Stage D phase (iv) step 2: per-row variant stepper "k/c" over
+            // this row's deduplicated (group element, flip) variants
+            // (timelineRowVariants()). Both numbers are recomputed here on
+            // every render from the row's CURRENT Start<->End pairing -
+            // nothing is cached across reorders, so after Up/Down the count
+            // is the new pairing's (e.g. 12 for an orbit-0 line paired with
+            // an orbit-0 line, 6 for orbit 0 with orbit 2, 4 for orbit 2
+            // with orbit 2). k is the position of the CURRENT state's
+            // rendered picture in that list (matched by picture key, not by
+            // the stored element index), so a stored choice that is not the
+            // canonical representative of the new pairing's list - or a
+            // duplicate of a listed variant - still shows where it actually
+            // sits. A step commits element and flip together via
+            // setTimelineMember(), the same setter everything else uses.
+            const rv = timelineRowVariants(seg, row);
+            const variants = rv ? rv.variants : [];
+            const vCount = variants.length;
+            let vIdx = vCount === 0 ? -1 : (rv.currentKey !== null
+                ? variants.findIndex(v => v.key === rv.currentKey)
+                : variants.findIndex(v => v.g === info.members[endIdx] && v.f === !!info.flips[endIdx]));
+            if (vCount > 0 && vIdx < 0) vIdx = 0;
+            r.appendChild(label);
+            r.appendChild(up);
+            r.appendChild(down);
+            r.appendChild(flip);
+            if (vCount > 1) {
+                // d3 K3 (task 019): with the filter active only the variants that make the WHOLE pairing conclusive are stepped over; k counts those (0 = the current one is not conclusive: "\u2013")
+                const okRow = conclusiveActive ? timelineConclusiveRowImage(conclusiveCtx, info.perm, info.flips, info.members, endIdx, variants, timelineConclusiveRowVariants(conclusiveCtx, info.perm, info.flips, info.members, endIdx, variants)) : null;
+                const stp = okRow ? timelineConclusiveStep(okRow, vIdx) : null;
+                const prevTarget = stp ? stp.prev : (vIdx - 1 + vCount) % vCount;
+                const nextTarget = stp ? stp.next : (vIdx + 1) % vCount;
+                const stepper = document.createElement('span');
+                stepper.className = 'pairing-variant';
+                const prevBtn = document.createElement('button');
+                prevBtn.className = 'layer-btn pairing-move-btn pairing-variant-prev';
+                prevBtn.innerHTML = pairingStepIcon('left');
+                UI.name(prevBtn, 'Previous variant of this End line (distinct pictures against this row\'s Start line)');
+                if (stp) prevBtn.disabled = prevTarget < 0;
+                prevBtn.addEventListener('click', () => {
+                    const v = variants[prevTarget];
+                    if (v) setTimelineMember(seg, endIdx, v.g, v.f);
+                });
+                const countEl = document.createElement('span');
+                countEl.className = 'pairing-variant-count';
+                countEl.textContent = stp ? `${stp.k > 0 ? stp.k : '\u2013'}/${stp.c}` : `${vIdx + 1}/${vCount}`;
+                countEl.dataset.k = String(stp ? stp.k : vIdx + 1);
+                countEl.dataset.c = String(stp ? stp.c : vCount);
+                countEl.title = `End line variant ${vIdx + 1} of ${vCount} distinct pictures for this row's current Start\u2194End pairing`;
+                const nextBtn = document.createElement('button');
+                nextBtn.className = 'layer-btn pairing-move-btn pairing-variant-next';
+                nextBtn.innerHTML = pairingStepIcon('right');
+                UI.name(nextBtn, 'Next variant of this End line (distinct pictures against this row\'s Start line)');
+                if (stp) nextBtn.disabled = nextTarget < 0;
+                nextBtn.addEventListener('click', () => {
+                    const v = variants[nextTarget];
+                    if (v) setTimelineMember(seg, endIdx, v.g, v.f);
+                });
+                stepper.appendChild(prevBtn);
+                stepper.appendChild(countEl);
+                stepper.appendChild(nextBtn);
+                r.appendChild(stepper);
+            }
+            list.appendChild(r);
+        });
+        const fmt = v => Math.round(v).toLocaleString('en-US');
+        timelinePairingMetric.html(info.isDefault
+            ? `Displacement \u03A3d\u00B2: ${fmt(info.displacement)} px\u00B2 (default)`
+            : `Displacement \u03A3d\u00B2: ${fmt(info.displacement)} px\u00B2 (default: ${fmt(info.defaultDisplacement)})`);
+        timelinePairingResetBtn.elt.hidden = info.isDefault;
+        renderTimelinePairingBrowser(info, seg);
+        timelineImageCheckSchedule(setTimeout, () => performance.now(), renderTimelinePairingEditor);   // task 022: the image test continues in portions (a no-op when nothing waits)
+    }
+    window.renderTimelinePairingEditor = renderTimelinePairingEditor;
+
+    // Roadmap 1.8 Stage D phase (ii): the numeric "Browse all" list - one
+    // row per pairing (order = the End line assigned to Start 1..n, then
+    // its sum-of-squared-displacement), sorted by that value (ties broken
+    // by the permutation itself, so the order is deterministic) and
+    // optionally cut off at a max value. The row equal to the segment's
+    // CURRENT pairing is marked. Clicking a row commits it via
+    // setTimelinePairing() - the same call the up/down buttons end in.
+    // Hidden entirely unless the segment resolves and 1 <= n <=
+    // PAIRING_BROWSE_MAX_N (timelinePairingCandidates() returns null
+    // otherwise; at n=1 the rows are the two orientations, not pairings). Rebuilt fresh like the rest of the panel; the list's
+    // scroll position is preserved across rebuilds so stepping with
+    // up/down doesn't jump the list back to the top.
+    function renderTimelinePairingBrowser(info, seg) {
+        const cand = info ? timelinePairingCandidates(seg) : null;
+        if (timelinePairingBrowseBtn) timelinePairingBrowseBtn.elt.hidden = !cand;
+        const open = !!cand && timelinePairingBrowseOpen;
+        if (timelinePairingBrowseBtn) timelinePairingBrowseBtn.html(open ? 'Hide list' : 'Browse all');
+        if (timelinePairingBrowser) timelinePairingBrowser.elt.hidden = !open;
+        if (!open) {
+            timelinePairingBrowserList.elt.innerHTML = ''; // no stale rows behind a hidden list (n left the browse range, or the list was closed)
+            return;
+        }
+
+        const dir = timelinePairingSortSelect.elt.value === 'desc' ? -1 : 1;
+        const maxRaw = parseFloat(timelinePairingFilterInput.elt.value);
+        const hasMax = Number.isFinite(maxRaw);
+        const cmpPerm = (a, b) => { for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return a[i] - b[i]; return 0; };
+        const conclusiveCtxB = timelinePairingConclusive ? timelineConclusiveContext(seg) : null;
+        const conclusiveView = timelineConclusiveView(cand, timelinePairingConclusive, conclusiveCtxB);
+        const conclusiveStage = conclusiveCtxB ? timelineConclusiveImageStage(conclusiveView, conclusiveCtxB) : { items: conclusiveView.items, pending: 0, done: 0, total: 0 };   // task 022: the image test narrows the score's list
+        const conclusiveEmpty = conclusiveView.state === 'empty' || (conclusiveView.state === 'ok' && conclusiveStage.pending === 0 && conclusiveStage.items.length === 0);
+        const shown = conclusiveStage.items.filter(it => !hasMax || Math.round(it.displacement) <= maxRaw);
+        const rows = conclusiveView.state === 'ok'
+            ? shown   // the filter's own order (best score first) stands
+            : shown.sort((a, b) => (a.displacement - b.displacement) * dir || cmpPerm(a.perm, b.perm));
+        if (conclusiveNote) {
+            conclusiveNote.elt.hidden = conclusiveView.state === 'off';
+            conclusiveNote.elt.textContent = conclusiveView.state === 'ok' && !conclusiveEmpty
+                ? (conclusiveStage.pending > 0
+                    ? (window.UI && UI.t ? UI.t('timeline.conclusiveChecking', { done: conclusiveStage.done, total: conclusiveStage.total }) : `wird gepr\u00FCft ${conclusiveStage.done} von ${conclusiveStage.total}`)
+                    : (window.UI && UI.t ? UI.t('timeline.conclusiveCount', { kept: conclusiveStage.items.length, total: conclusiveView.total }) : `${conclusiveStage.items.length} von ${conclusiveView.total} schl\u00FCssig`))
+                : conclusiveEmpty
+                    ? (window.UI && UI.t ? UI.t('timeline.conclusiveNone') : 'Keine schl\u00FCssige Zuordnung. Filter ausschalten, um alle zu sehen.')
+                    : conclusiveView.state === 'free'
+                        ? (window.UI && UI.t ? UI.t('timeline.conclusiveFree') : 'Ebene hat freie Linienenden, Filter nicht anwendbar')
+                        : '';
+        }
+
+        timelinePairingBrowserCount.html(cand.orientation
+            ? `Showing ${rows.length} of ${cand.items.length} variants (Start 1 \u2192 End 1, distinct pictures only)`
+            : `Showing ${rows.length} of ${cand.items.length} pairings (Start 1..${cand.n} \u2192 End ...)`);
+        const list = timelinePairingBrowserList.elt;
+        const prevScroll = list.scrollTop;
+        list.innerHTML = '';
+        const fmt = v => Math.round(v).toLocaleString('en-US');
+        let currentRow = null;
+        rows.forEach(it => {
+            const btn = document.createElement('button');
+            // n=1 (Stage D phase iv): "current" = the variant sharing the
+            // current state's rendered-picture key - the current state may
+            // itself be a duplicate of a listed variant, not listed on its own.
+            const isCurrent = cand.orientation
+                ? it.key === cand.currentKey
+                : it.perm.every((j, i) => j === info.perm[i]);
+            btn.className = 'pairing-browse-row' + (isCurrent ? ' current' : '');
+            btn.dataset.perm = it.perm.join('');
+            if (cand.orientation) { btn.dataset.flip = it.flips[0] ? '1' : '0'; btn.dataset.member = String(it.members[0]); }
+            // Stage D phase (iii)/(iv), n=1: the candidates are the End line's
+            // distinct (group element, flip) variants (see
+            // timelinePairingCandidates()) - shown as the node pair actually
+            // read (start\u2192end), with a marker for a reversal / a non-identity
+            // element, so as-clicked and reversed read as before.
+            const variantText = cand.orientation
+                ? `${it.ids[0]}\u2013${it.ids[1]}${it.flips[0] ? ' \u21C4' : ''}${it.members[0] === 0 && !it.flips[0] ? ' (as clicked)' : ''}`
+                : '';
+            btn.title = cand.orientation
+                ? `Start 1 \u2192 End 1 as ${it.ids[0]}\u2013${it.ids[1]} (group element ${it.members[0]}${it.flips[0] ? ', reversed' : ''})`
+                : it.perm.map((j, i) => `Start ${i + 1} \u2192 End ${j + 1}`).join(', ');
+            const order = document.createElement('span');
+            order.textContent = cand.orientation ? variantText : it.perm.map(j => j + 1).join(' ');
+            const d = document.createElement('span');
+            d.textContent = `${fmt(it.displacement)} px\u00B2`;
+            btn.appendChild(order);
+            btn.appendChild(d);
+            btn.addEventListener('click', () => cand.orientation
+                ? commitTimelineSegmentPairing(seg, it.perm, it.flips, it.members)
+                : setTimelinePairing(seg, it.perm));
+            list.appendChild(btn);
+            if (isCurrent) currentRow = btn;
+        });
+        list.scrollTop = prevScroll;
+        if (timelinePairingBrowseJustOpened && currentRow) currentRow.scrollIntoView({ block: 'nearest' });
+        timelinePairingBrowseJustOpened = false;
+    }
+
+    if (timelinePairingBrowseBtn) {
+        timelinePairingBrowseBtn.elt.addEventListener('click', () => {
+            timelinePairingBrowseOpen = !timelinePairingBrowseOpen;
+            timelinePairingBrowseJustOpened = timelinePairingBrowseOpen;
+            renderTimelinePairingEditor();
+        });
+    }
+    if (timelinePairingSortSelect) timelinePairingSortSelect.elt.addEventListener('change', () => renderTimelinePairingEditor());
+    if (conclusiveBox) conclusiveBox.elt.addEventListener('click', () => {
+        timelinePairingConclusive = !timelinePairingConclusive;
+        renderTimelinePairingEditor();
+    });
+    if (timelinePairingFilterInput) timelinePairingFilterInput.elt.addEventListener('input', () => renderTimelinePairingEditor());
+
+    if (timelinePairingSegmentSelect) {
+        timelinePairingSegmentSelect.elt.addEventListener('change', () => {
+            timelinePairingSegment = parseInt(timelinePairingSegmentSelect.elt.value, 10) || 0;
+            previewTimelineSegmentMidpoint(timelinePairingSegment);
+            updateTimelineControls();
+            redraw();
+        });
+    }
+    if (timelinePairingResetBtn) {
+        timelinePairingResetBtn.elt.addEventListener('click', () => resetTimelinePairing(timelinePairingSegment));
+    }
+
+    // Roadmap 1.8 Stage C phase (ii): shows/hides the pieces of the timeline group (the keyframe list, the pairing editor) and refreshes the net status, based on whether a
+    // timeline exists. Called after every add/remove-layer action and every base-level shape/order rebuild (all of which can change the timeline's own shape) - see each
+    // of those call sites.
+    function updateTimelineControls() {
+        const hasTimeline = !!timeline;
+        if (timelineKeyframeList) timelineKeyframeList.elt.hidden = !hasTimeline;
+        renderTimelineKeyframeList();
+        renderTimelinePairingEditor();
+        enforceNetAnimationLockout();   // Case B1: the standalone net animation locks/unlocks with the coupling
+        if (window.syncTimelineNetUi) window.syncTimelineNetUi();
+    }
+    window.updateTimelineControls = updateTimelineControls;
+    // layerApi: begin - the layer table, rail and strip (ui-layers.js) and the timeline strip (ui-timeline.js) call these; each is a sequence of existing calls (assignments only, no new logic)
+    window.layerApi = {
+        select(sheet) { activeLayer = sheet; renderLayerTabs(); updateOffsetControls(); updateFaceToggleControl(); updateTimelineControls(); redraw(); },
+        add() { addLayer(); renderLayerTabs(); updateOffsetControls(); updateFaceToggleControl(); updateTimelineControls(); redraw(); },
+        remove(index) { removeLayer(index); renderLayerTabs(); updateOffsetControls(); updateFaceToggleControl(); redraw(); },
+        setEnabled(index, on) { additionalLayers[index].enabled = !!on; renderLayerTabs(); redraw(); },
+        toggleMore() { layerMoreOpen = !layerMoreOpen; syncLayerMore(); },
+        addToTimeline() { addLayerToTimeline(); },
+        removeKeyframe(index) { removeKeyframeFromTimeline(index); },
+        play() { toggleTimelinePlayback(); redraw(); },
+        setProgress(t) { setTimelineProgress(t); redraw(); },
+        clearTimeline() { removeTimelineAction(); },
+        includeNet() { return includeNetOverride; },
+        toggleIncludeNet() { includeNetOverride = timelineIncludeNetToggle(includeNetOverride); window.syncTimelineNetUi(); },
+        moreState() { return { open: layerMoreOpen, dot: layerMoreDot() }; },
+    };
+    // layerApi: end
+
+    // Roadmap: catalog -> clipboard "Paste Pattern" action. Mirrors
+    // setup()'s own catalogUrlPattern.layer==='new' tail handling
+    // exactly - applyCatalogPatternToNewLayer() reused completely
+    // unmodified (including its own removeLayer() rollback on semantic
+    // failure), then the SAME UI-sync sequence that tail already runs.
+    // navigator.clipboard.readText() is a real, uneven cross-browser
+    // permission surface (unlike writeText(), used on the gallery side)
+    // - guarded for outright unavailability (insecure context, very old
+    // browser) before ever calling it, and its rejection (permission
+    // denied, or blocked entirely) is reported as a notice (the key "paste"),
+    // never a silent no-op - this needed real, isolated browser
+    // verification, not just code review (see this feature's own
+    // implementation report).
+    if (pastePatternBtn) {
+        pastePatternBtn.mousePressed(async () => {
+            // Bug fix (found via real state reproduction, not assumed):
+            // navigator.clipboard.readText() can take a real, uneven
+            // amount of time - a first-time permission prompt in
+            // particular. Without disabling the button for that whole
+            // window, an impatient double-click (very plausible exactly
+            // during a permission prompt) fired this handler TWICE, each
+            // independently calling applyCatalogPatternToNewLayer() -
+            // creating a SECOND, unwanted layer from what the person
+            // intended as a single paste. That extra layer then silently
+            // broke "Animate A -> B"'s own "exactly two ordinary layers"
+            // eligibility check (canCreateTwoKeyframeTimeline()) the next
+            // time it was clicked, with no obvious explanation - reproduced
+            // concretely (two back-to-back applyCatalogPatternToNewLayer()
+            // calls leave 3 non-playback layers, canCreateTwoKeyframeTimeline()
+            // correctly but confusingly returns false) before this fix.
+            // Native `disabled` both greys the button out (existing
+            // .layer-btn:disabled CSS) and stops the browser from
+            // dispatching mousedown/click to it at all - a re-click during
+            // the awaited read is a no-op, not a second invocation.
+            pastePatternBtn.elt.disabled = true;
+            try {
+                if (!navigator.clipboard || !navigator.clipboard.readText) {
+                    say('paste', 'Clipboard access is not available in this browser/context.', 'error');
+                    return;
+                }
+                let text;
+                try {
+                    text = await navigator.clipboard.readText();
+                } catch (err) {
+                    say('paste', "Clipboard permission denied - check your browser's site settings.", 'error');
+                    console.warn('Failed to read clipboard for Paste Pattern:', err.message);
+                    return;
+                }
+                const pattern = parseClipboardCatalogPattern(text);
+                if (!pattern) {
+                    say('paste', catalogTransportRejection ? catalogRejectionText(catalogTransportRejection) : 'Clipboard does not contain a valid copied pattern.', 'error');
+                    return;
+                }
+                if (applyCatalogPatternToNewLayer(pattern)) {
+                    if (window.UI) UI.notifyClear('paste');
+                } else {
+                    say('paste', 'Failed to load the copied pattern - see console for details.', 'error');
+                }
+                renderLayerTabs();
+                updateOffsetControls();
+                updateFaceToggleControl();
+                updateTimelineControls();
+                redraw();
+                updateCrossLayerStatus();
+                updatePatternNameStatus();
+            } finally {
+                pastePatternBtn.elt.disabled = false;
+            }
+        });
+    }
+
+    // Roadmap 1.12 stage 4 (UI): this layer's own shape - the missing
+    // piece that finally makes a real cross-net-type combination
+    // (e.g. triangle base + hexagon layer) reachable through actual
+    // clicks, not just script-driven state (stage 4 parts 1-2 already
+    // shipped the data model/rendering/symmetry for it). Separate
+    // handler from the base's own .shape-icon-btn one above - writes
+    // additionalLayers[activeLayer].shape via updateActiveLayerGrid(),
+    // never currentShape, and updates only the LAYER buttons' own
+    // active state (the base's selector is untouched by this).
+    if (layerShapeBtns.length) {
+        layerShapeBtns.forEach(btn => {
+            btn.mousePressed(() => {
+                if (activeLayer === 'base') return;
+                if (additionalLayers[activeLayer] && additionalLayers[activeLayer].shape === btn.attribute('data-shape')) { toggleLayerLage(additionalLayers[activeLayer]); return; }   // task 068c3b: the active shape again = the lage
+                layerShapeBtns.forEach(b => b.removeClass('active'));
+                btn.addClass('active');
+                const hadLines = additionalLayers[activeLayer].connections.length > 0, shapeDiffers = additionalLayers[activeLayer].shape !== btn.attribute('data-shape');
+                const clamp = updateActiveLayerGrid({ shape: btn.attribute('data-shape') });
+                // updateActiveLayerGrid() keeps the layer's ordnung (task 068c3a) and clamps it to the new shape's maximum; say so, and sync the input
+                if (clamp && layerNodeCountInput) layerNodeCountInput.value(ordnungForCount(clamp.shape, clamp.to));
+                if (shapeDiffers) { const t = shapeChangeText(clamp ? ordnungForCount(clamp.shape, clamp.to) : null, hadLines ? shapeLossWhat({ lines: true }) : ''); if (t) showLayerNodeCountNote(t); }
+                // Roadmap 1.12 "Align to base" bugfix: found live while
+                // testing - this handler predates the align button and
+                // never re-synced the layer-contextual controls'
+                // disabled/active state after a shape change, so
+                // #btn-align-to-base stayed enabled even once this
+                // layer's shape no longer matched the base's (its own
+                // manual active-class toggle above is exactly the kind
+                // of narrow, single-field update updateOffsetControls()
+                // exists to replace - see its own docblock). Calling the
+                // shared sync function here keeps every layer-contextual
+                // control (not just the align button) consistent with
+                // this layer's new shape, the same as every other
+                // shape/size/rotation change already does.
+                updateOffsetControls();
+                redraw();
+            });
+        });
+    }
+
+    // Roadmap 1.12 stage 5 (symmetryMode axis) part 3: this layer's own
+    // Mode/Fold - separate handlers from the base's own .mode-btn/
+    // .fold-btn ones above, writing additionalLayers[activeLayer].
+    // symmetryMode via setActiveLayerSymmetryMode(), never the global
+    // symmetryMode (mirrors the shape handler directly above exactly).
+    // category/fold aren't tracked as separate persisted state the way
+    // the base's own symmetryCategory/symmetryFold closure variables
+    // are - each click derives "the other half" (fold for a mode click,
+    // category for a fold click) from the layer's CURRENT symmetryMode
+    // via bestEffortCategoryFold(), so layer.symmetryMode stays the
+    // single source of truth (no separate category/fold fields to ever
+    // drift out of sync with it, unlike the base's own two-variable
+    // approach - a deliberate simplification enabled by the base
+    // already existing as a working precedent to compare against).
+    if (layerModeBtns.length) {
+        layerModeBtns.forEach(btn => {
+            btn.mousePressed(() => {
+                if (activeLayer === 'base') return;
+                const layer = additionalLayers[activeLayer];
+                const category = btn.attribute('data-mode');
+                const current = bestEffortCategoryFold(layer.symmetryMode, 6) || { fold: 6 };
+                setActiveLayerSymmetryMode(normSym(resolveSymmetryMode(layer.shape, category, current.fold)));
+                updateOffsetControls();
+                redraw();
+            });
+        });
+    }
+
+    if (layerFoldBtns.length) {
+        layerFoldBtns.forEach(btn => {
+            btn.mousePressed(() => {
+                if (activeLayer === 'base') return;
+                const layer = additionalLayers[activeLayer];
+                const fold = parseInt(btn.attribute('data-fold'));
+                const current = bestEffortCategoryFold(layer.symmetryMode, fold) || { category: 'spiegeling' };
+                setActiveLayerSymmetryMode(normSym(resolveSymmetryMode(layer.shape, current.category, fold)));
+                updateOffsetControls();
+                redraw();
+            });
+        });
+    }
+
+    // Roadmap 1.8 Stage A: this layer's own animation controls. Set
+    // Start/End are explicit-action captures (never automatic, same
+    // convention as "Align to base"); Duration/Play/Progress all funnel
+    // through the top-level setActiveLayer*() setters (Roadmap 1.8
+    // Stage A section) so activeLayer==='base' stays a no-op everywhere,
+    // same guard as every other per-layer setter.
+    if (setAnimStartBtn) {
+        setAnimStartBtn.mousePressed(() => {
+            setActiveLayerAnimationStart();
+            updateOffsetControls();
+        });
+    }
+    if (setAnimEndBtn) {
+        setAnimEndBtn.mousePressed(() => {
+            setActiveLayerAnimationEnd();
+            updateOffsetControls();
+        });
+    }
+    if (animDurationInput) {
+        animDurationInput.input(() => {
+            setActiveLayerAnimationDuration(animDurationInput.value());
+        });
+    }
+    if (animPlayBtn) {
+        animPlayBtn.mousePressed(() => {
+            toggleActiveLayerAnimationPlayback();
+            updateOffsetControls();
+            redraw();
+        });
+    }
+    // Roadmap 1.8 Stage A (design session point 4 - bidirectional scrub):
+    // dragging this slider pauses (if playing) and jumps straight to the
+    // dragged progress - setActiveLayerAnimationProgress() itself already
+    // applies the new frame immediately, so a single redraw() here is
+    // enough to show it even while noLoop() is active (nothing else is
+    // animating).
+    if (animProgressInput) {
+        animProgressInput.input(() => {
+            setActiveLayerAnimationProgress(parseFloat(animProgressInput.value()));
+            updateOffsetControls();
+            redraw();
+        });
+    }
+
+    // Roadmap 1.12 "Align to base": computed suggestion, same explicit-
+    // action convention as the mesh-width preset buttons below (never
+    // automatic). alignLayerToBase() (core/forms.js) searches the
+    // layer's own reachable parameter range for the smallest
+    // (shapeSizeFactor, nodeCount) pair whose grid is a strict superset
+    // of the base's own nodes - see the design session for the derived,
+    // per-shape condition. Guarded by activeLayer/shape-match even
+    // though the button is already disabled in that state (updateOffsetControls()) -
+    // defense in depth against a stale click queued before a fast
+    // layer/shape switch. On success, applies via the SAME
+    // updateActiveLayerGrid() path every other layer-grid-changing
+    // control already uses (clears this layer's own connections/
+    // redoStack, refreshes its persisted grid) and syncs the now-stale
+    // Layer Node Count/Layer Shape Size input displays. On
+    // {achievable:false}, shows an explicit status message - never a
+    // silent no-op, never an inexact approximation applied instead.
+    if (alignBtn) {
+        alignBtn.mousePressed(() => {
+            if (activeLayer === 'base') return;
+            const layer = additionalLayers[activeLayer];
+            if (layer.shape !== currentShape) return;
+            const result = (layerGridSpecOf(layer).lage !== 1 || baseGridSpecNow().lage !== 1) ? { achievable: false } : alignLayerToBase(shapeSizeFactor, nodeCount, layer.shapeSizeFactor, layer.nodeCount, layer.shape);
+            if (result.achievable) {
+                updateActiveLayerGrid({ shapeSizeFactor: result.shapeSizeFactor, nodeCount: result.nodeCount });
+                if (layerShapeSizeInput) layerShapeSizeInput.value(Math.round(layer.shapeSizeFactor));
+                if (layerNodeCountInput) layerNodeCountInput.value(layerGridSpecOf(layer).ordnung);
+                if (window.UI) UI.notifyClear('align');
+                redraw();
+            } else {
+                say('align', 'Not achievable within the current parameter ranges.', 'warn');
+            }
+        });
+    }
+
+    // Roadmap 1.12 stage 1 pass 2: this layer's own order/size - same
+    // clamp ranges as the base sheet's own Shape Size/Node Count inputs
+    // above (1-9 / 1-5), acting on whichever layer is currently active.
+    // updateActiveLayerGrid() (INTERACTION section below) does the
+    // actual state mutation (clear this layer's own connections/
+    // redoStack, refresh its persisted grid via layerGrid()) - these
+    // handlers are just the DOM wiring, same division of labor as
+    // mousePressed()/addRandomConnection() calling activeNodes() rather
+    // than inlining the base/layer split themselves.
+    if (layerNodeCountInput) {
+        layerNodeCountInput.input(() => {
+            if (activeLayer === 'base') return;
+            let v = parseInt(layerNodeCountInput.value());
+            // Roadmap 1.1 (Group A): bounded by the LAYER'S OWN shape (it may differ from the base's) - see the base input's clamp
+            const maxN = gridMaxOrdnung(additionalLayers[activeLayer].shape, layerGridSpecOf(additionalLayers[activeLayer]).lage);   // task 068c2: the value is the ordnung
+            if (v < 1) v = 1;
+            if (v > maxN) {
+                showLayerNodeCountNote(`Layer Order ${v} is above the ${additionalLayers[activeLayer].shape} limit of ${maxN}, so it was set to ${maxN}.`);
+                v = maxN;
+                layerNodeCountInput.value(v);
+            }
+            updateActiveLayerGrid({ ordnung: v });
+            redraw();
+        });
+    }
+    if (layerShapeSizeInput) {
+        layerShapeSizeInput.input(() => {
+            if (activeLayer === 'base') return;
+            let v = parseInt(layerShapeSizeInput.value());
+            if (v < 1) v = 1; if (v > 9) v = 9;
+            updateActiveLayerGrid({ shapeSizeFactor: v });
+            redraw();
+        });
+    }
+
+    // Roadmap 1.12 stage 3: this layer's own rotation - a pure render-
+    // time placement parameter, exactly like offsetX/offsetY (not baked
+    // into stored nodes/outerCorners, see the stage-3 design session's
+    // point 1) - so, unlike nodeCount/shapeSizeFactor above, this needs
+    // NO updateActiveLayerGrid() call: no connections-clearing, no grid
+    // refresh, just the field itself. [0,360) wraparound is a pure UI
+    // nicety (avoids an ever-growing spinner value on repeated
+    // scrolling) - rotateAround() itself handles any angle correctly,
+    // this normalization is not mathematically required.
+    if (layerRotationInput) {
+        layerRotationInput.input(() => {
+            setActiveLayerRotation(layerRotationInput.value());
+            redraw();
+        });
+    }
+
+    // Offset Inputs (continuous, pixels - see 1.3(b) design: building
+    // this as a free parameter costs nothing extra over a whole-mesh-
+    // width-only control, so it's not artificially constrained) and
+    // "1 mesh-width" Presets both act on whichever layer is currently
+    // active - getMeshWidth() (core/tiling.js) derives the step from
+    // the current shape's own tiling math.
+    if (offsetXInput) {
+        offsetXInput.input(() => {
+            if (activeLayer === 'base') return;
+            additionalLayers[activeLayer].offsetX = parseFloat(offsetXInput.value()) || 0;
+            redraw();
+        });
+    }
+    if (offsetYInput) {
+        offsetYInput.input(() => {
+            if (activeLayer === 'base') return;
+            additionalLayers[activeLayer].offsetY = parseFloat(offsetYInput.value()) || 0;
+            redraw();
+        });
+    }
+    // Roadmap 1.2-B: getMeshWidth() now returns {v1,v2} (the net's own
+    // lattice vectors) instead of {x,y} (two independent axis-aligned
+    // scalars) - each preset shifts by one FULL lattice vector, setting
+    // both offsetX and offsetY together, so the shift follows the net's
+    // actual lattice direction regardless of rotation (previously only
+    // correct because v1/v2 happened to be axis-aligned).
+    const meshPresetXBtn = select('#btn-mesh-preset-x');
+    meshPresetXBtn && meshPresetXBtn.mousePressed(() => {
+        if (activeLayer === 'base') return;
+        const v1 = getMeshWidth().v1;
+        additionalLayers[activeLayer].offsetX = v1.x;
+        additionalLayers[activeLayer].offsetY = v1.y;
+        if (offsetXInput) offsetXInput.value(additionalLayers[activeLayer].offsetX);
+        if (offsetYInput) offsetYInput.value(additionalLayers[activeLayer].offsetY);
+        redraw();
+    });
+    const meshPresetYBtn = select('#btn-mesh-preset-y');
+    meshPresetYBtn && meshPresetYBtn.mousePressed(() => {
+        if (activeLayer === 'base') return;
+        const v2 = getMeshWidth().v2;
+        additionalLayers[activeLayer].offsetX = v2.x;
+        additionalLayers[activeLayer].offsetY = v2.y;
+        if (offsetXInput) offsetXInput.value(additionalLayers[activeLayer].offsetX);
+        if (offsetYInput) offsetYInput.value(additionalLayers[activeLayer].offsetY);
+        redraw();
+    });
+
+    renderLayerTabs();
+    updateOffsetControls();
+    updateTimelineControls();
+    updateFaceToggleControl();
+    updateCurveTypeControls();
+    updateFreeVisibleToggleIcon();
+
+    // Show nodes Toggle Button
+    const nodeBtn = select('#btn-toggle-nodes');
+    // The button's active class and eye icon follow showNodes (also called by the session restore, which sets showNodes directly).
+    function updateNodeToggleIcon() {
+        if (!nodeBtn) return;
+        if (showNodes) {
+            nodeBtn.addClass('active');
+            nodeBtn.html('<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="6" cy="17" r="2.2"/><circle cx="12" cy="8" r="2.2"/><circle cx="18" cy="15" r="2.2"/></svg>');
+        } else {
+            nodeBtn.removeClass('active');
+            nodeBtn.html('<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="6" cy="17" r="2.2"/><circle cx="12" cy="8" r="2.2"/><circle cx="18" cy="15" r="2.2"/><path d="M3 3 L21 21" fill="none" stroke="currentColor" stroke-width="2"/></svg>'); // dots with a slash
+        }
+    }
+    if (nodeBtn) {
+        nodeBtn.mousePressed(() => {
+            showNodes = !showNodes;
+            updateNodeToggleIcon();
+            redraw();
+        });
+    }
+
+    // Action Buttons - operate on the active layer (base or overlay,
+    // see activeConnections()/clearActiveRedoStack() etc. in INTERACTION)
+    const clearBtn = select('#btn-clear');
+    clearBtn && clearBtn.mousePressed(() => {
+        clearActiveConnections();
+        clearActiveRedoStack(); // Clear redo on clear
+        redraw();
+    });
+
+    const backBtn = select('#btn-undo');
+    backBtn && backBtn.mousePressed(() => {
+        const conns = activeConnections();
+        const redo = activeRedoStack();
+        if (conns.length) {
+            redo.push(conns.pop()); // Push to redo stack
+            redraw();
+        }
+    });
+
+    const redoBtn = select('#btn-redo');
+    redoBtn && redoBtn.mousePressed(() => {
+        const conns = activeConnections();
+        const redo = activeRedoStack();
+        if (redo.length) {
+            conns.push(redo.pop()); // Pop from redo stack
+            redraw();
+        }
+    });
+
+    const randBtn = select('#btn-random');
+    randBtn && randBtn.mousePressed(() => {
+        addRandomConnection();
+        clearActiveRedoStack(); // Clear redo on new action
+        redraw();
+    });
+
+    // Export Dialog (PNG / JSON / SVG)
+    const dlBtn = select('#btn-save');
+    const exportOverlay = select('#export-overlay');
+    const closeExportBtn = select('#close-export');
+
+    if (dlBtn && exportOverlay) {
+        dlBtn.mousePressed(() => {
+            exportOverlay.removeClass('hidden');
+            animExportDialogOpened();
+        });
+        closeExportBtn && closeExportBtn.mousePressed(() => {
+            if (animExportCancelIfRunning()) return;   // task 116: while an animation export runs, Close / Escape cancel it
+            exportOverlay.addClass('hidden');
+        });
+        // Close on background click
+        exportOverlay.mousePressed((e) => {
+            if (e.target.id === 'export-overlay' && !animExportCancelIfRunning()) exportOverlay.addClass('hidden');
+        });
+    }
+    animExportInit();
+
+    const pngBtn = select('#export-png');
+    pngBtn && pngBtn.mousePressed(() => {
+        exportPNG();
+        exportOverlay && exportOverlay.addClass('hidden');
+    });
+
+    const jsonBtn = select('#export-json');
+    jsonBtn && jsonBtn.mousePressed(() => {
+        // Roadmap 1.10b-ii-c: only pass a crossLayerData object through
+        // to exportJSON()/buildExportData() when a valid, CURRENT (not
+        // stale - same crossLayerConfigSignature() check draw()/
+        // updateCrossLayerStatus() already use) cross-layer result
+        // exists - an outdated result never gets exported as if it were
+        // still accurate, same rule as rendering.
+        const crossLayerData = (crossLayerResult && crossLayerResultSignature === crossLayerConfigSignature())
+            ? { latticeBasis: crossLayerResult.latticeBasis, nodes: crossLayerResult.nodes, faces: crossLayerResult.faces }
+            : null;
+        exportJSON(crossLayerData);
+        exportOverlay && exportOverlay.addClass('hidden');
+    });
+
+    const svgBtn = select('#export-svg');
+    svgBtn && svgBtn.mousePressed(() => {
+        exportSVG();
+        exportOverlay && exportOverlay.addClass('hidden');
+    });
+
+    // Help Button Logic
+    const helpBtn = select('#btn-help');
+    const helpOverlay = select('#help-overlay');
+    const closeHelpBtn = select('#close-help');
+
+    if (helpBtn && helpOverlay) {
+        helpBtn.mousePressed(() => {
+            helpOverlay.removeClass('hidden');
+        });
+        closeHelpBtn && closeHelpBtn.mousePressed(() => {
+            helpOverlay.addClass('hidden');
+        });
+        // Close on background click
+        helpOverlay.mousePressed((e) => {
+            if (e.target.id === 'help-overlay') helpOverlay.addClass('hidden');
+        });
+    }
+
+    // Cross-Layer Face Compute (Roadmap 1.10b-ii-b) - see
+    // computeCrossLayerFacesFlow()/updateCrossLayerStatus() (INTERACTION
+    // section below) for the actual logic; this just wires the click.
+    const computeCrossLayerBtn = optionalSelect('#btn-compute-cross-layer');   // null: the button was removed (its flow, computeCrossLayerFacesFlow, is kept)
+    computeCrossLayerBtn && computeCrossLayerBtn.mousePressed(computeCrossLayerFacesFlow);
+
+    // ---- Session restore (Phase 3 autosave, P1d; the storage side is core/session-store.js, the rest core/session*.js) ----
+    // The seven UI hooks core/session-apply.js runs after it has set the globals (they are final by then, so a hook reads what it shows
+    // from the globals, not from its argument). They are defined here because the things they drive live in setup()'s closure. None of
+    // them dispatches an input event (the node-count and size handlers would rebuildGrid() and wipe the restored sheet).
+    // window.sessionUi IS the hooks object (plus symmetryUi, which collectSessionState() reads).
+    const sessionHooks = {
+        symmetryUi: window.symmetryUi,
+        shapeAndInputs() {
+            shapeBtns.forEach(b => b.removeClass('active'));
+            const match = shapeBtns.find(b => b.attribute('data-shape') === currentShape);
+            if (match) match.addClass('active');
+            if (shapeInput) shapeInput.value(gridSizeX());
+            sizeLockOpen = false;   // task 080: the lock is UI state; a restored square shows it closed, a non-square area shows it open (sizeLockIsOpen)
+            if (nodeInput) nodeInput.value(gridSpec.ordnung);
+            clampNodeCountToShape('Restore'); // the input's max for the restored shape; the restored count is within it, so no note
+        },
+        symmetry(category, fold) {
+            // The setters recompute symmetryMode from (shape, category, fold); the stored mode is assigned again afterwards by the apply code
+            // (it can legitimately differ: a catalog link with shape=square&symmetryMode=rotation6 shows (drehling, 6) but keeps rotation6).
+            // So the check is that the UI took the category and fold it was given and landed on one of the six modes - not that the mode is the stored one.
+            // The two setters each recompute symmetryMode, so between them (and after them, until the apply code assigns the stored mode) the
+            // mode is an intermediate one; restoringSymmetry makes them skip uiSync() and redraw() (see its declaration). Measured without it: a
+            // (drehling, 3) session restored 10 stray gray entries computed under rotation6, the default fold, in between.
+            const ui = window.symmetryUi;
+            restoringSymmetry = true;
+            try {
+                if (category !== null && category !== undefined) ui.setCategory(category);
+                if (fold !== null && fold !== undefined) ui.setFold(fold);
+            } finally { restoringSymmetry = false; }
+            if ((category !== null && category !== undefined && ui.category() !== category) || (fold !== null && fold !== undefined && ui.fold() !== fold)) {
+                throw new Error(`the symmetry controls did not take (${category}, ${fold}): they show (${ui.category()}, ${ui.fold()})`);
+            }
+            if (SESSION_SYMMETRY_MODES.indexOf(symmetryMode) < 0) throw new Error(`the symmetry controls resolved to "${symmetryMode}"`);
+        },
+        toggles() {
+            updateNodeToggleIcon();
+            if (curveBtn) { if (curveType.kind === 'curve') curveBtn.addClass('active'); else curveBtn.removeClass('active'); }
+            if (freeBtn) { if (curveType.kind === 'free') freeBtn.addClass('active'); else freeBtn.removeClass('active'); }
+            if (freeEndpointsBtn) { if (freeEndpointsEnabled) freeEndpointsBtn.addClass('active'); else freeEndpointsBtn.removeClass('active'); }
+            updateFaceToggleControl();
+            updateCurveTypeControls();
+            updateFreeVisibleToggleIcon();
+            cancelAltNetConstruction(); // an in-progress alternative-net click pair means nothing against the restored sheet
+        },
+        net() {
+            if (adoptNetState) adoptNetState();
+            if (netControlsSync) netControlsSync();
+        },
+        layers() {
+            renderLayerTabs();
+            updateOffsetControls();
+        },
+        timeline() {
+            updateTimelineControls();
+            applyTimelineFrame(); // sets the playback layer's _morph* caches (nothing is saved of them); a no-op without a timeline
+        },
+        finish() {
+            updateCrossLayerStatus();
+            updatePatternNameStatus();
+            if (window.syncTimelineNetUi) window.syncTimelineNetUi();
+            if (window.uiSync) window.uiSync();
+            redraw(); // a no-op until setup() has finished (p5 1.9.0); the first draw() comes right after setup
+        },
+    };
+    window.sessionUi = sessionHooks;
+
+    // The code a quarantine is filed under (core/session-store.js SESSION_QUARANTINE_REASONS) from the code that rejected the snapshot.
+    // The warning always carries the original code and message, so nothing is lost behind the normalised reason.
+    function sessionQuarantineReason(code) {
+        if (code === 'schema-version' || code === 'trail-key-version') return code;
+        if (code === 'canvas-mismatch' || code === 'grid-mismatch') return 'grid-mismatch';
+        if (code === 'plan-error' || code === 'apply-failed') return 'apply-failed';
+        return 'corrupt'; // empty, too-large, not-json, not-an-object, invalid
+    }
+
+    // Startup: restore this tab's saved session if the navigation rules say so (core/session-store.js loadSessionForStartup()), else
+    // return false and let the catalog / random start line below run. Any failure ends in the quarantine and a fresh start (the apply
+    // rolled everything back); it never throws.
+    function restoreSessionAtStartup() {
+        try {
+            const guard = sessionStorageGuard(window);
+            const loaded = loadSessionForStartup({ storage: guard.storage, perf: window.performance, currentHref: sessionCurrentHref(window.location), allowed: guard.allowed });
+            if (loaded.reason === 'envelope-invalid') console.warn(`[session] saved session not restored (${loaded.detail}); kept in the quarantine slot, starting fresh`); // the store already moved it
+            if (loaded.action !== 'restore') return false;
+            const reject = (code, detail) => {
+                console.warn(`[session] saved session not restored (${code}: ${detail}); kept in the quarantine slot, starting fresh`);
+                quarantineSession(guard.storage, loaded.text, sessionQuarantineReason(code));
+                // task 062: a session saved under the old schema is discarded with a plain message (kept in the quarantine slot as before)
+                if (code === 'schema-version') say('session-old', window.UI && UI.t ? UI.t('note.session.oldSchema') : 'The saved session comes from an older version of the generator and cannot be restored. It was set aside and the generator starts fresh.', 'info');
+                return false;
+            };
+            const parsed = parseSession(loaded.text);
+            if (!parsed.ok) return reject(parsed.code, parsed.detail);
+            const planned = planSessionRestore(parsed.snapshot, { canvasW, canvasH });
+            if (!planned.ok) return reject(planned.code, planned.detail);
+            const applied = applySessionSnapshot(parsed.snapshot, planned.plan, sessionHooks, {
+                onFailure(error, info) { // before the rollback: the snapshot leaves the main key, so a reload cannot repeat the failure
+                    console.warn(`[session] saved session not restored (apply-failed: ${info.step}: ${info.detail}); kept in the quarantine slot, starting fresh`);
+                    quarantineSession(guard.storage, loaded.text, 'apply-failed');
+                },
+            });
+            if (applied.ok) return true;
+            if (applied.resyncFailed) location.reload(); // the old state is back in the globals but the controls could not be re-synced; the key is already gone
+            return false;
+        } catch (e) {
+            console.warn('[session] restore failed unexpectedly, starting fresh: ' + (e && e.message));
+            return false;
+        }
+    }
+
+    // ---- Session writer (Phase 3 autosave, P2): WHEN the snapshot is saved is core/session-writer.js; this wires it to the page ----
+    // One writer per page load, only where the storage guard allows (not in a frame, sessionStorage reachable). It is told after every draw (see draw()),
+    // flushed when the page is hidden or goes away, and not asked to write while something plays (isAnythingAnimating()). It only ever writes the main key
+    // (core/session-store.js writeSession), with the URL the page has NOW (the hash is dropped there). check(): a snapshot that could not be restored
+    // (plan: grid-mismatch, ...) is not written, the previous one stays. A layer a layer animation left mid-way (shapeSizeFactor 3.8, nodes still built for 5)
+    // is collected with the size its nodes were built with ({ buildSizes: true }, core/session-apply.js), so it is written and restores; only a layer
+    // for which no size reproduces its nodes is refused. See ROADMAP (Phase 3).
+    function startSessionWriter() {
+        try {
+            const guard = sessionStorageGuard(window);
+            if (!guard.allowed) return null;
+            const writer = createSessionWriter({
+                collect: () => collectSessionState(window.symmetryUi, { buildSizes: true }),
+                serialize: (state, now) => { const r = serializeSession(buildSessionSnapshot(state, now)); return r.ok ? r.text : null; },
+                write: (text, now) => writeSession(guard.storage, text, window.location.href, now, true), // quiet: the writer warns once per kind
+                check: text => {
+                    const parsed = parseSession(text);
+                    if (!parsed.ok) return parsed.code + ': ' + parsed.detail;
+                    const planned = planSessionRestore(parsed.snapshot, { canvasW, canvasH });
+                    return planned.ok ? null : planned.code + ': ' + planned.detail;
+                },
+                isBlocked: () => isAnythingAnimating(),
+                setTimer: (fn, ms) => window.setTimeout(fn, ms),
+                clearTimer: handle => window.clearTimeout(handle),
+                now: () => Date.now(),
+            });
+            window.sessionWriter = writer;
+            // the page is hidden (tab switch, app switch, mobile background) or goes away (close, reload, navigation): write what is pending
+            window.addEventListener('pagehide', () => { writer.flush(); });
+            document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') writer.flush(); });
+            return writer;
+        } catch (e) {
+            console.warn('[session] autosave could not be started: ' + (e && e.message));
+            return null;
+        }
+    }
+
+    // "Neu anfangen" (rail, Mehr): forget this tab's saved session and load the page again without URL parameters. The writer is disabled FIRST - the page
+    // is about to go away and its pagehide handler would write the snapshot straight back - then the main key and the quarantine slot are removed, then a plain
+    // navigation (no search, no hash) starts fresh: the restore rule finds no snapshot. The state is not rebuilt by hand.
+    window.sessionRestart = function () {
+        try { if (window.sessionWriter) window.sessionWriter.disable(); } catch (e) { } // the navigation below still happens
+        try {
+            const guard = sessionStorageGuard(window);
+            if (guard.storage) { guard.storage.removeItem(SESSION_STORAGE_KEY); guard.storage.removeItem(SESSION_QUARANTINE_KEY); }
+        } catch (e) { console.warn('[session] could not remove the saved session: ' + (e && e.message)); }
+        window.location.assign(window.location.pathname);
+    };
+
+    rebuildGrid(currentShape);
+    // Draw a random connection on start - unless a valid catalog URL
+    // pattern is already resolved (see catalogUrlPattern/applyCatalogPattern()
+    // above), in which case that pattern's own connections replace the
+    // random seed entirely. Any failure (semantic validation - orbitIds
+    // that don't actually exist in this exact table) falls back to
+    // exactly the pre-existing default, same as no URL pattern at all.
+    //
+    // Roadmap: catalog -> NEW LAYER back-link extension - a
+    // catalogUrlPattern.layer === 'new' link is routed to
+    // applyCatalogPatternToNewLayer() instead, which never touches the
+    // base globals/UI at all (see its own comment), so the plain
+    // base-only case just below is completely unaffected either way.
+    //
+    // Phase 3 autosave: a saved session for this tab and URL (reload, back/forward, same-URL navigate - see restoreSessionAtStartup()
+    // above) is restored INSTEAD of all of this; it replaces whatever the URL parameters set earlier, and a failed restore rolls back to
+    // exactly that state before this branch runs.
+    if (restoreSessionAtStartup()) {
+        // restored: the sheet, the layers, the timeline and the colours are the saved ones - no catalog pattern, no random start line
+    } else if (catalogUrlPattern && catalogUrlPattern.layer === 'new') {
+        if (!applyCatalogPatternToNewLayer(catalogUrlPattern)) addRandomConnection();
+    } else if (!catalogUrlPattern || !applyCatalogPattern(catalogUrlPattern)) {
+        addRandomConnection();
+    }
+    // Roadmap: renderLayerTabs()/updateOffsetControls()/updateFaceToggleControl()/
+    // updateTimelineControls() only ran once, earlier in setup(), BEFORE
+    // rebuildGrid() above - a layer created just now by
+    // applyCatalogPatternToNewLayer() needs an explicit re-sync so its
+    // tab/controls actually appear on the very first paint, the same
+    // sync layerApi.add() already does. Harmless
+    // (redundant, not wrong) when no layer was created.
+    renderLayerTabs();
+    updateOffsetControls();
+    updateFaceToggleControl();
+    updateTimelineControls();
+    redraw();
+    updateCrossLayerStatus();
+    updatePatternNameStatus();
+    startSessionWriter(); // last: the first write follows the first draw (markDirty is called at the end of draw())
+}
+
+// ----------------- DRAW -----------------------------------------
+function draw() {
+    // UI rework: the nav rows (steppers, toggles) read the state on every redraw (ui-form.js); cheap, attribute-only.
+    if (window.uiSync) window.uiSync();
+    // Force Light Mode / Standard Style
+    // Hintergrund exakt wie Bedienfeld (oder weiß)
+    const bgColor = getComputedStyle(document.body).getPropertyValue('--panel-bg-color') || '#ffffff';
+    background(bgColor);
+
+    // Linienfarbe wie Picker/CSS, keine Füllung für die Kurven
+    stroke(lineColor);
+    noFill();
+
+    // Roadmap 1.8 Stage A: recompute every ACTIVELY PLAYING layer's live
+    // offsetX/offsetY/rotation/shapeSizeFactor BEFORE drawTessellation()
+    // reads them - cheap (a handful of lerp() calls per playing layer,
+    // negligible next to drawTessellation()'s own cost - see the design
+    // session's real per-redraw timing citations). Re-checking
+    // isAnythingAnimating() afterward (not just at the Play/Pause click
+    // site) is what makes loop() correctly stop the instant the LAST
+    // playing layer reaches its own end, not one frame late or never -
+    // applyLayerAnimationFrame() itself may have just flipped that
+    // layer's own `playing` to false.
+    //
+    // [real-bug fix]: gated on layer.animation.playing, NOT merely
+    // layer.animation existing (the shipped bug: `if (layer.animation)`
+    // alone). A layer that merely HAS an animation object but isn't
+    // playing (the entire window between "Set Start" and "Set End", or
+    // any paused state) would otherwise get its live offsetX/rotation/
+    // shapeSizeFactor forcibly reset to t=0's interpolated value (=
+    // fromOffsetX/fromRotation/fromShapeSizeFactor, since elapsedMs is
+    // still 0) on EVERY redraw - including the redraw the offset/
+    // rotation/shape-size input's OWN change handler already triggers
+    // right after writing the user's edit. That silently undid the
+    // edit before "Set End" ever captured it, so `to*` always ended up
+    // identical to `from*` - Play then genuinely interpolated between
+    // two identical states, which is indistinguishable from doing
+    // nothing (the reported bug: "no visible movement" - confirmed via
+    // real UI clicks, not assumed: editing #layer-offset-x-input after
+    // "Set Start" measurably had zero lasting effect on
+    // additionalLayers[i].offsetX before this fix). Scrubbing
+    // (setActiveLayerAnimationProgress()) is unaffected - it already
+    // calls applyLayerAnimationFrame() itself, directly, exactly once
+    // per scrub action, never relying on this per-frame loop.
+    additionalLayers.forEach(layer => { if (layer.animation && layer.animation.playing) applyLayerAnimationFrame(layer); });
+    applyNetAnimationFrame();   // the net animation's progress for this frame (only while it is live; never touches baseNetTransform)
+    if (window.syncTimelineNetUi) window.syncTimelineNetUi();
+    if (window.syncNetAnimationDisplay && baseNetAnimation) window.syncNetAnimationDisplay();
+    // Roadmap 1.8 Stage C phase (i): same "recompute while actively
+    // playing, re-check isAnythingAnimating() afterward" pattern as the
+    // per-layer loop just above - applyTimelineFrame() may itself flip
+    // timeline.playing to false (reaching the end), which
+    // syncAnimationLoopState() needs to see this same frame, not one
+    // frame late. (The timeline strip's own sync runs at the start of every draw, but NOT after the last frame: the draw that ends the playback
+    // is followed by noLoop(). ui-timeline.js therefore arms one timer for the end of a playback and syncs when it fires.)
+    if (timeline && timeline.playing) applyTimelineFrame();
+    syncAnimationLoopState();
+    if (activeLayer !== 'base' && additionalLayers[activeLayer] && additionalLayers[activeLayer].animation) {
+        syncLayerAnimationDisplay(additionalLayers[activeLayer]);
+    }
+    if (window.syncLayerMore) window.syncLayerMore();   // the dot of the layer "Mehr" toggle follows edits made through the (closed) controls and the base's values; writes only on a change
+
+    drawTessellation();
+
+    // Roadmap 1.10b-ii-c: cross-layer face fills - additive to (not a
+    // replacement for) 1.10a's per-sheet showFaces fills already drawn
+    // inside drawTessellation() above. Rendered only when a computed
+    // result exists AND is still current for the present connections/
+    // layers/offsets (crossLayerConfigSignature() - the same staleness
+    // check updateCrossLayerStatus() uses for its own "Outdated" label):
+    // an outdated result is never rendered as if it were current, even
+    // though it's still SHOWN (with that label) in the status text. The
+    // whole block below (buffer render-or-reuse, then blit) only runs at
+    // all inside this same currency check, so an outdated result simply
+    // never reaches the blit - the previously cached buffer's content is
+    // left alone but never drawn, same "hidden until recomputed" behavior
+    // as before caching existed.
+    //
+    // Roadmap 1.10b-ii-d: offscreen-buffer cache (see crossLayerFillBuffer/
+    // crossLayerFillBufferSignature above) - re-renders into the buffer
+    // ONLY when its signature doesn't match the current result's (i.e. a
+    // new compute was accepted since the buffer was last built), then
+    // always just blits the buffer via image(). clear() before re-
+    // rendering matters: a new result can have FEWER faces than the one
+    // the buffer previously held, and without clearing, stale pixels from
+    // the larger previous render would linger under/around the new ones.
+    if (crossLayerResult && crossLayerResultSignature === crossLayerConfigSignature()) {
+        if (crossLayerFillBufferSignature !== crossLayerResultSignature) {
+            if (!crossLayerFillBuffer) crossLayerFillBuffer = createGraphics(width, height);
+            crossLayerFillBuffer.clear();
+            drawCrossLayerFaceFillsAcrossCanvas(crossLayerResult, crossLayerFillBuffer);
+            crossLayerFillBufferSignature = crossLayerResultSignature;
+        }
+        image(crossLayerFillBuffer, 0, 0);
+    }
+
+    drawNetLinesOverlay();
+
+    // Knoten (Hover rot)
+    // Roadmap [layer node-dot rendering fix]: previously always the base
+    // sheet's own `nodes`, regardless of activeLayer - an active,
+    // differently-scaled/shaped layer's own node positions (already
+    // correctly click-resolvable via activeNodes(), the stage-1 fix)
+    // were never actually drawn, making it impossible to see where to
+    // click to build a theme-line for that layer. Base sheet: full
+    // interactive styling when it IS the active sheet (byte-identical to
+    // before this fix), dimmed light gray when a layer is active
+    // instead - drawTessellation() still renders the base's own
+    // connections regardless of activeLayer, so its dots stay visible
+    // for spatial reference (shared centroid) rather than disappearing
+    // while its lines remain on screen. Scope: base + the ACTIVE layer
+    // only, not every simultaneously-enabled layer (design confirmed).
+    if (showNodes) {
+        push();
+        noStroke();
+        // Roadmap 1.6 / Group E phase 2: dots (base and active layer) sit where the lines are drawn -
+        // through the net warp when one is in force (position-based, like the warp itself).
+        const dotWarp = netWarpBaseNow();
+        const dotPos = nd => dotWarp ? applyNetWarp(dotWarp, nd) : nd;
+        // Hover (Phase 2, B4c): ONE dot is red - the nearest within HOVER_RADIUS - chosen by the same pickNodeAt over the same drawn positions
+        // (drawnHitNodes) that a click uses, so the red dot is the node a click on that spot selects. It used to be every dot within 10 units.
+        const hovered = pickNodeAt(drawnHitNodes(), mouseX, mouseY, HOVER_RADIUS);
+        const hoverId = hovered ? hovered.id : null;
+        nodes.forEach(nd => {
+            const p = dotPos(nd);
+            if (activeLayer === 'base') {
+                // Default: Schwarz (Grid) / Blau (frei) oder Rot bei Hover
+                fill(nd.id === hoverId ? color(220, 0, 0) : (nd.free ? color(30, 110, 220) : color(0)));
+            } else {
+                fill(200);
+            }
+            ellipse(p.x, p.y, 6, 6);
+        });
+        // The active layer's own persisted nodes. They are STORED canonically (untransformed - orbits, export, morphing and
+        // "Align to base" rely on that), but the dot must stand where the layer's central-tile copy is DRAWN: c + offset +
+        // Rot(n - c) (layerNodeDrawnPosition(), core/tiling.js) - and through the net warp when one is in force. It used to sit at
+        // the stored position, which is only where the layer is drawn at offset 0 / rotation 0.
+        if (activeLayer !== 'base') {
+            const dotLayer = additionalLayers[activeLayer];
+            dotLayer.nodes.forEach(nd => {
+                const p = dotPos(layerNodeDrawnPosition(dotLayer, nd));
+                fill(nd.id === hoverId ? color(220, 0, 0) : (nd.free ? color(30, 110, 220) : color(0)));
+                ellipse(p.x, p.y, 6, 6);
+            });
+        }
+        pop();
+    }
+
+    // Roadmap 1.2-C: live preview of the alternative-net construction in
+    // progress - a dashed outline (distinct from the actual rendered
+    // pattern) of the candidate polygon, flipping sides as
+    // altNetPending.previewSide updates in mouseMoved(). Drawn after
+    // nodes so P/Q markers stay visible on top.
+    if (altNetActive && altNetPending) {
+        push();
+        noStroke();
+        fill(30, 110, 220);
+        ellipse(altNetPending.p.x, altNetPending.p.y, 8, 8);
+        if (altNetPending.q !== undefined) {
+            ellipse(altNetPending.q.x, altNetPending.q.y, 8, 8);
+            const n = shapeToN(currentShape);
+            const { vertices } = completeEdgeToRegularPolygon(altNetPending.p, altNetPending.q, n, altNetPending.previewSide);
+            noFill();
+            stroke(120);
+            strokeWeight(2);
+            drawingContext.setLineDash([6, 4]);
+            beginShape();
+            vertices.forEach(v => vertex(v.x, v.y));
+            endShape(CLOSE);
+            drawingContext.setLineDash([]);
+        }
+        pop();
+    }
+
+    // Draw Canvas Border (Frame)
+    push();
+    noFill();
+    stroke(lineColor); // Use same color as lines (usually black) or fixed black
+    strokeWeight(4);   // 4px border (doubled)
+    rect(0, 0, width, height);
+    pop();
+
+    // Roadmap 1.10b-ii-b: cheap enough to run on every redraw (see
+    // updateCrossLayerStatus()'s own comment) - catches every
+    // connections/layers/offsets change via the same redraw() calls
+    // those already trigger, without needing a hook at each individual
+    // mutation site.
+    updateCrossLayerStatus();
+
+    // Roadmap 1.11-B: NOT unconditionally cheap the way
+    // updateCrossLayerStatus() is - computeThemeLineName() rebuilds the
+    // full orbit table from scratch (core/orbits.js's
+    // computeThemeLineOrbitTable(), no caching of its own by design -
+    // see that function's own comment on why the cache lives here
+    // instead), measured at ~13ms at the UI's largest reachable order
+    // (hex, nodeCount 5). Paying that on every mouseMoved()-triggered
+    // redraw would reintroduce exactly the kind of avoidable per-redraw
+    // recomputation 1.10b-ii-d's diagnosis/fix targeted - so this is
+    // cached here (signature-invalidated), same pattern as
+    // crossLayerFillBuffer/crossLayerFillBufferSignature above, not
+    // called unconditionally like updateCrossLayerStatus().
+    updatePatternNameStatus();
+    // Group D Phase 3: Face Colors panel - same once-per-draw, signature-
+    // gated pattern (rebuilds only when its contents could have changed).
+    updateFaceColorsPanel();
+    if (netControlsSync) netControlsSync();
+    // Phase 3 autosave (P2): the saved state MAY have changed. Called on every draw, hover redraws included: it costs a function call and two stores, and the
+    // writer (core/session-writer.js) debounces, caps the wait at 5 s, and does not write an unchanged snapshot. Last in draw(), so the first write is after the
+    // first draw (face colours are written lazily into the store while the first draw computes the faces).
+    if (window.sessionWriter) window.sessionWriter.markDirty();
+}
+
+// ----------------- ALTERNATIVE NET CONSTRUCTION (Roadmap 1.2-C) -----
+// One-shot tool-like activation (not a persistent mode, per the design
+// session): toggling #btn-alternative-net arms a 3-click flow - click
+// P, click Q (live preview from then on, flipping side as the mouse
+// crosses line PQ), click again to confirm the currently-previewed
+// side. Reuses the existing shape-selector buttons for n (no new
+// picker) and raw click coordinates for P/Q (no snap-to-existing-node -
+// the grid any existing node belongs to is about to be replaced
+// entirely, so snapping to it has no clear meaning here, unlike
+// ordinary connection-drawing).
+let altNetActive = false;
+let altNetPending = null; // null | {p} | {p, q, previewSide}
+
+// UI-level safeguard against a careless near-zero-length click pair,
+// which would otherwise silently hit core/tiling.js's MAX_TILES safety
+// cap (cce6a8b) rather than giving immediate, obvious feedback. Well
+// below any default net's own smallest edge (canvasW/9 at
+// shapeSizeFactor=9 - e.g. ~67px on a 600px canvas), but far above the
+// ~3px scale that measurably produces a pathological tile count (1.2-B
+// design session) - a rejected click just doesn't advance the state
+// machine (stays waiting for a valid Q), no separate error UI needed.
+const MIN_EDGE_LENGTH = 20;
+
+function shapeToN(shape) { return shape === 'triangle' ? 3 : (shape === 'square' ? 4 : 6); }
+
+// Which side of line PQ point m falls on, in this project's screen
+// coordinates (y increasing downward) - sign verified directly against
+// completeEdgeToRegularPolygon()'s own `side` parameter (1.2-C
+// implementation note): a positive cross product here matches side=+1.
+function sideOfLine(p, q, m) {
+    const cross = (q.x - p.x) * (m.y - p.y) - (q.y - p.y) * (m.x - p.x);
+    return cross >= 0 ? 1 : -1;
+}
+
+function cancelAltNetConstruction() {
+    altNetActive = false;
+    altNetPending = null;
+    const btn = select('#btn-alternative-net');
+    if (btn) btn.removeClass('active');
+}
+
+function handleAltNetClick(x, y) {
+    if (altNetPending === null) {
+        altNetPending = { p: { x, y } };
+        redraw();
+        return;
+    }
+    if (altNetPending.q === undefined) {
+        const q = { x, y };
+        if (dist(altNetPending.p.x, altNetPending.p.y, q.x, q.y) < MIN_EDGE_LENGTH) return; // reject - stay waiting for a valid Q
+        altNetPending.q = q;
+        altNetPending.previewSide = 1; // initial default; mouseMoved() corrects it live from here on
+        redraw();
+        return;
+    }
+    // Third click: confirm the currently-previewed side.
+    const { p, q, previewSide } = altNetPending;
+    const n = shapeToN(currentShape);
+    rebuildGridFromConstruction(p, q, n, previewSide);
+    renderLayerTabs(); // rebuildGridFromConstruction() clears additionalLayers - the layer views follow on the next tick, same as the shape-button handler
+    updateOffsetControls();
+    updateTimelineControls(); // rebuildGridFromConstruction() also clears timeline - see its own comment (core/state.js)
+    cancelAltNetConstruction();
+    redraw();
+}
+
+function mouseMoved() {
+    if (altNetActive && altNetPending && altNetPending.q !== undefined) {
+        altNetPending.previewSide = sideOfLine(altNetPending.p, altNetPending.q, { x: mouseX, y: mouseY });
+    }
+    if (showNodes || (altNetActive && altNetPending)) redraw();
+}
+
+// ----------------- INTERACTION ---------------------------------
+// Roadmap 1.9 (generalizing 1.3(b)'s base/overlay pair): which
+// connections/redo-stack pair mousePressed()/addRandomConnection()/
+// undo/redo/clear act on depends on activeLayer ('base' | integer
+// index into additionalLayers, see core/state.js). Reads return the
+// actual array (mutate via .push()/.pop() as before); clears need an
+// explicit setter since `arr = []` can't be expressed through a
+// returned reference.
+function activeConnections() { return activeLayer === 'base' ? connections : additionalLayers[activeLayer].connections; }
+function activeRedoStack() { return activeLayer === 'base' ? redoStack : additionalLayers[activeLayer].redoStack; }
+function clearActiveConnections() { if (activeLayer === 'base') connections = []; else additionalLayers[activeLayer].connections = []; }
+function clearActiveRedoStack() { if (activeLayer === 'base') redoStack = []; else additionalLayers[activeLayer].redoStack = []; }
+// Roadmap 1.12 stage 1 (node-resolution fix): same base/active-layer
+// split as the four helpers above, for the NODE array a click/random-
+// connection should resolve/create against - mousePressed()'s hit-test
+// and free-endpoint creation, and addRandomConnection()'s random pick,
+// previously always read the bare global `nodes` regardless of
+// activeLayer (the bug this fix addresses). Returns the actual array
+// (mutated via .push() by mousePressed(), same convention as
+// activeConnections()), not a copy.
+function activeNodes() { return activeLayer === 'base' ? nodes : additionalLayers[activeLayer].nodes; }
+// Roadmap 1.12 stage 1 pass 2: the {nodes, centroid, outerCorners}
+// gridOverride core/orbits.js's computeThemeLineOrbitTable() (and
+// friends) expects - undefined for the base sheet, so callers can pass
+// this straight through as the (optional) gridOverride argument and get
+// that function's own base-global default, byte-identical to omitting
+// it entirely. For an additional layer, its own PERSISTED fields (see
+// addLayer()/updateActiveLayerGrid()) - never an ephemeral layerGrid()
+// call, per the node-resolution fix this mirrors.
+// Roadmap [orbits.js shape-mismatch fix]: shape - this layer's own
+// shape, mirroring core/tiling.js's own override.shape embedding (the
+// same override-object convention, not a separate accessor) - callers
+// extract it as the shapeOverride argument to
+// computeThemeLineOrbitTable()/computeThemeLineName()/friends, the
+// same way tileHex()/tileSquare()/tileTriangle() extract override.shape
+// before passing it onward. Correctly undefined for the base sheet
+// (the whole object is undefined there), letting shapeOverride default
+// to currentShape exactly as before this fix.
+// Roadmap 1.12 stage 5 (symmetryMode axis) part 2: symmetryMode -
+// same role/convention as shape directly above, added now that a layer
+// has its own value (Phase 1) - callers extract it as the mode argument
+// to computeThemeLineOrbitTable()/computeThemeLineName()/friends,
+// mirroring core/tiling.js's own override.symmetryMode embedding
+// (Phase 1). Fixes patternNameSignature()/updatePatternNameStatus(),
+// previously the two live call sites still reading/passing the bare
+// global symmetryMode regardless of activeLayer - the same bug class
+// the shape fix above already addressed for shape, just not yet
+// extended to this axis (design session finding).
+function activeGridOverride() {
+    if (activeLayer === 'base') return undefined;
+    const layer = additionalLayers[activeLayer];
+    return { nodes: layer.nodes, centroid: layer.centroid, outerCorners: layer.outerCorners, shape: layer.shape, symmetryMode: layer.symmetryMode };
+}
+
+// Roadmap 1.10a: same base/active-layer split as above, for the face-
+// fill toggle - "pro Blatt/Sheet unabhängig" (design session point 7),
+// no cross-layer fill in 1.10a. The base sheet keeps its own showFaces
+// global (core/state.js, read directly by core/tiling.js's
+// drawTessellation()); additional layers get their own showFaces field
+// (see addLayer()). setActiveShowFaces() needs an explicit setter for
+// the same reason clearActiveConnections() does - `x = v` can't be
+// expressed through a returned reference for the base-sheet case.
+function activeShowFaces() { return activeLayer === 'base' ? showFaces : additionalLayers[activeLayer].showFaces; }
+function setActiveShowFaces(v) { if (activeLayer === 'base') showFaces = v; else additionalLayers[activeLayer].showFaces = v; }
+
+// Adds a new, empty additional layer and makes it the active one -
+// matches the natural workflow (add layer -> immediately start
+// clicking nodes to build its connections). No cap enforced here (see
+// 1.9 design session) - the UI is what practically targets 4 total
+// sheets.
+function addLayer() {
+    // Roadmap 1.12 stage 1: nodeCount/shapeSizeFactor - this layer's own
+    // order/size, independent of the base's. Starts identical to the
+    // base's current values (ratio=1, no visual change until the user
+    // adjusts them), matching the natural "layer starts as a copy of
+    // base" workflow addLayer() already establishes for connections.
+    //
+    // Roadmap 1.12 stage 1 (node-resolution fix): nodes/centroid/outerCorners
+    // are PERSISTED here (via one real layerGrid() call, core/forms.js),
+    // not re-derived fresh on every render/interaction - a fresh call
+    // would restart node ids at 1 every time (_subdivide*Interior()'s own
+    // `let id = 1`), silently discarding any free-endpoint node (1.3(a))
+    // pushed into a previous call's now-abandoned array. Refreshed again
+    // only if this layer's own nodeCount/shapeSizeFactor changes later
+    // (not yet wired - that's the paused pass 2's own point 4); never
+    // re-derived on every redraw/click the way it was before this fix.
+    // Roadmap 1.12 stage 3: rotation defaults to 0 (unrotated) - a pure
+    // render-time placement field, same status as offsetX/offsetY, so no
+    // grid-refresh implications at creation time either.
+    // Roadmap 1.12 stage 4 (data model only - no rendering/UI wiring
+    // yet): shape starts identical to the base's current shape, same
+    // "layer starts as a copy of base" convention as nodeCount/
+    // shapeSizeFactor above. Not yet threaded into the layerGrid() call
+    // below (that's a later, UI-driven pass's job - see the stage-4
+    // design session) - since layer.shape always equals currentShape at
+    // creation time regardless, layerGrid()'s own layerShape parameter
+    // (defaulting to baseShape when omitted, as it is here) already
+    // produces the exact same, correct same-shape result.
+    // Roadmap 1.12 stage 5 (symmetryMode axis) part 1 (data model +
+    // rendering only - no UI wiring yet): symmetryMode starts identical
+    // to the base's current global value, same "layer starts as a copy
+    // of base" convention as shape above - NOT a live reference to the
+    // global (a later base symmetryMode change must not silently drag
+    // this layer's own value along with it, the same one-time-copy
+    // semantics shape/nodeCount/shapeSizeFactor already have). Unlike
+    // shape, this needs no grid refresh of any kind at creation or
+    // change time - core/tiling.js's drawTessellation()/drawAdditionalLayers()
+    // already read it straight from this field (symmetryModeOverride),
+    // no layerGrid() involvement.
+    const layer = { connections: [], redoStack: [], offsetX: 0, offsetY: 0, rotation: 0, shape: currentShape, symmetryMode, enabled: true, showFaces: false, shapeSizeFactor };
+    projectLayerGridSpec(layer, Object.assign({}, baseGridSpecNow())); // task 061: gridSpec + the derived nodeCount, the one write; task 068b: a copy of the base's spec, its lage included (lage 1: fromLegacy as before)
+    const grid = layerGridForSpec(outerCorners, centroid, currentShape, shapeSizeFactor, layer.shapeSizeFactor, layer.gridSpec, layer.shape, canvasW, canvasH);
+    layer.nodes = grid.nodes;
+    layer.centroid = grid.centroid;
+    layer.outerCorners = grid.outerCorners;
+    additionalLayers.push(layer);
+    activeLayer = additionalLayers.length - 1;
+}
+
+// Removes one additional layer by index. Falls back to 'base' if it
+// was the active layer; otherwise shifts a numeric activeLayer down
+// by one if it pointed past the removed index, since splice() shifts
+// every later layer's index down by one too.
+//
+// Roadmap 1.8 Stage C phase (ii): if `index` is the timeline's
+// auto-created playback layer, the WHOLE timeline is torn down first
+// (can't continue without it) - clearTimelineState() restores every
+// keyframe's saved `enabled`. If `index` is instead one of the
+// timeline's (possibly many) keyframes, only THAT ONE keyframe leaves
+// the sequence - spliceKeyframeOutOfTimeline() (shared with
+// removeKeyframeFromTimeline()'s own, layer-preserving removal) - the
+// rest of the sequence survives, re-assembled around the gap. Dropping
+// to a single remaining keyframe orphans the now-unusable playback
+// layer, spliced out here too via the same local spliceOne() helper so
+// activeLayer's own index-shift logic isn't duplicated. A timeline
+// that ISN'T affected at all (the removed layer is some other,
+// unrelated one) survives with its own stored indices shifted the same
+// way activeLayer's is just below.
+function removeLayer(index) {
+    function spliceOne(i) {
+        additionalLayers.splice(i, 1);
+        if (activeLayer === i) {
+            activeLayer = 'base';
+        } else if (typeof activeLayer === 'number' && activeLayer > i) {
+            activeLayer -= 1;
+        }
+    }
+    let orphanedPlaybackIndex = null;
+    if (timeline && index === timeline.playbackLayerIndex) {
+        clearTimelineState(`Timeline removed: Layer ${index + 1} was deleted.`, 'refusal');
+    } else if (timeline && timeline.keyframeLayerIds.includes(index)) {
+        orphanedPlaybackIndex = spliceKeyframeOutOfTimeline(index);
+    }
+    spliceOne(index);
+    if (orphanedPlaybackIndex !== null) {
+        spliceOne(orphanedPlaybackIndex > index ? orphanedPlaybackIndex - 1 : orphanedPlaybackIndex);
+    }
+    if (timeline) {
+        timeline.keyframeLayerIds = timeline.keyframeLayerIds.map(i => i > index ? i - 1 : i);
+        if (timeline.playbackLayerIndex !== null && timeline.playbackLayerIndex > index) timeline.playbackLayerIndex -= 1;
+    }
+    // Roadmap 1.8 Stage A (design session's own isolated verification
+    // focus): a removed layer's own `playing` flag leaves with it (the
+    // object itself is gone, spliced out above), but isAnythingAnimating()
+    // only re-evaluates when SOMETHING calls syncAnimationLoopState() -
+    // without this call, removing the LAST still-playing layer would
+    // leave loop() running forever with nothing left to animate (not
+    // dangerous, but exactly the silent-leftover-loop risk the design
+    // session flagged as this feature's highest-risk piece).
+    syncAnimationLoopState();
+    // Refreshes the playback layer's interpolated content immediately
+    // (a mid-sequence removal changes which pair a given scrub position
+    // now resolves to) - the caller's own redraw() right after picks
+    // this up. Safe no-op when timeline is null.
+    applyTimelineFrame();
+    // Roadmap 1.8 Stage C: refreshes the Add/Remove/playback control
+    // visibility (a timeline may have just changed shape or been torn
+    // down above) - window-exposed by setup() the same way
+    // updateOffsetControls() is, since this is a top-level function.
+    updateTimelineControls();
+}
+
+// Roadmap 1.12 stage 1 pass 2: changes the ACTIVE layer's own nodeCount
+// and/or shapeSizeFactor (patch, e.g. {nodeCount: 4}) and refreshes that
+// layer's own persisted {nodes, centroid, outerCorners} via one real
+// layerGrid() call - the second (and, per addLayer()'s own comment,
+// final) trigger point layerGrid() needs beyond layer creation. No
+// analogous call is needed for base-level changes: rebuildGrid()/
+// rebuildGridFromConstruction() (core/state.js) already wipe
+// additionalLayers=[] unconditionally on any base-level change, so no
+// layer ever survives underneath a stale base grid.
+//
+// Also clears this layer's OWN connections/redoStack (not the base's,
+// not any other layer's) - its previous connections reference node ids
+// from the grid about to be replaced (_subdivide*Interior() restarts
+// ids at 1 for a new nodeCount, so old ids from a differently-sized
+// grid are stale, meaningless references), same reasoning rebuildGrid()
+// already applies at the base-sheet level. A no-op when activeLayer is
+// 'base' - this only ever changes an ADDITIONAL layer's own grid, never
+// the base's (which has its own Shape Size/Node Count controls).
+function updateActiveLayerGrid(patch) {
+    if (activeLayer === 'base') return;
+    const layer = additionalLayers[activeLayer];
+    // task 061: a patch's nodeCount is not assigned; it becomes the layer's gridSpec (projectLayerGridSpec writes layer.nodeCount)
+    const oldShape = layer.shape, oldSpecForShape = layerGridSpecOf(layer);   // task 068c3a
+    const { nodeCount: patchCount, ordnung: patchOrdnung, ...patchRest } = patch;   // task 068c2: the input sends the ordnung; align / catalog still send the legacy count
+    Object.assign(layer, patchRest);
+    let layerCount = Number.isInteger(patchOrdnung) && patchOrdnung >= 1 ? countForOrdnung(layer.shape, patchOrdnung) : Number.isInteger(patchCount) && patchCount >= 1 ? patchCount : layer.nodeCount;
+    // task 068c3a: a shape change on its own keeps the layer's ORDNUNG (the clamp below limits it), not the legacy count
+    if (patch.shape !== undefined && patch.shape !== oldShape && !(Number.isInteger(patchOrdnung) && patchOrdnung >= 1) && !(Number.isInteger(patchCount) && patchCount >= 1)) layerCount = countForOrdnung(layer.shape, oldSpecForShape.ordnung);
+    // Defence in depth for every caller (shape switch, catalog link, align): a layer's node count never exceeds its OWN
+    // shape's ceiling (core/forms.js NODE_COUNT_MAX). The caller that knows the UI reports it (returned below).
+    let clamped = null;
+    const keepLage = layerGridSpecOf(layer).lage;   // task 068b: a layer keeps its lage through every patch (size, count, shape)
+    const layerMax = gridMaxCount(layer.shape, keepLage);
+    if (layerCount > layerMax) { clamped = { shape: layer.shape, from: layerCount, to: layerMax }; layerCount = layerMax; }
+    projectLayerGridSpec(layer, gridSpecForCount(layer.shape, layerCount, keepLage));
+    layer.connections = [];
+    layer.redoStack = [];
+    // Roadmap 1.12 stage 4 (UI) bugfix: layer.shape (post-patch, so a
+    // {shape:...} patch takes effect on the SAME refresh that applies
+    // it) and canvasW/canvasH were previously omitted here entirely -
+    // layerGrid()'s layerShape parameter silently defaulted to baseShape
+    // (currentShape) every time, so its cross-shape branch (which needs
+    // canvasW/canvasH to size the new polygon - buildTriangleGrid()/
+    // buildSquareGrid()/buildHexGrid()) was never actually reachable
+    // through this function, for ANY layer - latent and harmless before
+    // this session, since nothing could set a layer's shape differently
+    // from the base's before this control existed, but a real bug now
+    // that it does: without this, a shape-changing patch would update
+    // layer.shape itself (Object.assign above) while silently leaving
+    // the actual persisted grid geometry unchanged (still the base's
+    // shape) - see the design session's own before/after verification.
+    const grid = layerGridForSpec(outerCorners, centroid, currentShape, shapeSizeFactor, layer.shapeSizeFactor, layer.gridSpec, layer.shape, canvasW, canvasH);
+    layer.nodes = grid.nodes;
+    layer.centroid = grid.centroid;
+    layer.outerCorners = grid.outerCorners;
+    return clamped; // null, or {shape, from, to} when the node count had to be clamped
+}
+
+// Roadmap 1.12 stage 3: normalizes a raw rotation input value into
+// [0,360) and writes it to the ACTIVE layer - a no-op when activeLayer
+// is 'base'. Unlike updateActiveLayerGrid() above, this never clears
+// connections/redoStack and never calls layerGrid() - rotation is a
+// pure render-time placement parameter (like offsetX/offsetY), not
+// baked into stored nodes/outerCorners, so no grid refresh is ever
+// needed when it changes (see the stage-3 design session's own point
+// 1). Extracted as its own function (mirroring updateActiveLayerGrid()'s
+// own separation of DOM wiring from state-mutation logic), so it's
+// directly testable headlessly without needing the DOM at all - the
+// [0,360) wraparound itself is a pure UI nicety (avoids an ever-growing
+// spinner value), not a mathematical requirement: rotateAround() (core/
+// symmetry.js) handles any angle correctly regardless.
+function setActiveLayerRotation(rawValue) {
+    if (activeLayer === 'base') return;
+    let v = parseFloat(rawValue) || 0;
+    v = ((v % 360) + 360) % 360;
+    additionalLayers[activeLayer].rotation = v;
+}
+
+// Roadmap 1.12 stage 5 (symmetryMode axis) part 3: writes the ACTIVE
+// layer's own symmetryMode - a no-op when activeLayer is 'base', same
+// guard as setActiveLayerRotation() directly above. Pure property
+// write, mirroring that function exactly (not updateActiveLayerGrid()'s
+// clear-and-rebuild pattern): symmetryMode is a pure render-time
+// parameter (Phase 1's own core/tiling.js module-docblock classifies
+// it alongside curveType/rotation), never baked into stored nodes/
+// connections, so no grid refresh or connections/redoStack clearing is
+// ever needed when it changes - core/tiling.js's drawTessellation()/
+// drawAdditionalLayers() (Phase 1) already read straight from this
+// field via symmetryModeOverride. Takes an ALREADY-RESOLVED raw mode
+// string (unlike setActiveLayerRotation()'s raw numeric input, which
+// normalizes itself) - the caller (setup()'s layer-mode/fold click
+// handlers) resolves category+fold to a raw value via the same
+// resolveSymmetryMode()/normSym() pipeline the base's own control uses,
+// since that resolution needs this layer's own shape (a setup()-local
+// closure concern), not something this standalone setter should
+// re-derive itself.
+function setActiveLayerSymmetryMode(resolvedMode) {
+    if (activeLayer === 'base') return;
+    additionalLayers[activeLayer].symmetryMode = resolvedMode;
+}
+
+// ----------------- LAYER ANIMATION (Roadmap 1.8 Stage A) -------------
+// Layer-level keyframe animation - interpolates a layer's already-
+// existing continuous parameters (offsetX/offsetY from 1.9/1.12 stage
+// 2, rotation from 1.12 stage 3, shapeSizeFactor from 1.12 stage 1)
+// between a captured start and end state over time. Additional layers
+// only, never the base - offsetX/offsetY/rotation are already layer-
+// only concepts (the base has none), and animating the base's own
+// shapeSizeFactor would mean the shared coordinate-scale reference
+// every other layer's positioning depends on changes over time, a
+// materially different, more invasive feature (design session).
+//
+// layer.animation, once created (undefined until the first Set Start/
+// End capture), holds:
+//   fromOffsetX/fromOffsetY/fromRotation/fromShapeSizeFactor - the
+//     captured start state
+//   toOffsetX/toOffsetY/toRotation/toShapeSizeFactor - the captured
+//     end state
+//   durationMs - playback length
+//   elapsedMs - progress while PAUSED (authoritative then); while
+//     PLAYING, derived progress is millis()-startTime instead, and
+//     elapsedMs is kept in sync every frame purely so pausing/resuming/
+//     scrubbing never has to distinguish "where was it stored" - it's
+//     always readable from elapsedMs regardless of playing state once
+//     applyLayerAnimationFrame() has run at least once this frame.
+//   startTime - millis() this playback segment's t=0 corresponds to;
+//     recomputed on every play so a paused-then-resumed animation
+//     continues from elapsedMs, not from the beginning.
+//   playing - whether this layer is actively advancing right now.
+//
+// No new rendering-path plumbing: core/tiling.js/core/symmetry.js
+// already read layer.offsetX/rotation/shapeSizeFactor unconditionally -
+// animation just means something other than the mouse is now writing
+// those same fields on a timer (design session point 2's central
+// reasoning for choosing this data model over two-full-layers-as-
+// keyframes).
+function ensureLayerAnimation(layer) {
+    if (!layer.animation) {
+        layer.animation = {
+            fromOffsetX: layer.offsetX, fromOffsetY: layer.offsetY,
+            fromRotation: layer.rotation || 0, fromShapeSizeFactor: layer.shapeSizeFactor,
+            toOffsetX: layer.offsetX, toOffsetY: layer.offsetY,
+            toRotation: layer.rotation || 0, toShapeSizeFactor: layer.shapeSizeFactor,
+            durationMs: 2000, elapsedMs: 0, startTime: null, playing: false,
+        };
+    }
+    return layer.animation;
+}
+
+// Roadmap 1.8 Stage B (connections morph): resolves this layer's
+// CURRENT connections/nodes into raw {x1,y1,x2,y2} coordinate pairs -
+// the same lookup drawShapeCell() itself does (nodeArr.find(n => n.id
+// === conn[0])), but done once at capture time rather than at render
+// time, so the captured shape survives independently of whatever the
+// layer's own connections/nodes go on to become afterward (the person
+// keeps editing/rebuilding this SAME layer to author the other
+// endpoint of the morph - see setActiveLayerAnimationStart()/End()
+// below). A connection with a dangling/missing endpoint id is skipped,
+// the same defensive guard drawShapeCell() itself already has
+// (`if (!n1 || !n2) continue`) - not reachable via any shipped UI path,
+// kept consistent rather than assumed impossible.
+function resolveConnectionsToCoords(layer) {
+    const coords = [];
+    for (const conn of layer.connections) {
+        if (conn.length !== 2) continue;
+        const n1 = layer.nodes.find(n => n.id === conn[0]);
+        const n2 = layer.nodes.find(n => n.id === conn[1]);
+        if (!n1 || !n2) continue;
+        coords.push({ x1: n1.x, y1: n1.y, x2: n2.x, y2: n2.y });
+    }
+    return coords;
+}
+
+// Roadmap 1.8 Stage B: stable synthetic node ids for the interpolated
+// morph render substitute (applyLayerConnectionsMorphFrame() below) -
+// assigned ONCE per (fromConnections,toConnections) pairing, never
+// regenerated per frame. This is what keeps a 'free'-styled morphing
+// line's curve seed (core/curves.js's _connectionSeed(), keyed off
+// id1/id2) STABLE across the whole animation instead of re-rolling its
+// noise pattern every frame (verified via a real browser test - see
+// this stage's implementation report). Only regenerated when the
+// pairing's own length changes (a genuinely new Start/End capture with
+// a different, still-matching, line count) - recapturing with the SAME
+// count keeps the previous ids, so an in-flight animation's noise
+// pattern isn't disturbed by an unrelated recapture of the other side.
+function ensureLayerMorphIds(anim, count) {
+    if (!anim.morphIds || anim.morphIds.length !== count) {
+        anim.morphIds = [];
+        for (let i = 0; i < count; i++) anim.morphIds.push([i * 2, i * 2 + 1]);
+    }
+}
+
+// Captures the ACTIVE layer's CURRENT live offsetX/offsetY/rotation/
+// shapeSizeFactor as its animation's start (Set Start) or end (Set
+// End) state - explicit-action convention, same as "Align to base"
+// (never automatic). A no-op when activeLayer is 'base'.
+// Roadmap 1.8 Stage B: also resolves+deep-copies this layer's CURRENT
+// connections into anim.fromConnections/toConnections (see
+// resolveConnectionsToCoords() above) - independent of the transform
+// fields above (always captured unconditionally, unaffected by
+// anything below). A line-count mismatch against the OTHER side's
+// already-captured connections is refused with a status message
+// (#layer-anim-connections-status, see setup()'s
+// setLayerAnimConnectionsStatus()) rather than silently truncating or
+// crashing - matching this project's established "refuse, don't
+// silently do something wrong" convention (e.g. core/tiling.js's
+// clampTileCount()). layer._morphNodes/_morphConnections (the render
+// substitute - see core/tiling.js) are cleared unconditionally on every
+// Set Start/End click so the live, currently-edited connections render
+// normally until the next Play/scrub recomputes the substitute -
+// otherwise a stale substitute from a PREVIOUS animation would keep
+// shadowing whatever the person is now clicking together for the next
+// Start/End pattern.
+function setActiveLayerAnimationStart() {
+    if (activeLayer === 'base') return;
+    const layer = additionalLayers[activeLayer];
+    const anim = ensureLayerAnimation(layer);
+    anim.fromOffsetX = layer.offsetX;
+    anim.fromOffsetY = layer.offsetY;
+    anim.fromRotation = layer.rotation || 0;
+    anim.fromShapeSizeFactor = layer.shapeSizeFactor;
+    layer._morphNodes = null;
+    layer._morphConnections = null;
+    const resolved = resolveConnectionsToCoords(layer);
+    if (anim.toConnections && resolved.length !== anim.toConnections.length) {
+        if (window.setLayerAnimConnectionsStatus) window.setLayerAnimConnectionsStatus(
+            `Line count mismatch: Start has ${resolved.length}, End has ${anim.toConnections.length} - counts must match. Start connections NOT captured.`
+        );
+        return;
+    }
+    anim.fromConnections = resolved;
+    if (anim.toConnections) ensureLayerMorphIds(anim, resolved.length);
+    if (window.setLayerAnimConnectionsStatus) window.setLayerAnimConnectionsStatus('');
+}
+function setActiveLayerAnimationEnd() {
+    if (activeLayer === 'base') return;
+    const layer = additionalLayers[activeLayer];
+    const anim = ensureLayerAnimation(layer);
+    anim.toOffsetX = layer.offsetX;
+    anim.toOffsetY = layer.offsetY;
+    anim.toRotation = layer.rotation || 0;
+    anim.toShapeSizeFactor = layer.shapeSizeFactor;
+    layer._morphNodes = null;
+    layer._morphConnections = null;
+    const resolved = resolveConnectionsToCoords(layer);
+    if (anim.fromConnections && resolved.length !== anim.fromConnections.length) {
+        if (window.setLayerAnimConnectionsStatus) window.setLayerAnimConnectionsStatus(
+            `Line count mismatch: End has ${resolved.length}, Start has ${anim.fromConnections.length} - counts must match. End connections NOT captured.`
+        );
+        return;
+    }
+    anim.toConnections = resolved;
+    if (anim.fromConnections) ensureLayerMorphIds(anim, resolved.length);
+    if (window.setLayerAnimConnectionsStatus) window.setLayerAnimConnectionsStatus('');
+}
+
+function setActiveLayerAnimationDuration(rawValue) {
+    if (activeLayer === 'base') return;
+    const layer = additionalLayers[activeLayer];
+    const anim = ensureLayerAnimation(layer);
+    let v = parseFloat(rawValue);
+    if (!Number.isFinite(v) || v <= 0) v = 2000;
+    anim.durationMs = v;
+}
+
+// Play/Pause toggle for the ACTIVE layer's animation - a no-op when
+// activeLayer is 'base'. Resuming continues from anim.elapsedMs (not
+// from the beginning): startTime is recomputed so millis()-startTime
+// reproduces the same elapsed progress the pause left off at.
+function toggleActiveLayerAnimationPlayback() {
+    if (activeLayer === 'base') return;
+    const layer = additionalLayers[activeLayer];
+    const anim = ensureLayerAnimation(layer);
+    if (anim.playing) {
+        anim.elapsedMs = Math.max(0, Math.min(anim.durationMs, millis() - anim.startTime));
+        anim.playing = false;
+    } else {
+        // Roadmap 1.8 Stage A: play-once-and-stop (design session point
+        // 3) - restarts from the beginning once it has already reached
+        // the end, rather than silently doing nothing on a second Play
+        // click.
+        if (anim.elapsedMs >= anim.durationMs) anim.elapsedMs = 0;
+        sessionFlushNow(); // the layer animation overwrites saved layer fields while it plays: save what is pending BEFORE it starts
+        anim.startTime = millis() - anim.elapsedMs;
+        anim.playing = true;
+    }
+    syncAnimationLoopState();
+}
+
+// Manual scrub (design session point 4 - bidirectional progress
+// control): sets progress directly to `t` (0..1) and pauses if it was
+// playing, matching a scrub gesture's usual "grab it, it stops"
+// convention. Applied immediately (not waiting for the next natural
+// animation frame) so dragging the slider while noLoop() is active
+// still shows a live preview - the caller is responsible for a single
+// redraw() afterward, same as every other manual-interaction control.
+function setActiveLayerAnimationProgress(t) {
+    if (activeLayer === 'base') return;
+    const layer = additionalLayers[activeLayer];
+    const anim = ensureLayerAnimation(layer);
+    anim.elapsedMs = Math.max(0, Math.min(1, t)) * anim.durationMs;
+    anim.playing = false;
+    syncAnimationLoopState();
+    applyLayerAnimationFrame(layer);
+}
+
+// Shortest-angular-path interpolation (design session point 3) - plain
+// linear interpolation of the raw stored degree values would sweep the
+// LONG way around whenever the short path crosses the 0/360 boundary
+// (e.g. 350 -> 10 linearly sweeps 340 degrees the wrong way instead of
+// the natural 20 degrees). +540 (not +180) before the modulo keeps the
+// dividend always positive despite JS's sign-of-dividend % semantics -
+// verified concretely: 350->10 gives delta=20 (the short way), matching
+// hand computation, not just assumed algebraically.
+function lerpAngleShortest(fromDeg, toDeg, t) {
+    const delta = ((toDeg - fromDeg + 540) % 360) - 180;
+    const result = fromDeg + delta * t;
+    return ((result % 360) + 360) % 360;
+}
+
+// Recomputes ONE layer's live offsetX/offsetY/rotation/shapeSizeFactor
+// from its animation's current progress - called for every layer that
+// HAS an animation object on every draw() call (not just while
+// playing), so a paused/scrubbed state renders correctly too, not only
+// live playback. Auto-stops at t=1 (play-once, not looping) - the
+// caller (draw()) re-checks isAnythingAnimating() afterward so loop()
+// correctly ends the instant the last playing layer finishes, not one
+// frame late.
+function applyLayerAnimationFrame(layer) {
+    const anim = layer.animation;
+    if (!anim) return;
+    let elapsed = anim.playing ? (millis() - anim.startTime) : anim.elapsedMs;
+    elapsed = Math.max(0, Math.min(anim.durationMs, elapsed));
+    if (anim.playing) {
+        anim.elapsedMs = elapsed;
+        if (elapsed >= anim.durationMs) anim.playing = false;
+    }
+    const t = anim.durationMs > 0 ? elapsed / anim.durationMs : 1;
+    layer.offsetX = lerp(anim.fromOffsetX, anim.toOffsetX, t);
+    layer.offsetY = lerp(anim.fromOffsetY, anim.toOffsetY, t);
+    layer.rotation = lerpAngleShortest(anim.fromRotation, anim.toRotation, t);
+    layer.shapeSizeFactor = lerp(anim.fromShapeSizeFactor, anim.toShapeSizeFactor, t);
+    applyLayerConnectionsMorphFrame(layer, anim, t);
+}
+
+// Roadmap 1.8 Stage B (connections morph): recomputes this layer's
+// interpolated connections-morph render substitute
+// (layer._morphNodes/_morphConnections) for the CURRENT progress t -
+// read by core/tiling.js's drawTessellation() override object and
+// drawAdditionalLayers()'s drawShapeCell() call INSTEAD OF
+// layer.nodes/layer.connections whenever set (see their own comments).
+// Computed ONCE per draw() call here (not per tile) - the same
+// "mutate once, let the existing per-tile loop pick it up for free"
+// strategy the four transform fields above already use, not a new
+// per-tile mechanism.
+//
+// Synthetic node ids (anim.morphIds, see ensureLayerMorphIds()) are
+// assigned once and reused every frame here, never regenerated - the
+// requirement a 'free'-styled morphing line's curve seed (id-keyed,
+// core/curves.js's _connectionSeed()) needs to stay STABLE across the
+// whole animation instead of re-rolling its noise pattern every frame
+// (verified concretely via a real browser test tracking one 'free'
+// line's rendered path across several frames - see this stage's
+// implementation report).
+//
+// null/null (not an empty array) whenever no valid pairing exists -
+// no fromConnections/toConnections captured yet, a length mismatch
+// between them (refused at capture time, see setActiveLayerAnimation
+// Start()/End(), but defended here too rather than trusting the
+// invariant blindly), or an empty pairing - so the two render call
+// sites' `layer._morphNodes || layer.nodes` fallback correctly reverts
+// to this layer's own live connections/nodes: both right after Set
+// Start/End (before Play/scrub ever runs this) and for any layer that
+// has never used the connections-morph feature at all.
+function applyLayerConnectionsMorphFrame(layer, anim, t) {
+    if (!anim.fromConnections || !anim.toConnections ||
+        anim.fromConnections.length !== anim.toConnections.length ||
+        anim.fromConnections.length === 0) {
+        layer._morphNodes = null;
+        layer._morphConnections = null;
+        return;
+    }
+    ensureLayerMorphIds(anim, anim.fromConnections.length);
+    const morphNodes = [];
+    const morphConnections = [];
+    for (let i = 0; i < anim.fromConnections.length; i++) {
+        const from = anim.fromConnections[i], to = anim.toConnections[i];
+        const idA = anim.morphIds[i][0], idB = anim.morphIds[i][1];
+        morphNodes.push({ id: idA, x: lerp(from.x1, to.x1, t), y: lerp(from.y1, to.y1, t), free: true });
+        morphNodes.push({ id: idB, x: lerp(from.x2, to.x2, t), y: lerp(from.y2, to.y2, t), free: true });
+        morphConnections.push([idA, idB]);
+    }
+    layer._morphNodes = morphNodes;
+    layer._morphConnections = morphConnections;
+}
+
+// Whether loop()/noLoop() should be active right now - the single
+// source of truth both toggleActiveLayerAnimationPlayback() and
+// draw()'s own per-frame re-check consult, so multiple independently-
+// playing layers (1.12's own per-layer-independence precedent - no
+// artificial "only one animates at a time" restriction) and a layer
+// finishing mid-playback both correctly resolve to the same answer.
+// Roadmap 1.8 Stage C phase (i): also true while the timeline is
+// playing - a single shared loop()/noLoop() gate covering both the
+// per-layer transform/connections animation (Stage A/B) and the
+// persistent-layer timeline (Stage C), same "loop() only while
+// something is actually moving" discipline for both.
+function isAnythingAnimating() {
+    return additionalLayers.some(l => l.animation && l.animation.playing) || !!(timeline && timeline.playing) || !!(baseNetAnimation && baseNetAnimation.playing);
+}
+
+// Phase 3 autosave (P2): the session writer (core/session-writer.js, created at the end of setup()) writes nothing while something plays - a layer animation
+// overwrites saved layer fields (offset, rotation, shapeSizeFactor) frame by frame - and is flushed once just before a playback starts.
+function sessionFlushNow() { if (window.sessionWriter) window.sessionWriter.flush(); }
+
+// ----------------- NET ANIMATION (Group E, Stage 1 - the Stage A "capture two states, lerp" pattern) --------------------
+// STATUS: FUNCTIONAL, TESTED, BUT WITHOUT A UI ENTRY POINT (as of this change). This standalone net animation (Case B2: baseNetAnimation, Set Start /
+// Set End / Play / progress) was superseded by the Timeline-coupled net animation (Case B1, timeline.netStates, driven by the Timeline's own clock) and
+// its controls were REMOVED FROM THE UI by the person's decision (their workflow always builds Timelines with a different pattern per keyframe). The
+// state, these functions, netTransformNow()'s standalone branch (core/netwarp.js) and tools/netwarp/test-netwarp-animation.js were deliberately LEFT IN
+// PLACE - unreachable from the UI, not abandoned and not broken - so that the mechanism can be given a control again without re-deriving it. Nothing
+// here can become live any more (nothing calls captureNetAnimationEnd / toggleNetAnimationPlayback / setNetAnimationProgress), so baseNetAnimation stays
+// null and netTransformNow() falls straight through to the author net (or the Timeline frame). Do not delete it as dead code without asking.
+// baseNetAnimation (core/state.js) holds two captured AUTHOR nets and a clock. It NEVER writes the frame it computes into
+// baseNetTransform: the controls read and write the author spec, and netTransformNow() (core/netwarp.js) derives the net that is
+// drawn / hit-tested / exported from (author spec, animation, t). Stage A's layer animation overwrote the edited value on every
+// redraw; here that cannot happen, because there is nothing to overwrite. Only the continuous parameters (strength, focus) of a
+// same-family law animate; anything discrete that differs between Start and End is refused at capture, visibly.
+function ensureNetAnimation() {
+    if (!baseNetAnimation) baseNetAnimation = { from: null, to: null, durationMs: 2000, elapsedMs: 0, playing: false, startTime: 0, live: false, t: 0 };
+    return baseNetAnimation;
+}
+function setNetAnimationStatus(text) { if (window.setNetAnimStatusText) window.setNetAnimStatusText(text); }
+// which = 'from' | 'to': captures the AUTHOR net (a regular net is captured as {regular: true} - compatible with any domain)
+function captureNetAnimationEnd(which) {
+    if (timelineNetCoupled()) { setNetAnimationStatus('The timeline drives the net.'); return false; }
+    const a = ensureNetAnimation(), label = which === 'from' ? 'Start' : 'End';
+    const spec = netSpecSnapshot();   // task 127: the family follows the shape
+    const other = which === 'from' ? a.to : a.from;
+    if (other) {
+        const c = which === 'from' ? netAnimationCompat(spec, other) : netAnimationCompat(other, spec);
+        if (!c.ok) { setNetAnimationStatus(`${label} NOT captured: ${c.reason}. Only the strength and focus of a same-family law (sinus/tangens, or geometric) can be animated - set the discrete choices (domain, macro cells, Alternate tiles, law family) the same at both ends.`); return false; }
+    }
+    a.playing = false; a.live = false; a[which] = spec;   // re-capturing shows the author net again (as Stage B's Set Start/End clear their render substitute)
+    syncAnimationLoopState();
+    setNetAnimationStatus(a.from && a.to ? `${label} captured. Ready: Play or drag the progress slider.` : `${label} captured. Now set the other end.`);
+    return true;
+}
+// Case B1: while the Timeline drives the net (>= 2 keyframes, a net state at every one) the standalone animation is locked out: two clocks on
+// one net make no sense. Called whenever the coupling can change (add, re-capture, remove).
+function enforceNetAnimationLockout() {
+    if (timelineNetCoupled() && baseNetAnimation && (baseNetAnimation.playing || baseNetAnimation.live)) {
+        baseNetAnimation.playing = false; baseNetAnimation.live = false;
+        syncAnimationLoopState();
+    }
+    if (window.syncNetAnimationLock) window.syncNetAnimationLock();
+}
+// The per-keyframe "Net" button: captures the current AUTHOR net for keyframe `pos`, refused (visibly) when it cannot be interpolated with
+// an adjacent keyframe's net.
+function recaptureTimelineKeyframeNet(pos) {
+    if (!timeline || pos < 0 || pos >= timeline.keyframeLayerIds.length) return;
+    const snap = netSpecSnapshot();
+    for (const n of [pos - 1, pos + 1]) {
+        const other = timeline.netStates && timeline.netStates[n];
+        if (n < 0 || n >= timeline.keyframeLayerIds.length || !other) continue;
+        const c = n < pos ? netAnimationCompat(other, snap) : netAnimationCompat(snap, other);
+        if (!c.ok) { setTimelineStatus(`Net of keyframe ${pos + 1} NOT captured: it cannot be interpolated with keyframe ${n + 1}'s net - ${c.reason}.`, 'refusal'); return; }
+    }
+    if (!timeline.netStates) timeline.netStates = timeline.keyframeLayerIds.map(() => null);
+    timeline.netStates[pos] = snap;
+    timeline.netLive = false;
+    enforceNetAnimationLockout();
+    if (timeline.playbackLayerIndex !== null) applyTimelineFrame(); else setTimelineStatus('');
+    if (window.updateTimelineControls) window.updateTimelineControls();
+    redraw();
+}
+// Recomputes the frame's progress from the clock (the Stage A applyLayerAnimationFrame() bookkeeping); called every draw().
+function applyNetAnimationFrame() {
+    const a = baseNetAnimation;
+    if (!a || !a.live || !a.from || !a.to) return;
+    let elapsed = a.playing ? (millis() - a.startTime) : a.elapsedMs;
+    elapsed = Math.max(0, Math.min(a.durationMs, elapsed));
+    if (a.playing) { a.elapsedMs = elapsed; if (elapsed >= a.durationMs) a.playing = false; }
+    a.t = a.durationMs > 0 ? elapsed / a.durationMs : 1;
+}
+function toggleNetAnimationPlayback() {
+    if (timelineNetCoupled()) { setNetAnimationStatus('The timeline drives the net.'); return; }
+    const a = baseNetAnimation;
+    if (!a || !a.from || !a.to) { setNetAnimationStatus('Set Start and Set End first.'); return; }
+    if (a.playing) { a.elapsedMs = Math.max(0, Math.min(a.durationMs, millis() - a.startTime)); a.playing = false; }
+    else { if (a.elapsedMs >= a.durationMs) a.elapsedMs = 0; a.startTime = millis() - a.elapsedMs; a.playing = true; a.live = true; }
+    syncAnimationLoopState();
+    applyNetAnimationFrame();
+    redraw();
+}
+function setNetAnimationProgress(t) {
+    if (timelineNetCoupled()) { setNetAnimationStatus('The timeline drives the net.'); return; }
+    const a = baseNetAnimation;
+    if (!a || !a.from || !a.to) { setNetAnimationStatus('Set Start and Set End first.'); return; }
+    a.elapsedMs = Math.max(0, Math.min(1, t)) * a.durationMs; a.playing = false; a.live = true;
+    syncAnimationLoopState();
+    applyNetAnimationFrame();
+    redraw();
+}
+
+// Roadmap 1.8 Stage A (design session point 1's own scoping condition):
+// loop() is activated ONLY while something is actually animating, never
+// left on permanently - the app's whole efficiency discipline (pattern-
+// name-status caching, the cross-layer fill offscreen-buffer cache)
+// exists specifically because redraw is normally event-driven, not
+// continuous; leaving loop() on after playback ends would silently
+// undo that for the other 99% of the time nothing is moving. Guarded by
+// animationLoopActive so redundant loop()/noLoop() calls are avoided
+// (harmless either way, but this keeps the intent explicit at each call
+// site rather than relying on p5's own idempotence).
+//
+// Deliberately does NOT call redraw() itself when stopping - this is
+// called from two genuinely different contexts that need different
+// repaint handling: (1) from WITHIN draw() itself (every frame, to stop
+// the instant the last playing layer finishes) - the CURRENT draw()
+// call is already mid-execution and will finish painting the correct
+// final frame on its own; calling redraw() here would recursively
+// re-enter draw() from inside draw() itself, a real bug caught before
+// this shipped, not a hypothetical one. (2) from a click handler
+// OUTSIDE draw() (Pause, Set Start/End, a layer being removed
+// mid-playback) - every one of those call sites already ends with its
+// own explicit redraw() (this app's established "redraw() after every
+// manual state change" convention), so an extra one here would only be
+// redundant, never load-bearing.
+let animationLoopActive = false;
+function syncAnimationLoopState() {
+    const shouldBeLooping = isAnythingAnimating();
+    if (shouldBeLooping && !animationLoopActive) {
+        animationLoopActive = true;
+        loop();
+    } else if (!shouldBeLooping && animationLoopActive) {
+        animationLoopActive = false;
+        noLoop();
+    }
+}
+
+// ----------------- TIMELINE (Roadmap 1.8 Stage C) ----------------------
+// Persistent-layer keyframe timeline, superseding Stage B's ephemeral
+// Set Start/End capture model: a captured fromConnections/toConnections
+// snapshot can't be revisited and can't grow beyond two states. Here,
+// each keyframe IS one of additionalLayers[]'s own real, persistent,
+// independently-editable entries - revisiting one is just switching to
+// that layer's own tab and editing normally. `timeline` (core/state.js)
+// is a TOP-LEVEL concept, not nested inside any one layer's own
+// `animation` field - a transition spanning several independent layers
+// has no single layer to belong to. Stage B's own mechanism
+// (ensureLayerAnimation() etc., above) stays fully intact and
+// unmodified alongside this.
+//
+// Roadmap 1.8 Stage C phase (ii): generalized from phase (i)'s fixed
+// two named keyframes to an ORDERED ARRAY of any length >= 1
+// (core/state.js's own comment on `timeline` has the full shape/
+// reasoning). The one part that generalizes with genuinely NO change at
+// all is the interpolation math itself - applyLayerConnectionsMorphFrame()
+// (Stage B, still below, untouched) only ever sees ONE resolved
+// {fromConnections, toConnections} pair and ONE local t; this phase's
+// entire job is finding the RIGHT pair + local t for the current global
+// time (resolveTimelineSegment() below) and feeding it in exactly the
+// same shape phase (i) always did.
+
+// Roadmap 1.8 Stage C phase (ii): the eligibility of adding a layer to the
+// timeline - the active layer must be a real, ordinary layer (not base,
+// not the playback layer) and not already part of the sequence. Finer
+// content checks (shape/order/symmetryMode/line-count matching the
+// PREVIOUS keyframe) are only evaluated when the layer is actually added
+// (the diamond) - see addLayerToTimeline() - and reported as a notice.
+function canAddLayerToTimeline() {
+    if (activeLayer === 'base') return false;
+    const layer = additionalLayers[activeLayer];
+    if (!layer || layer.isTimelinePlayback) return false;
+    if (timeline && timeline.keyframeLayerIds.includes(activeLayer)) return false;
+    return true;
+}
+
+// Roadmap 1.8 Stage C phase (ii): adding a layer to the timeline (the diamond) - appends the
+// CURRENTLY ACTIVE layer (typically just pasted or just built) as the
+// next keyframe. Design session point 3: this directly matches the
+// stated paste-then-add authoring rhythm - addLayer()/
+// applyCatalogPatternToNewLayer() already leave the new layer as
+// activeLayer, so no separate picker is needed.
+//
+// The FIRST call (timeline is null) just starts tracking - one keyframe
+// alone has no segment to render, so no playback layer is created yet
+// (see below) and no shape/order/symmetryMode/line-count validation is
+// possible or needed. Every SUBSEQUENT call validates the new keyframe
+// against the PREVIOUS one only (not against every earlier keyframe
+// individually) - sufficient by transitivity, since every earlier
+// consecutive pair already validated equal to each other when it was
+// added, matching/refusing exactly as phase (i)'s own single-pair check
+// did (design session point 4 of the original phase (i) session: this
+// constraint is sharper than the coordinate math itself needs, but
+// required for the playback layer's own FIXED tessellation scheme,
+// established from keyframe 0, to mean the same thing for every
+// keyframe's content).
+function addLayerToTimeline() {
+    if (!canAddLayerToTimeline()) return;
+    const idx = activeLayer;
+    const layer = additionalLayers[idx];
+
+    if (!timeline) {
+        timeline = {
+            keyframeLayerIds: [idx],
+            playbackLayerIndex: null,
+            segmentDurationsMs: [],
+            segmentPairings: [],
+            segmentFlips: [],
+            segmentMembers: [],
+            // Case B1: one captured net per KEYFRAME, parallel to keyframeLayerIds (null = none); netLive = the Timeline's frame, not the author
+            // net, is what is drawn (set by play/scrub, ended by an author edit of the net controls while paused)
+            netStates: [window.timelineIncludeNet && window.timelineIncludeNet() ? netSpecSnapshot() : null], netLive: false,
+            elapsedMs: 0, startTime: null, playing: false,
+        };
+        layer._timelineSavedEnabled = layer.enabled;
+        layer.enabled = false;
+        setTimelineStatus('');
+        renderLayerTabs();
+        updateOffsetControls();
+        updateTimelineControls();
+        redraw();
+        return;
+    }
+
+    const prevIdx = timeline.keyframeLayerIds[timeline.keyframeLayerIds.length - 1];
+    const prevLayer = additionalLayers[prevIdx];
+    if (layer.shape !== prevLayer.shape || layer.nodeCount !== prevLayer.nodeCount ||
+        layer.shapeSizeFactor !== prevLayer.shapeSizeFactor || layer.symmetryMode !== prevLayer.symmetryMode) {
+        setTimelineStatus(`Layer ${idx + 1} must share the same shape, order, size and symmetry mode as Layer ${prevIdx + 1} to extend the timeline.`, 'refusal');
+        return;
+    }
+    if (layerGridSpecOf(layer).lage !== layerGridSpecOf(prevLayer).lage) {   // task 068b: keyframes of lage 1 and lage 2 are different lattices and cannot be morphed
+        setTimelineStatus(window.UI && UI.t ? UI.t('note.timeline.lageMix') : `Layer ${idx + 1} not added: Layer ${prevIdx + 1} is on another position (Lage) of the grid - keyframes must share it.`, 'refusal');
+        return;
+    }
+    const fromCoords = resolveConnectionsToCoords(prevLayer);
+    const toCoords = resolveConnectionsToCoords(layer);
+    if (fromCoords.length !== toCoords.length || fromCoords.length === 0) {
+        setTimelineStatus(`Line count mismatch: Layer ${prevIdx + 1} has ${fromCoords.length}, Layer ${idx + 1} has ${toCoords.length} - counts must match.`, 'refusal');
+        return;
+    }
+
+    // Case B1: "Include net" captures the current AUTHOR net as this keyframe's net state; it must be interpolable with the previous
+    // keyframe's (same rule as the standalone animation), else this add is refused like a shape / line-count mismatch.
+    let netState = null;
+    if (window.timelineIncludeNet && window.timelineIncludeNet()) {
+        netState = netSpecSnapshot();
+        const prevNet = timeline.netStates && timeline.netStates[timeline.netStates.length - 1];
+        const c = prevNet ? netAnimationCompat(prevNet, netState) : { ok: true };
+        if (!c.ok) { setTimelineStatus(`Layer ${idx + 1} not added: its net cannot be interpolated with Layer ${prevIdx + 1}'s net - ${c.reason}. Only the strength and focus of a same-family law can change between keyframes.`, 'refusal'); return; }
+    }
+
+    // Roadmap 1.8 Stage C phase (ii): the playback layer is created
+    // LAZILY, here, the first time a real segment becomes possible (the
+    // second keyframe) - not at the first add, which
+    // has nothing yet to interpolate. Every later add
+    // (3rd, 4th, ... keyframe) reuses this SAME playback layer unchanged
+    // - only keyframeLayerIds/segmentDurationsMs grow.
+    if (timeline.playbackLayerIndex === null) {
+        const playbackLayer = {
+            connections: [], redoStack: [], offsetX: 0, offsetY: 0, rotation: 0,
+            shape: prevLayer.shape, symmetryMode: prevLayer.symmetryMode, enabled: true,
+            showFaces: false, shapeSizeFactor: prevLayer.shapeSizeFactor,
+            isTimelinePlayback: true,
+        };
+        projectLayerGridSpec(playbackLayer, Object.assign({}, layerGridSpecOf(prevLayer))); // task 061: the playback layer has the keyframes' spec
+        const grid = layerGridForSpec(outerCorners, centroid, currentShape, shapeSizeFactor, playbackLayer.shapeSizeFactor, playbackLayer.gridSpec, playbackLayer.shape, canvasW, canvasH);   // task 068b: with the lage-2 nodes
+        playbackLayer.nodes = grid.nodes;
+        playbackLayer.centroid = grid.centroid;
+        playbackLayer.outerCorners = grid.outerCorners;
+        additionalLayers.push(playbackLayer);
+        // idx/prevIdx were captured before this push and are both
+        // earlier indices - push() only appends, so neither is affected.
+        timeline.playbackLayerIndex = additionalLayers.length - 1;
+    }
+
+    timeline.keyframeLayerIds.push(idx);
+    if (!timeline.netStates) timeline.netStates = timeline.keyframeLayerIds.slice(0, -1).map(() => null);
+    timeline.netStates.push(netState);   // lockstep with keyframeLayerIds (mutation point 2 of 3)
+    // Design session point 2: each segment's own FIXED duration,
+    // captured once here - not derived by dividing one total evenly.
+    // Currently always the same default (2000ms); a later session could
+    // expose this as an editable value per segment without touching
+    // anything else, since it already lives in its own array entry.
+    timeline.segmentDurationsMs.push(2000);
+    timeline.segmentPairings.push(null); // Roadmap 1.8 Stage D phase (i): null = default (index) pairing
+    timeline.segmentFlips.push(null); // Stage D phase (iii): null = no End line reversed
+    timeline.segmentMembers.push(null); // Stage D phase (iv): null = every End line as clicked (group element 0)
+    layer._timelineSavedEnabled = layer.enabled;
+    layer.enabled = false;
+
+    setTimelineStatus('');
+    applyTimelineFrame();
+    renderLayerTabs();
+    updateOffsetControls();
+    updateTimelineControls();   // also enforces the standalone net animation's lockout
+    redraw();
+}
+
+// Roadmap 1.8 Stage C phase (ii): sum of every segment's own fixed
+// duration - what play/pause/scrub treat as "the timeline's total
+// length" (the scrub slider's own 0..1 range spans this whole sum, not
+// any one segment).
+function totalTimelineDurationMs(timeline) {
+    return timeline.segmentDurationsMs.reduce((a, b) => a + b, 0);
+}
+
+// Roadmap 1.8 Stage C phase (ii): the "which pair of consecutive
+// keyframes brackets the current global time" helper (design session
+// point 4) - given global elapsedMs (0..totalTimelineDurationMs()),
+// walks the segments in order accumulating their own (possibly
+// different) durations, and returns the segment index plus the LOCAL
+// t (0..1) within it. The very last segment is returned even if
+// floating-point rounding leaves elapsedMs a hair past its own end
+// (the `i === segCount - 1` fallback), so a scrub to exactly t=1 always
+// resolves to "end of the last segment", never falls through with no
+// match at all. Returns null only when there are zero segments (fewer
+// than 2 keyframes) - the caller's own job to handle.
+function resolveTimelineSegment(timeline, elapsedMs) {
+    const segCount = timeline.segmentDurationsMs.length;
+    if (segCount === 0) return null;
+    let acc = 0;
+    for (let i = 0; i < segCount; i++) {
+        const segDur = timeline.segmentDurationsMs[i];
+        const segEnd = acc + segDur;
+        if (elapsedMs < segEnd || i === segCount - 1) {
+            const localElapsed = Math.max(0, elapsedMs - acc);
+            const localT = segDur > 0 ? Math.min(1, localElapsed / segDur) : 1;
+            return { segmentIndex: i, localT };
+        }
+        acc = segEnd;
+    }
+}
+
+// Roadmap 1.8 Stage C phase (ii): resolves the TWO keyframe layers
+// bracketing one specific segment's CURRENT connections into raw
+// coordinate pairs, fresh on every call - this (not any cached/frozen
+// field) is what keeps the interpolation "live-resolved": editing a
+// keyframe layer's connections is picked up the very next time this
+// runs. Reuses resolveConnectionsToCoords() (Stage B, unmodified) - the
+// same lookup drawShapeCell() itself does. Mismatched/zero counts are
+// reported, not silently truncated - checked here, not just once at
+// addLayerToTimeline() time, since a keyframe can be edited to a
+// different count at any point while the timeline exists.
+function resolveTimelineKeyframeCoords(timeline, segmentIndex) {
+    const idFrom = timeline.keyframeLayerIds[segmentIndex];
+    const idTo = timeline.keyframeLayerIds[segmentIndex + 1];
+    const layerFrom = additionalLayers[idFrom];
+    const layerTo = additionalLayers[idTo];
+    if (!layerFrom || !layerTo) return { ok: false, reason: 'A keyframe layer no longer exists.' };
+    const from = resolveConnectionsToCoords(layerFrom);
+    const toStored = resolveConnectionsToCoords(layerTo);
+    if (from.length !== toStored.length || from.length === 0) {
+        return { ok: false, reason: `Keyframe line count mismatch: Layer ${idFrom + 1} has ${from.length}, Layer ${idTo + 1} has ${toStored.length} - counts must match.` };
+    }
+    // Roadmap 1.8 Stage D phase (i): the optional manual pairing
+    // (timeline.segmentPairings[segmentIndex]) reorders the END side
+    // only - to[i] becomes toOriented[perm[i]] - so
+    // applyLayerConnectionsMorphFrame() below, still untouched, keeps
+    // pairing index i with index i exactly as before; a null/invalid
+    // pairing is the old default (index order) and changes nothing.
+    // Stage D phase (iii): before pairing, End line j is REVERSED
+    // (endpoints swapped) when segmentFlips[segmentIndex][j] is true -
+    // indexed by End line, not by row, so up/down reordering never
+    // disturbs an orientation choice. A null/absent/invalid flips entry
+    // (every timeline authored before this phase has none) leaves
+    // toOriented === toStored, i.e. the pre-phase-(iii) behavior exactly.
+    // Stage D phase (iv): even before that, End line j is REPLACED by its
+    // image under group element segmentMembers[segmentIndex][j] (index 0
+    // = identity = as clicked; see core/orbits.js's computeGroupElements())
+    // - an interpolation-time substitution only: the End keyframe layer's
+    // own connections are never touched. Order member -> flip -> pairing;
+    // member and flip commute (reversing an image is the image of the
+    // reversal), so the order is a convention, not a constraint. A
+    // null/absent/all-zero/wrong-length members entry leaves toMembered
+    // === toStored (the SAME array, no group computation at all), i.e.
+    // exactly the pre-phase-(iv) behavior. An out-of-range single entry
+    // counts as 0; a line touching a free endpoint has no orbit, so its
+    // member choice is ignored (memberImageLines()).
+    // toStored (as authored), toMembered/toOriented (member / member+flip
+    // applied, before pairing) and perm/flips/members are returned too for
+    // the pairing editor's own displacement readout (timelineSegmentInfo()).
+    const perm = getSegmentPairing(timeline, segmentIndex, from.length);
+    const flips = getSegmentFlips(timeline, segmentIndex, from.length);
+    let members = null, groupElements = null;
+    const rawMembers = timeline.segmentMembers && timeline.segmentMembers[segmentIndex];
+    if (Array.isArray(rawMembers) && rawMembers.length === from.length && rawMembers.some(g => g !== 0)) {
+        groupElements = layerGroupElements(layerTo);
+        members = groupElements ? sanitizeMembers(rawMembers, groupElements.groupOrder) : null;
+    }
+    const toMembered = members ? memberImageLines(layerTo, members, groupElements).map(l => l.coords) : toStored;
+    const toOriented = applyFlipsToCoords(toMembered, flips);
+    const to = perm ? perm.map(j => toOriented[j]) : toOriented;
+    return { ok: true, from, to, toStored, toMembered, toOriented, perm, flips, members, groupElements, layerFrom, layerTo };
+}
+
+// Roadmap 1.8 Stage D phase (i): a pairing is perm[i] = index into the
+// END keyframe's line list assigned to START line i. Must be a true
+// permutation of 0..n-1 for the CURRENT line count - a stored pairing
+// silently goes stale when a keyframe layer's line count changes (a
+// line added/removed), and is then treated as absent (default order)
+// rather than trusted; the editor (renderTimelinePairingEditor())
+// discards it on next render.
+function isValidPairing(perm, n) {
+    if (!Array.isArray(perm) || perm.length !== n) return false;
+    const seen = new Array(n).fill(false);
+    for (const j of perm) {
+        if (!Number.isInteger(j) || j < 0 || j >= n || seen[j]) return false;
+        seen[j] = true;
+    }
+    return true;
+}
+function getSegmentPairing(timeline, segmentIndex, n) {
+    const perm = timeline.segmentPairings && timeline.segmentPairings[segmentIndex];
+    return isValidPairing(perm, n) ? perm : null;
+}
+
+// Roadmap 1.8 Stage D phase (iii): per-End-line orientation flips - an
+// array of n booleans (flips[j] true = End line j is read with its two
+// endpoints swapped). Same "stale means absent" rule as isValidPairing():
+// a wrong-length/non-boolean entry, or one with no true value, is
+// treated as no flips at all (null), which is also what every timeline
+// created before this phase has (no segmentFlips array at all).
+function isValidFlips(flips, n) {
+    return Array.isArray(flips) && flips.length === n && flips.every(f => typeof f === 'boolean');
+}
+function getSegmentFlips(timeline, segmentIndex, n) {
+    const flips = timeline.segmentFlips && timeline.segmentFlips[segmentIndex];
+    return isValidFlips(flips, n) && flips.some(f => f) ? flips : null;
+}
+// Returns the SAME array when flips is null (no copy, no allocation on
+// the common unflipped path); otherwise a new array with the flagged
+// lines' endpoints swapped.
+function applyFlipsToCoords(coords, flips) {
+    if (!flips) return coords;
+    return coords.map((c, j) => flips[j] ? { x1: c.x2, y1: c.y2, x2: c.x1, y2: c.y1 } : c);
+}
+
+// Roadmap 1.8 Stage D phase (iv): per-End-line member choice - an array
+// of n group-element indices (segmentMembers[seg][j] = element applied to
+// End line j; 0 = identity = as clicked). Same "stale means absent" rule
+// as the pairing/flips arrays for the LENGTH (a wrong-length entry is
+// ignored wholesale); an individual out-of-range index is treated as 0.
+function sanitizeMembers(raw, groupOrder) {
+    const clean = raw.map(g => Number.isInteger(g) && g >= 0 && g < groupOrder ? g : 0);
+    return clean.some(g => g !== 0) ? clean : null;
+}
+function isValidMemberArray(members, n) {
+    return Array.isArray(members) && members.length === n && members.every(g => Number.isInteger(g) && g >= 0);
+}
+
+// The group elements (core/orbits.js, cached per grid) of a layer's own
+// grid/shape/symmetryMode, or null if they cannot be built (a grid that
+// is not symmetric under its claimed group makes the engine throw - a
+// real bug elsewhere, reported once and not allowed to take the render
+// loop down; callers fall back to "no member choice").
+let groupElementsWarned = false;
+function layerGroupElements(layer) {
+    try {
+        return getGroupElementsCached(layer.nodes, layer.centroid, layer.shape, layer.symmetryMode, layer.outerCorners);
+    } catch (err) {
+        if (!groupElementsWarned) { groupElementsWarned = true; console.warn('Group elements unavailable for a layer grid - member choice disabled:', err.message); }
+        return null;
+    }
+}
+
+// A layer's complete lines as node-id pairs, in resolveConnectionsToCoords()'s
+// own filtered order (so index j names the same line in both).
+function completeConnectionIds(layer) {
+    const ids = [];
+    for (const conn of layer.connections) {
+        if (conn.length !== 2) continue;
+        const n1 = layer.nodes.find(n => n.id === conn[0]);
+        const n2 = layer.nodes.find(n => n.id === conn[1]);
+        if (!n1 || !n2) continue;
+        ids.push([conn[0], conn[1]]);
+    }
+    return ids;
+}
+
+// Each complete line of `layer`, replaced by its image under group
+// element members[j] (null members = as clicked): {ids, coords} in
+// resolveConnectionsToCoords()'s filtered order. Maps the line's node ids
+// through the element's permutation and reads the image's coordinates
+// from the layer's own nodes - the group is a symmetry of the grid, so
+// both image nodes exist. A line with a free endpoint is absent from the
+// permutation (no orbit) and stays as clicked.
+function memberImageLines(layer, members, ge) {
+    const lines = [];
+    let j = 0;
+    for (const conn of layer.connections) {
+        if (conn.length !== 2) continue;
+        const n1 = layer.nodes.find(n => n.id === conn[0]);
+        const n2 = layer.nodes.find(n => n.id === conn[1]);
+        if (!n1 || !n2) continue;
+        let ids = [conn[0], conn[1]], a = n1, b = n2;
+        const g = members ? members[j] : 0;
+        if (g > 0) {
+            const perm = ge.perms[g];
+            const i1 = perm.get(conn[0]), i2 = perm.get(conn[1]);
+            const m1 = i1 !== undefined ? layer.nodes.find(n => n.id === i1) : null;
+            const m2 = i2 !== undefined ? layer.nodes.find(n => n.id === i2) : null;
+            if (m1 && m2) { ids = [i1, i2]; a = m1; b = m2; }
+        }
+        lines.push({ ids, coords: { x1: a.x, y1: a.y, x2: b.x, y2: b.y } });
+        j++;
+    }
+    return lines;
+}
+
+// Roadmap 1.8 Stage D phase (i): sum of squared endpoint displacements
+// for a given pairing (design session point 3's cost proxy) - both
+// endpoints of every line, in the layer's own px coordinates. perm null
+// = index order. Purely an orientation aid, not used by rendering.
+function pairingDisplacement(from, toOriented, perm) {
+    let sum = 0;
+    for (let i = 0; i < from.length; i++) {
+        const t = toOriented[perm ? perm[i] : i];
+        sum += (from[i].x1 - t.x1) ** 2 + (from[i].y1 - t.y1) ** 2
+             + (from[i].x2 - t.x2) ** 2 + (from[i].y2 - t.y2) ** 2;
+    }
+    return sum;
+}
+
+// Everything the pairing editor shows for one segment, resolved live
+// (same "live-resolved, never cached" discipline as the interpolation
+// itself). Labels are the real node-id pairs of the COMPLETE connections
+// only, in exactly resolveConnectionsToCoords()'s own filtered order, so
+// label i always names coords[i].
+function completeConnectionLabels(layer) {
+    const labels = [];
+    for (const conn of layer.connections) {
+        if (conn.length !== 2) continue;
+        const n1 = layer.nodes.find(n => n.id === conn[0]);
+        const n2 = layer.nodes.find(n => n.id === conn[1]);
+        if (!n1 || !n2) continue;
+        labels.push(`${conn[0]}\u2013${conn[1]}`);
+    }
+    return labels;
+}
+function timelineSegmentInfo(segmentIndex) {
+    if (!timeline || segmentIndex < 0 || segmentIndex >= timeline.segmentDurationsMs.length) return null;
+    const r = resolveTimelineKeyframeCoords(timeline, segmentIndex);
+    if (!r.ok) return { ok: false, reason: r.reason };
+    const n = r.from.length;
+    const perm = r.perm || Array.from({ length: n }, (_, i) => i);
+    const flips = r.flips || new Array(n).fill(false);
+    const members = r.members || new Array(n).fill(0);
+    const permIsDefault = perm.every((j, i) => j === i);
+    const flipsAny = flips.some(f => f);
+    const membersAny = members.some(g => g !== 0);
+    return {
+        ok: true, n, perm, flips, members, permIsDefault, flipsAny, membersAny,
+        isDefault: permIsDefault && !flipsAny && !membersAny, // index pairing, no flips, every End line as clicked
+        fromLabels: completeConnectionLabels(r.layerFrom),
+        // End labels name the line actually used (its member image),
+        // not the authored one, so a chosen member is visible in the editor.
+        toLabels: r.members
+            ? memberImageLines(r.layerTo, r.members, r.groupElements).map(l => `${l.ids[0]}\u2013${l.ids[1]}`)
+            : completeConnectionLabels(r.layerTo),
+        // displacement follows the effective (member+flip) endpoints;
+        // defaultDisplacement is the plain default: index order, no flips,
+        // no member substitution (as authored).
+        displacement: pairingDisplacement(r.from, r.toOriented, perm),
+        defaultDisplacement: pairingDisplacement(r.from, r.toStored, null),
+    };
+}
+
+// Roadmap 1.8 Stage D phase (ii)/(iii): "Browse all" is offered for
+// 1 <= n <= PAIRING_BROWSE_MAX_N, i.e. whenever the combined space
+// n!*2^n is greater than 1 (n=1 lists the two orientations; n=2..5 the
+// n! pairings, 120 at n=5) - the agreed cutoff from the phase (ii)
+// design session; n=6 (720) and beyond stay editor-only (up/down and
+// the per-row flip toggle).
+const PAIRING_BROWSE_MAX_N = 5;
+
+// All permutations of 0..n-1 in lexicographic order.
+function allPermutations(n) {
+    const out = [];
+    (function go(prefix, rest) {
+        if (rest.length === 0) { out.push(prefix); return; }
+        rest.forEach((x, i) => go([...prefix, x], rest.filter((_, j) => j !== i)));
+    })([], Array.from({ length: n }, (_, i) => i));
+    return out;
+}
+
+// Roadmap 1.8 Stage D phase (iv): the picture ONE morphing line draws -
+// its segment at t = 0.25/0.5/0.75, every image under all group elements
+// (exactly what drawConnectionWithSymmetry() puts on the canvas for a
+// straight line), endpoints quantized to 1e-3 px and each segment
+// canonically ordered/sorted, so two transitions that render identically
+// get the same string. 1e-3 px sits between the ~1e-9 px float noise of
+// exact lattice transforms and the tens-of-px differences between
+// genuinely different transitions (core/orbits.js's snap tolerance is
+// 1e-6, core/faces.js's 0.5 for arbitrary user geometry - neither fits
+// exact-transform output as well). Three frames, not one, so two
+// transitions that merely coincide at t=0.5 are not merged. Compares
+// coordinates, never a symbolic stabilizer computed in isolation - the
+// equivalence depends on the line it is paired with (a Start line on a
+// mirror axis makes mirror-image End variants identical; an off-axis one
+// does not).
+const ROW_VARIANT_FRAMES = [0.25, 0.5, 0.75];
+function transitionPictureKey(a, b, ge) {
+    const q = v => Math.round(v * 1000) / 1000;
+    const c = ge.centroid;
+    return ROW_VARIANT_FRAMES.map(t => {
+        const p = { x: a.x1 + (b.x1 - a.x1) * t, y: a.y1 + (b.y1 - a.y1) * t };
+        const r = { x: a.x2 + (b.x2 - a.x2) * t, y: a.y2 + (b.y2 - a.y2) * t };
+        const segs = new Set();
+        for (const op of ge.ops) {
+            const P = op(p, c), Q = op(r, c);
+            const s1 = `${q(P.x)},${q(P.y)}`, s2 = `${q(Q.x)},${q(Q.y)}`;
+            segs.add(s1 < s2 ? s1 + '~' + s2 : s2 + '~' + s1);
+        }
+        return [...segs].sort().join('|');
+    }).join('##');
+}
+
+// Roadmap 1.8 Stage D phase (iv): the DEDUPLICATED End-line variants for
+// one row - every (group element g, flip f) applied to the End line
+// currently assigned to that row (perm[row]), keeping only the first
+// candidate of each distinct rendered picture against that row's own
+// Start line. Candidate order is g ascending, unflipped before flipped,
+// so the kept representative is always the "simplest": identity and
+// unflipped first, then the smallest g. Returns
+// {variants: [{g, f, ids, coords, key, displacement}], currentKey,
+// groupOrder}; currentKey is the picture key of the row's CURRENT state
+// (which may be a duplicate not itself listed - callers mark whichever
+// variant shares its key as current). Without group elements (grid
+// unavailable) only identity is offered and flips are not deduplicated.
+// Lines with a free endpoint have no member choice (identity only).
+function timelineRowVariants(segmentIndex, row) {
+    if (!timeline) return null;
+    const r = resolveTimelineKeyframeCoords(timeline, segmentIndex);
+    if (!r.ok || row < 0 || row >= r.from.length) return null;
+    const perm = r.perm || Array.from({ length: r.from.length }, (_, i) => i);
+    const j = perm[row];
+    const layerTo = r.layerTo;
+    const authored = completeConnectionIds(layerTo)[j];
+    const ge = layerGroupElements(layerTo);
+    const a = r.from[row];
+    const groupOrder = ge ? ge.groupOrder : 1;
+    const nodeOf = id => layerTo.nodes.find(n => n.id === id);
+    const variants = [];
+    const seen = new Set();
+    for (let g = 0; g < groupOrder; g++) {
+        let ids = authored;
+        if (g > 0) {
+            const i1 = ge.perms[g].get(authored[0]), i2 = ge.perms[g].get(authored[1]);
+            if (i1 === undefined || i2 === undefined) continue; // free endpoint: no orbit, no member choice
+            ids = [i1, i2];
+        }
+        const n1 = nodeOf(ids[0]), n2 = nodeOf(ids[1]);
+        if (!n1 || !n2) continue;
+        for (const f of [false, true]) {
+            const coords = f ? { x1: n2.x, y1: n2.y, x2: n1.x, y2: n1.y } : { x1: n1.x, y1: n1.y, x2: n2.x, y2: n2.y };
+            const key = ge ? transitionPictureKey(a, coords, ge) : `g${g}f${f ? 1 : 0}`;
+            if (seen.has(key)) continue;
+            seen.add(key);
+            variants.push({
+                g, f, ids: f ? [ids[1], ids[0]] : ids, coords, key,
+                displacement: (a.x1 - coords.x1) ** 2 + (a.y1 - coords.y1) ** 2 + (a.x2 - coords.x2) ** 2 + (a.y2 - coords.y2) ** 2,
+            });
+        }
+    }
+    const currentKey = ge ? transitionPictureKey(a, r.to[row], ge) : null;
+    return { variants, currentKey, groupOrder };
+}
+
+// d3 (K3): "only conclusive pairings" in the pairing editor's list. Pure helpers (no write, no DOM); the list switch itself lives in renderTimelinePairingBrowser().
+// A candidate of n >= 2 carries only a perm: it is given the segment's CURRENT flips and members (when it has none of its own), so the filter scores the pairing will be drawn.
+function timelineEnrichPairingCandidates(items, flips, members) {
+    return items.map(it => Object.assign({}, it, {
+        flips: Array.isArray(it.flips) ? it.flips : flips,
+        members: Array.isArray(it.members) ? it.members : members,
+    }));
+}
+// What the filter needs of a segment, read from the same resolution the render uses: both layers, the segment's flips / members / group elements, the tile polygon (outerCorners of the start layer).
+function timelineConclusiveContext(segmentIndex) {
+    if (!timeline) return null;
+    const r = resolveTimelineKeyframeCoords(timeline, segmentIndex);
+    if (!r.ok) return null;
+    return { layerA: r.layerFrom, layerB: r.layerTo, flips: r.flips, members: r.members, groupElements: r.groupElements || layerGroupElements(r.layerTo), poly: r.layerFrom.outerCorners || null };
+}
+// A layer with free line ends (no end of another line within the tolerance, the tile boundary aside; counted on the lines under every group element too, task 021) can never give a conclusive pairing: the filter does not apply.
+function timelineConclusiveFree(ctx) {
+    return [ctx.layerA, ctx.layerB].some(l => spatialMorphScorePairing(l, l, null, null, null, { poly: ctx.poly, groupElements: ctx.groupElements }).dangling > 0);
+}
+// One row (End line endIdx) of a pairing: which of its variants ({ g, f }) make the WHOLE pairing conclusive, the other End lines keeping their flips / members. -> one boolean per variant.
+function timelineConclusiveRowVariants(ctx, perm, flips, members, endIdx, variants) {
+    const cands = variants.map((v, i) => ({ perm, flips: flips.map((f, j) => (j === endIdx ? !!v.f : f)), members: members.map((g, j) => (j === endIdx ? v.g : g)), vi: i }));
+    const res = spatialMorphFilterPairingCandidates(ctx.layerA, ctx.layerB, cands, { poly: ctx.poly, groupElements: ctx.groupElements });
+    const ok = variants.map(() => false);
+    res.kept.forEach(c => { ok[c.vi] = true; });
+    return ok;
+}
+// The row's stepper over the conclusive variants only (ok = the booleans above, cur = the current variant's index): { k, c, prev, next }. c = how many are conclusive; k = the current one's place among them,
+// 0 when the current one is not conclusive; prev / next = the index of the previous / next conclusive variant in the row's own order (cyclic, the current one excluded), -1 when there is none.
+function timelineConclusiveStep(ok, cur) {
+    const len = ok.length, c = ok.filter(Boolean).length;
+    const k = ok[cur] ? ok.slice(0, cur + 1).filter(Boolean).length : 0;
+    const find = dir => { for (let d = 1; d < len; d++) { const i = (((cur + dir * d) % len) + len) % len; if (ok[i]) return i; } return -1; };
+    return { k, c, prev: find(-1), next: find(1) };
+}
+// ---- task 022: the IMAGE test of the conclusive filter (stage 2). A pairing that the score passes can still show loose ends or open seams in a part of the transition; the test draws the frame the morph
+// draws (core/spatial-morph.js spatialMorphPairingFrame, the render's own building blocks) at five times and counts them. It runs for the candidates the editor SHOWS (the list, the rows' steppers) only,
+// in portions of at most timelineImageBudgetMs, between two timer ticks, never per frame; results are cached by picture key and cleared when the layers, the segment or the morph mode change.
+const timelineImageBudgetMs = 25;
+// The page state the test needs, read once per layer pair and mode: the start layer's sheet, its tiles, the span, the symmetry operations, the seam layout. null when a piece is missing.
+function timelineImageEnv(ctx) {
+    if (typeof spatialMorphRenderSource !== 'function' || typeof spatialMorphRenderRecordTiles !== 'function' || typeof spatialMorphRenderToWorld !== 'function') return null;
+    const sm = getSpatialMorph();   // the e1 accessor: a copy of the block, the UI's only way to read it
+    const mode = spatialMorphNormalizeMode(sm ? sm.mode : 'linear'), angleDeg = spatialMorphNumber(sm ? sm.angleDeg : 0);
+    const at = additionalLayers.indexOf(ctx.layerA);
+    const src = spatialMorphRenderSource({ ids: [at >= 0 ? at : 'base'] });
+    const tiles = spatialMorphRenderRecordTiles(src);
+    if (!tiles.length) return null;
+    const center = { x: canvasW / 2, y: canvasH / 2 };
+    const sym = spatialMorphSymmetryOps(src.shape, src.symmetryMode);
+    const tilePolys = tiles.map(t => src.outerCorners.map(p => toTileLocal(p, t.c, t.flip, t.rot)));
+    return {
+        mode, angleDeg, poly: src.outerCorners, tiles, sym, center, toWorld: spatialMorphRenderToWorld,
+        axisFor: tile => (sym.hasReflection ? (tile.axis || mirrorAxisDir()) : null),
+        span: spatialMorphSpanFromCentroids(mode, tiles.map(t => t.c), canvasW, canvasH, { angleDeg, center }),
+        w: canvasW, h: canvasH, layout: spatialMorphFrameLayout(tiles, tilePolys, src.outerCorners, src.centroid),
+        times: mode === 'bilinear' ? [null] : [0.1, 0.25, 0.5, 0.75, 0.9],
+    };
+}
+function timelineImageCheckNew() {
+    return { sig: null, ctx: null, env: undefined, cache: new Map(), pending: new Map(), keys: new Map(), appear: new Map(), job: { queue: [], i: 0 }, timer: null, done: 0, total: 0, tested: 0 };
+}
+let timelineImageCheck = timelineImageCheckNew();
+// What the cached results depend on: both layers' lines, nodes, sheet and the morph's mode / angle / canvas.
+function timelineImageSignature(ctx) {
+    const sm = getSpatialMorph();
+    const lay = l => [l.connections, l.nodes.map(n => [n.id, n.x, n.y]), l.symmetryMode, l.shape, l.shapeSizeFactor, l.outerCorners];
+    return JSON.stringify([lay(ctx.layerA), lay(ctx.layerB), sm ? [sm.mode, sm.angleDeg] : null, typeof canvasW !== 'undefined' ? [canvasW, canvasH] : null]);
+}
+function timelineImageCheckStop() {
+    const C = timelineImageCheck;
+    if (C.timer !== null && typeof clearTimeout === 'function') clearTimeout(C.timer);
+    C.timer = null;
+}
+function timelineImageCandKey(c) { return JSON.stringify([c.perm, c.flips, c.members]); }
+// The result for one candidate ({ perm, flips, members }): true / false when known, undefined while it waits for its turn (it is queued once per picture).
+function timelineImageResult(ctx, cand) {
+    let C = timelineImageCheck;
+    const sig = ctx.imageSig || (ctx.imageSig = timelineImageSignature(ctx));   // once per context, not once per candidate
+    if (sig !== C.sig) { timelineImageCheckStop(); C = timelineImageCheck = timelineImageCheckNew(); C.sig = sig; }
+    C.ctx = ctx;
+    const ck = timelineImageCandKey(cand);
+    let key = C.keys.get(ck);   // the picture key of a candidate once (the editor asks for every candidate at every render)
+    if (key === undefined) { key = spatialMorphImageKey(ctx.layerA, ctx.layerB, cand.perm, cand.flips, cand.members, ctx.groupElements); C.keys.set(ck, key); }
+    if (key === null) return false;
+    if (C.cache.has(key)) return C.cache.get(key);
+    if (!C.pending.has(key)) { C.pending.set(key, spatialMorphPairedLines(ctx.layerA, ctx.layerB, cand.perm, cand.flips, cand.members, ctx.groupElements)); C.job.queue.push(key); C.total++; }
+    return undefined;
+}
+// One queued picture: the test itself. Without an environment (a piece of the page missing) the test is off and every picture passes.
+function timelineImageCheckStep(key) {
+    const C = timelineImageCheck, paired = C.pending.get(key);
+    let pass = true;
+    try {
+        if (C.env === undefined) C.env = timelineImageEnv(C.ctx);
+        pass = C.env === null ? true : spatialMorphTestPairingImage(C.env, paired, { stopAtFirst: true }).pass;
+    } catch (err) { C.env = null; }   // the page changed under the test (a layer is gone): the test is off for this signature, nothing is excluded
+    C.cache.set(key, pass); C.pending.delete(key); C.done++; C.tested++;
+}
+// One portion (budget ms of now()), then, while work is left, the next one after a timer tick; onProgress() after every portion (the editor shows the new state).
+function timelineImageCheckSchedule(setTimer, now, onProgress) {
+    const C = timelineImageCheck;
+    if (C.timer !== null || C.job.i >= C.job.queue.length) return false;
+    const mine = C;
+    C.timer = setTimer(() => {
+        mine.timer = null;
+        if (mine !== timelineImageCheck) return;   // the cache was cleared meanwhile: this job is gone
+        const r = spatialMorphRunPortion(mine.job, timelineImageCheckStep, timelineImageBudgetMs, now);
+        onProgress();
+        if (!r.done) timelineImageCheckSchedule(setTimer, now, onProgress);
+    }, 0);
+    return true;
+}
+// The candidates of a view that pass the image test, in the view's order; while results are missing only the checked ones count. -> { items, pending, done, total }.
+function timelineConclusiveImageStage(view, ctx) {
+    if (view.state !== 'ok') return { items: view.items, pending: 0, done: 0, total: 0 };
+    const items = [];
+    let pending = 0;
+    view.items.forEach(it => { const r = timelineImageResult(ctx, it); if (r === true) items.push(it); else if (r === undefined) pending++; });
+    const C = timelineImageCheck;
+    // A long list (> 100) must not jump while the test runs: the hits keep the order they first appeared in (new ones are appended below); when the test is through they take the score's order.
+    if (pending > 0 && view.items.length > 100) {
+        items.forEach(it => { const k = timelineImageCandKey(it); if (!C.appear.has(k)) C.appear.set(k, C.appear.size); });
+        items.sort((a, b) => C.appear.get(timelineImageCandKey(a)) - C.appear.get(timelineImageCandKey(b)));
+    }
+    return { items, pending, done: C.done, total: C.total };
+}
+// One row's variants: ok (the score's booleans) narrowed to the pictures that pass the image test; a variant whose test is still waiting does not count (yet).
+function timelineConclusiveRowImage(ctx, perm, flips, members, endIdx, variants, ok) {
+    return ok.map((v, i) => v && timelineImageResult(ctx, { perm, flips: flips.map((f, j) => (j === endIdx ? !!variants[i].f : f)), members: members.map((g, j) => (j === endIdx ? variants[i].g : g)) }) === true);
+}
+// The list to show: { state: 'off' | 'ok' | 'empty' | 'free', items, kept, total }. Off (or no context): cand.items itself, untouched. 'free': a layer has free line ends, so no pairing could be
+// conclusive: the unfiltered list. Otherwise the filter's list, best first ('empty': no substitute list).
+function timelineConclusiveView(cand, on, ctx) {
+    const all = cand ? cand.items : [];
+    if (!on || !cand || !ctx) return { state: 'off', items: all, kept: all.length, total: all.length };
+    if (timelineConclusiveFree(ctx)) return { state: 'free', items: all, kept: all.length, total: all.length };
+    const res = spatialMorphFilterPairingCandidates(ctx.layerA, ctx.layerB, timelineEnrichPairingCandidates(all, ctx.flips, ctx.members), { poly: ctx.poly, groupElements: ctx.groupElements });
+    return { state: res.empty ? 'empty' : 'ok', items: res.kept, kept: res.kept.length, total: res.total };
+}
+
+// Roadmap 1.8 Stage D phase (ii)/(iii)/(iv): the segment's browsable
+// candidates, or null when the segment is unresolvable or the space is
+// not worth browsing / too large. Two-level design (phase (iii) design
+// session): correspondence (n!) and per-line variants are NOT merged
+// into one flat list. For n >= 2 the candidates are the n! pairings (as
+// in phase (ii)), each with its sum-of-squared displacement computed at
+// the segment's CURRENT flips/members (so a listed value always equals
+// what the editor would show after picking it); per-line variants stay a
+// separate, linear per-row control. Only at n = 1, where n! = 1 leaves the
+// line's own variants as the sole variable, are those variants the
+// candidates: the deduplicated (group element, flip) images of the End
+// line (timelineRowVariants()), each carrying perm/flips/members ready
+// to commit - a list of at most 2*|G| entries (2 without symmetry), still
+// never a flat n!*2^n one. Offered whenever the combined space n!*2^n is
+// greater than 1 (true for every n >= 1) up to PAIRING_BROWSE_MAX_N.
+function timelinePairingCandidates(segmentIndex) {
+    if (!timeline || segmentIndex < 0 || segmentIndex >= timeline.segmentDurationsMs.length) return null;
+    const r = resolveTimelineKeyframeCoords(timeline, segmentIndex);
+    if (!r.ok) return null;
+    const n = r.from.length;
+    let factorial = 1;
+    for (let i = 2; i <= n; i++) factorial *= i;
+    if (factorial * 2 ** n <= 1 || n > PAIRING_BROWSE_MAX_N) return null;
+    if (n === 1) {
+        const rv = timelineRowVariants(segmentIndex, 0);
+        if (!rv) return null;
+        return {
+            n,
+            orientation: true,
+            currentKey: rv.currentKey,
+            items: rv.variants.map(v => ({
+                perm: [0], flips: [v.f], members: [v.g], key: v.key, ids: v.ids,
+                displacement: v.displacement,
+            })),
+        };
+    }
+    return {
+        n,
+        orientation: false,
+        items: allPermutations(n).map(perm => ({ perm, displacement: pairingDisplacement(r.from, r.toOriented, perm) })),
+    };
+}
+
+// Roadmap 1.8 Stage C: recomputes the timeline's playback layer's
+// interpolated render substitute for the CURRENT progress - mirrors
+// applyLayerAnimationFrame()'s own time bookkeeping, generalized (phase
+// (ii)) from "the one segment" to "find which segment brackets the
+// current global time, then apply that segment's own pair + local t" via
+// resolveTimelineSegment()/resolveTimelineKeyframeCoords() above. Reuses
+// applyLayerConnectionsMorphFrame() (Stage B, still completely
+// unmodified) verbatim - a freshly-built {fromConnections, toConnections}
+// object, never persisted anywhere, is passed as its `anim` parameter;
+// that function only ever reads .fromConnections/.toConnections/
+// .morphIds off it, and ensureLayerMorphIds() (called inside)
+// regenerates ids purely as a function of the connection COUNT (never
+// randomly), so rebuilding this object fresh every call still yields
+// byte-identical ids call to call as long as the count hasn't changed -
+// the same 'free'-curve seed-stability property phase (i) already
+// verified, unaffected by which segment is currently active.
+//
+// When more than one segment exists, #timeline-status doubles as a
+// cheap, free orientation readout ("Segment 2/3 (Layer 2 -> Layer 4)")
+// whenever no error is active - reuses the existing status span, no new
+// UI element, directly useful for the "which pair am I looking at"
+// question a longer sequence raises.
+function applyTimelineFrame() {
+    if (!timeline) return;
+    const totalDuration = totalTimelineDurationMs(timeline);
+    let elapsed = timeline.playing ? (millis() - timeline.startTime) : timeline.elapsedMs;
+    elapsed = Math.max(0, Math.min(totalDuration, elapsed));
+    if (timeline.playing) {
+        timeline.elapsedMs = elapsed;
+        if (elapsed >= totalDuration) timeline.playing = false;
+    }
+    const playbackLayer = timeline.playbackLayerIndex !== null ? additionalLayers[timeline.playbackLayerIndex] : null;
+    if (!playbackLayer) return; // fewer than 2 keyframes so far - nothing to render yet
+    const segment = resolveTimelineSegment(timeline, elapsed);
+    if (!segment) return; // defensive - playbackLayerIndex is only ever non-null once a segment exists
+    const resolved = resolveTimelineKeyframeCoords(timeline, segment.segmentIndex);
+    if (!resolved.ok) {
+        playbackLayer._morphNodes = null;
+        playbackLayer._morphConnections = null;
+        timeline.currentFrame = null;
+        setTimelineStatus(resolved.reason, 'condition');
+        return;
+    }
+    // Group D item 4: which two keyframes bracket this frame and how far between them - read by
+    // core/facecolor.js's playbackCrossfadeColors() (core/* cannot call back into sketch.js).
+    timeline.currentFrame = { segmentIndex: segment.segmentIndex, localT: segment.localT };
+    const segCount = timeline.segmentDurationsMs.length;
+    // Case B1: what the net is doing this frame (a missing state or an incompatible neighbouring pair is said, not silently ignored)
+    const missingNet = timelineNetMissing(), netSeg = timelineNetSegment();
+    const sep = segCount > 1 ? ' | ' : '';   // no stray separator when there is no segment text before the note
+    const netNote = missingNet.length ? `${sep}Net not animated: keyframe${missingNet.length > 1 ? 's' : ''} ${missingNet.join(', ')} ha${missingNet.length > 1 ? 've' : 's'} no net captured (use "Net" on the keyframe)` : (netSeg.reason ? `${sep}Net: ${netSeg.reason} - the author net is shown` : '');
+    setTimelineStatus((segCount > 1
+        ? `Segment ${segment.segmentIndex + 1}/${segCount} (Layer ${timeline.keyframeLayerIds[segment.segmentIndex] + 1} → Layer ${timeline.keyframeLayerIds[segment.segmentIndex + 1] + 1})`
+        : '') + netNote);
+    applyLayerConnectionsMorphFrame(playbackLayer, { fromConnections: resolved.from, toConnections: resolved.to }, segment.localT);
+}
+
+// Play/Pause toggle for the timeline - mirrors
+// toggleActiveLayerAnimationPlayback() exactly (resume-from-elapsedMs,
+// play-once-and-restart-from-0-if-already-finished), now against the
+// SUM of every segment's own duration rather than one fixed value.
+// Visibility was already established once per keyframe, at
+// addLayerToTimeline() time, and stays that way for the timeline's
+// whole lifetime - Play/Pause/scrub never touch it.
+function toggleTimelinePlayback() {
+    if (!timeline) return;
+    const totalDuration = totalTimelineDurationMs(timeline);
+    if (timeline.playing) {
+        timeline.elapsedMs = Math.max(0, Math.min(totalDuration, millis() - timeline.startTime));
+        timeline.playing = false;
+    } else {
+        if (timeline.elapsedMs >= totalDuration) timeline.elapsedMs = 0;
+        sessionFlushNow(); // no write happens while the timeline plays: save what is pending BEFORE it starts
+        timeline.startTime = millis() - timeline.elapsedMs;
+        timeline.playing = true;
+        timeline.netLive = true;
+    }
+    syncAnimationLoopState();
+}
+
+// Manual scrub (0..1, over the WHOLE sequence) - mirrors
+// setActiveLayerAnimationProgress() exactly: pauses if playing, applies
+// the new frame immediately so a drag shows a live preview even while
+// noLoop() is active.
+function setTimelineProgress(t) {
+    if (!timeline) return;
+    const totalDuration = totalTimelineDurationMs(timeline);
+    timeline.elapsedMs = Math.max(0, Math.min(1, t)) * totalDuration;
+    timeline.playing = false;
+    timeline.netLive = true;
+    syncAnimationLoopState();
+    applyTimelineFrame();
+}
+
+// Roadmap 1.8 Stage D phase (i): live preview for the pairing editor -
+// parks the timeline at t=0.5 of ONE segment (paused, applied
+// immediately so it shows even while noLoop() is active), i.e. exactly
+// the halfway frame, where a different pairing differs most visibly from
+// the endpoints. Every pairing edit and every segment switch calls this,
+// so a reorder is always directly visible on the canvas. Reuses the
+// timeline's own elapsedMs/applyTimelineFrame() path - no separate
+// preview render.
+function previewTimelineSegmentMidpoint(segmentIndex) {
+    if (!timeline || segmentIndex < 0 || segmentIndex >= timeline.segmentDurationsMs.length) return;
+    let acc = 0;
+    for (let i = 0; i < segmentIndex; i++) acc += timeline.segmentDurationsMs[i];
+    timeline.elapsedMs = acc + timeline.segmentDurationsMs[segmentIndex] / 2;
+    timeline.playing = false;
+    timeline.netLive = true;
+    syncAnimationLoopState();
+    applyTimelineFrame();
+}
+
+// Roadmap 1.8 Stage D phase (ii): the ONE place a pairing is committed -
+// used by both the up/down editor (moveTimelinePairing() below) and the
+// "Browse all" list (a click on a row), so picking a pairing from the
+// list is by construction the same state change as stepping there with
+// the buttons. Validates against the segment's CURRENT line count
+// (isValidPairing()), stores a result equal to the default order as null
+// so "default" stays a single state, then parks the live preview at
+// t=0.5 and refreshes the panel.
+function setTimelinePairing(segmentIndex, perm) {
+    const info = timelineSegmentInfo(segmentIndex);
+    if (!info || !info.ok) return;
+    commitTimelineSegmentPairing(segmentIndex, perm, info.flips);
+}
+
+// Roadmap 1.8 Stage D phase (iii): flips End line `endIdx` (or sets it
+// explicitly when `value` is given) and keeps the current correspondence.
+function setTimelineFlip(segmentIndex, endIdx, value) {
+    const info = timelineSegmentInfo(segmentIndex);
+    if (!info || !info.ok || endIdx < 0 || endIdx >= info.n) return;
+    const flips = info.flips.slice();
+    flips[endIdx] = value === undefined ? !flips[endIdx] : !!value;
+    commitTimelineSegmentPairing(segmentIndex, info.perm, flips);
+}
+
+// Roadmap 1.8 Stage D phase (iii): the shared tail of every pairing edit
+// (correspondence, per-line flip, or both at once from the n=1 list) -
+// validates against the CURRENT line count, stores a default
+// correspondence / an all-false flips array as null (so "default" stays
+// a single state each), then parks the live preview and refreshes.
+function commitTimelineSegmentPairing(segmentIndex, perm, flips, members) {
+    const info = timelineSegmentInfo(segmentIndex);
+    if (!info || !info.ok) return;
+    if (members === undefined) members = info.members; // callers that don't touch member choice keep it
+    if (!isValidPairing(perm, info.n) || !isValidFlips(flips, info.n) || !isValidMemberArray(members, info.n)) return;
+    timeline.segmentPairings[segmentIndex] = perm.every((j, i) => j === i) ? null : perm.slice();
+    if (!timeline.segmentFlips) timeline.segmentFlips = timeline.segmentPairings.map(() => null);
+    timeline.segmentFlips[segmentIndex] = flips.some(f => f) ? flips.slice() : null;
+    if (!timeline.segmentMembers) timeline.segmentMembers = timeline.segmentPairings.map(() => null);
+    timeline.segmentMembers[segmentIndex] = members.some(g => g !== 0) ? members.slice() : null;
+    previewTimelineSegmentMidpoint(segmentIndex);
+    updateTimelineControls();
+    redraw();
+}
+
+// Roadmap 1.8 Stage D phase (iv): sets End line `endIdx`'s member choice
+// (group element index; 0 = as clicked), keeping correspondence and
+// flips. Refused (no state change) for an index outside the End layer's
+// group - the number of elements comes from that layer's own grid/mode.
+// Step 2 (per-row variant stepper): the optional `flip` (true/false; omitted
+// = keep the End line's current flip) lets one call move to any
+// (group element, flip) variant of timelineRowVariants(), which spans both
+// - the stepper's list is the full deduplicated (element, flip) space of a
+// row, not just its elements.
+function setTimelineMember(segmentIndex, endIdx, g, flip) {
+    const info = timelineSegmentInfo(segmentIndex);
+    if (!info || !info.ok || endIdx < 0 || endIdx >= info.n || !Number.isInteger(g) || g < 0) return;
+    const r = resolveTimelineKeyframeCoords(timeline, segmentIndex);
+    const ge = layerGroupElements(r.layerTo);
+    if (g > 0 && (!ge || g >= ge.groupOrder)) return;
+    const members = info.members.slice();
+    members[endIdx] = g;
+    const flips = info.flips.slice();
+    if (flip !== undefined) flips[endIdx] = !!flip;
+    commitTimelineSegmentPairing(segmentIndex, info.perm, flips, members);
+}
+
+// Roadmap 1.8 Stage D phase (i): moves START line `row`'s assigned END
+// line up/down by swapping it with its neighbour's (delta -1/+1) - i.e.
+// reorders the End list against the fixed Start list. The swapped
+// permutation is committed via setTimelinePairing() (perm[i] = End line
+// index assigned to Start line i, see isValidPairing()).
+function moveTimelinePairing(segmentIndex, row, delta) {
+    const info = timelineSegmentInfo(segmentIndex);
+    if (!info || !info.ok) return;
+    const other = row + delta;
+    if (row < 0 || other < 0 || row >= info.n || other >= info.n) return;
+    const perm = info.perm.slice();
+    [perm[row], perm[other]] = [perm[other], perm[row]];
+    setTimelinePairing(segmentIndex, perm);
+}
+function resetTimelinePairing(segmentIndex) {
+    if (!timeline || segmentIndex < 0 || segmentIndex >= timeline.segmentPairings.length) return;
+    timeline.segmentPairings[segmentIndex] = null;
+    if (timeline.segmentFlips) timeline.segmentFlips[segmentIndex] = null;
+    if (timeline.segmentMembers) timeline.segmentMembers[segmentIndex] = null;
+    previewTimelineSegmentMidpoint(segmentIndex);
+    updateTimelineControls();
+    redraw();
+}
+
+// Roadmap 1.8 Stage C phase (ii): splices ONE keyframe out of the
+// timeline's OWN bookkeeping (keyframeLayerIds/segmentDurationsMs) and
+// restores that layer's saved visibility (layer._timelineSavedEnabled,
+// see core/state.js) - does NOT touch additionalLayers[] itself, so
+// this is safe to call both from removeKeyframeFromTimeline() (the
+// layer stays, just leaves the sequence) and from removeLayer() (the
+// layer is ALSO about to be spliced out of additionalLayers by its own
+// caller, immediately after this runs).
+//
+// If the removed keyframe was interior (had a segment on both sides),
+// those two now-invalid segments collapse into ONE new segment
+// (a fresh default duration, not a computed combination of the two
+// old ones - simplest, least surprising); if it was the first or last
+// keyframe, its own single adjacent segment is simply dropped, nothing
+// to merge.
+//
+// Dropping to exactly one keyframe removes the now-unusable playback
+// layer too (the exact symmetric inverse of addLayerToTimeline()'s own
+// lazy creation on the SECOND keyframe) - the caller is told via the
+// returned index (mirroring phase (i)'s own orphanedPlaybackIndex
+// pattern) so it can decide whether/how to splice it out of
+// additionalLayers[] itself. Dropping to zero keyframes tears the whole
+// timeline down.
+function spliceKeyframeOutOfTimeline(layerIndex) {
+    if (!timeline) return null;
+    const pos = timeline.keyframeLayerIds.indexOf(layerIndex);
+    if (pos === -1) return null;
+    const layer = additionalLayers[layerIndex];
+    if (layer && layer._timelineSavedEnabled !== undefined) {
+        layer.enabled = layer._timelineSavedEnabled;
+        delete layer._timelineSavedEnabled;
+    }
+    const segCountBefore = timeline.segmentDurationsMs.length;
+    timeline.keyframeLayerIds.splice(pos, 1);
+    if (timeline.netStates) timeline.netStates.splice(pos, 1);   // lockstep with keyframeLayerIds (mutation point 3 of 3): the neighbours become adjacent, revalidated at runtime
+    // segmentPairings (Stage D phase (i)) is spliced in lockstep with
+    // segmentDurationsMs - a merged interior segment gets a fresh null
+    // (default) pairing, since its two neighbours' pairings referred to
+    // keyframes that are no longer adjacent.
+    if (pos > 0 && pos < segCountBefore) {
+        timeline.segmentDurationsMs.splice(pos - 1, 2, 2000);
+        timeline.segmentPairings.splice(pos - 1, 2, null);
+        if (timeline.segmentFlips) timeline.segmentFlips.splice(pos - 1, 2, null);
+        if (timeline.segmentMembers) timeline.segmentMembers.splice(pos - 1, 2, null);
+    } else if (pos === 0 && segCountBefore > 0) {
+        timeline.segmentDurationsMs.splice(0, 1);
+        timeline.segmentPairings.splice(0, 1);
+        if (timeline.segmentFlips) timeline.segmentFlips.splice(0, 1);
+        if (timeline.segmentMembers) timeline.segmentMembers.splice(0, 1);
+    } else if (pos === segCountBefore && segCountBefore > 0) {
+        timeline.segmentDurationsMs.splice(pos - 1, 1);
+        timeline.segmentPairings.splice(pos - 1, 1);
+        if (timeline.segmentFlips) timeline.segmentFlips.splice(pos - 1, 1);
+        if (timeline.segmentMembers) timeline.segmentMembers.splice(pos - 1, 1);
+    }
+
+    if (timeline.keyframeLayerIds.length === 0) {
+        const orphanedPlaybackIndex = timeline.playbackLayerIndex;
+        timeline = null;
+        return orphanedPlaybackIndex;
+    }
+    let orphanedPlaybackIndex = null;
+    if (timeline.keyframeLayerIds.length === 1 && timeline.playbackLayerIndex !== null) {
+        orphanedPlaybackIndex = timeline.playbackLayerIndex;
+        timeline.playbackLayerIndex = null;
+    }
+    const totalDuration = totalTimelineDurationMs(timeline);
+    timeline.elapsedMs = Math.min(timeline.elapsedMs, totalDuration);
+    if (timeline.playing && totalDuration === 0) timeline.playing = false;
+    return orphanedPlaybackIndex;
+}
+
+// Roadmap 1.8 Stage C phase (ii): the keyframe list's own per-entry
+// remove action - takes a keyframe OUT of the sequence (restoring its
+// layer's visibility, shrinking keyframeLayerIds/segmentDurationsMs)
+// without deleting the underlying layer itself, unlike that layer's own
+// "x" tab button (removeLayer()). Handles the "dropped to one keyframe"
+// case by actually removing the now-orphaned playback layer from
+// additionalLayers[] - spliceKeyframeOutOfTimeline() only reports that
+// index, this is the one caller-side that owns the actual splice, same
+// activeLayer-adjustment logic removeLayer()'s own spliceOne() uses.
+function removeKeyframeFromTimeline(layerIndex) {
+    if (!timeline) return;
+    const orphanedPlaybackIndex = spliceKeyframeOutOfTimeline(layerIndex);
+    if (orphanedPlaybackIndex !== null) {
+        additionalLayers.splice(orphanedPlaybackIndex, 1);
+        if (activeLayer === orphanedPlaybackIndex) {
+            activeLayer = 'base';
+        } else if (typeof activeLayer === 'number' && activeLayer > orphanedPlaybackIndex) {
+            activeLayer -= 1;
+        }
+        if (timeline) {
+            timeline.keyframeLayerIds = timeline.keyframeLayerIds.map(i => i > orphanedPlaybackIndex ? i - 1 : i);
+        }
+    }
+    syncAnimationLoopState();
+    applyTimelineFrame();
+    renderLayerTabs();
+    updateOffsetControls();
+    updateTimelineControls();
+    redraw();
+}
+
+// Explicit "Zeitleiste entfernen" action - tears down the WHOLE sequence at
+// once (distinct from removeKeyframeFromTimeline()'s one-at-a-time
+// removal): restores every keyframe's saved visibility via
+// clearTimelineState(), then removes the playback layer (if one had
+// been created - a single-keyframe timeline never got that far) via the
+// ordinary removeLayer() (safe to call now: timeline is already null,
+// so removeLayer()'s own timeline-teardown branch is a no-op for it).
+function removeTimelineAction() {
+    if (!timeline) return;
+    const playbackIndex = timeline.playbackLayerIndex;
+    clearTimelineState('');
+    if (playbackIndex !== null) removeLayer(playbackIndex);
+    renderLayerTabs();
+    updateOffsetControls();
+    updateTimelineControls();
+    redraw();
+}
+
+// Roadmap 1.8 Stage C: restores every keyframe layer's saved `enabled`
+// state and clears `timeline` to null - the WHOLE-sequence teardown
+// (see removeTimelineAction() above, and removeLayer()'s own use when
+// the playback layer itself is the one being deleted). Does NOT touch
+// additionalLayers[] itself. Already fully N-agnostic (phase (i) never
+// needed to change here) - `timeline.keyframeLayerIds.forEach()` already
+// walks however many keyframes exist.
+function clearTimelineState(statusMessage, kind) {
+    if (!timeline) return;
+    timeline.keyframeLayerIds.forEach(i => {
+        const layer = additionalLayers[i];
+        if (layer && layer._timelineSavedEnabled !== undefined) {
+            layer.enabled = layer._timelineSavedEnabled;
+            delete layer._timelineSavedEnabled;
+        }
+    });
+    timeline = null;
+    syncAnimationLoopState(); // a playing timeline being torn down must not leave loop() running for nothing
+    if (statusMessage !== undefined) setTimelineStatus(statusMessage, kind);
+}
+
+// ----------------- PATTERN NAME (Roadmap 1.11-B) ---------------------
+// Per-sheet only (Base or whichever layer is active), same scoping
+// as 1.10a's own per-sheet face detection - no combined/cross-layer
+// name, since 1.9's offset overlay is a continuous parameter with no
+// orbit structure to name against (see core/orbits.js's own docblock).
+
+// Cached computeThemeLineName() result + the signature it was computed
+// for - see updatePatternNameStatus()'s own comment in draw() for why
+// this needs caching (unlike updateCrossLayerStatus()). null/null never
+// matches a real signature, so the first call always computes for real.
+let patternNameCacheSignature = null;
+let patternNameCacheValue = null;
+let patternNameCacheTip = null;   // task 071: the tooltip of the v2 name (null for the old name)
+
+// Everything the active sheet's name actually depends on: which shape/
+// symmetry group is active, which sheet is selected, and that sheet's
+// own connections (activeConnections() - already the existing base/
+// layer selector, see INTERACTION above). Deliberately explicit about
+// shape/mode rather than relying only on rebuildGrid()'s side effect of
+// clearing connections on a shape change (the way crossLayerConfigSignature()
+// implicitly does) - cheap either way, and self-evidently correct
+// without depending on a side effect defined elsewhere.
+// Roadmap [orbits.js shape-mismatch fix]: shape now reads the ACTIVE
+// sheet's own shape (activeGridOverride()'s shape field, falling back
+// to currentShape for the base) rather than the bare currentShape
+// global - this function's own comment above already states its
+// design principle as "deliberately explicit... rather than relying on
+// a side effect defined elsewhere"; keying the cache on the base's
+// shape even while a differently-shaped layer is active contradicted
+// that principle, even though it wasn't independently observable as a
+// bug (a layer's own shape change already clears its connections,
+// which this same signature also tracks via conns, so the cache still
+// happened to invalidate correctly regardless - fixed here for
+// consistency with the stated principle, not because of an observed
+// stale-cache symptom).
+// Roadmap 1.12 stage 5 (symmetryMode axis) part 2: mode now reads the
+// ACTIVE sheet's own symmetryMode (activeGridOverride()'s symmetryMode
+// field, falling back to the global for the base) the same way shape
+// does directly above - UNLIKE the shape case, this one WAS an
+// observable bug (design session finding): a per-layer symmetryMode
+// edit doesn't clear that layer's connections the way a shape change
+// does (Phase 1 - it's a pure render-time parameter, see
+// setActiveLayerRotation()'s own precedent), so conns alone wouldn't
+// change and this cache would keep showing the stale pre-edit name.
+function patternNameSignature() {
+    const gridOverride = activeGridOverride();
+    const activeShape = gridOverride ? gridOverride.shape : currentShape;
+    const activeMode = gridOverride ? gridOverride.symmetryMode : symmetryMode;
+    const sp = activeLayer !== 'base' && additionalLayers[activeLayer] ? layerGridSpecOf(additionalLayers[activeLayer]) : baseGridSpecNow();
+    return JSON.stringify({ shape: activeShape, mode: activeMode, activeLayer, conns: activeConnections(), ordnung: sp.ordnung, lage: sp.lage, rev: gridRevision, lang: window.UI ? UI.lang : '' });   // task 068b: the grid (ordnung, lage, revision) is part of the name's cache key
+}
+
+// ----------------- FACE COLORS PANEL (Group D Phase 3) -----------------
+// The UI over core/facecolor.js + core/color.js: rule picker, one k/c stepper
+// per rule axis, a swatch row per face trail (hover outlines the trail on the
+// canvas; a per-trail stepper picks another slot of the SAME generated
+// series), and Reset colors. Everything acts on the ACTIVE sheet's own store
+// and palette state (faceAssignmentsFor()/facePaletteFor()), so each tab keeps
+// independent colors. The panel exists only while that sheet's face fill is on.
+//
+// Not built here (Phase 2's deferred decisions, deliberately): orphan cleanup,
+// split/merge inheritance, stub-vertex key stability. In particular a trail
+// whose geometry an edit changed comes back UNASSIGNED (default color, no
+// explanation) - the row just says "default".
+let faceColorsSignature = null;
+// Roadmap 1.6 / Group E phase 2: set by setup() (it needs the curve/free/face button closures); called once per draw().
+let netControlsSync = null;
+// Net-line overlay (display aid, off by default): the warped net's own grid lines, edge to edge. Macro lines
+// black, the finer micro level of a nested net red. Not exported; a PNG export of the canvas includes it.
+let netLinesOn = false;
+function drawNetLinesOverlay() {
+    if (!netLinesOn || (currentShape !== 'square' && currentShape !== 'triangle' && currentShape !== 'hex')) return;
+    const nw = netWarpBaseNow(), closed = !!nw && !nw.repeat, field = nw && nw.field;
+    const lines = netGridLines(netTransformNow(), outerCorners, baseGridDivisions(), { x0: 0, y0: 0, x1: width, y1: height }, field ? { closed, domain: 'field', fieldTiles: field.Rx !== undefined ? { x: field.Rx, y: field.Ry } : field.Rt, frame: nw.meshes ? nw.frame : undefined, ...(currentShape === 'triangle' ? { diagonal: true } : {}) } : { closed });   // task 093: the triangle also shows the lattice diagonal of every mesh
+    push();
+    strokeWeight(1);
+    lines.forEach(l => {
+        if (l.level === 'micro') stroke(200, 0, 0, 170); else stroke(0, 0, 0, 120);
+        line(l.x1, l.y1, l.x2, l.y2);
+    });
+    pop();
+}
+
+// Why the active sheet draws no face fills right now, or null when it does.
+// Mirrors core/tiling.js's computeLayerCellFaces() guard (enabled, showFaces,
+// same scale, rotation 0) - duplicated on purpose so those guards stay
+// untouched; a base sheet only needs straight lines (computeCellFaces()).
+function faceFillsUnavailableReason() {
+    // Faces are exact only on a FIELD warp (affine per tile), and only for the base sheet (offset layers cross tile boundaries)
+    const nw = netWarpBaseNow();
+    if (nw && !nw.field) return 'Face fills are off on a Single or Tiled net transform (the warp is not affine inside a tile, so faces would not fit the lines). Use Field (Shape Size 3-9), or set the net to Regular on the Base sheet.';
+    if (nw && nw.field && activeLayer !== 'base' && !layerGridMatchesBase(additionalLayers[activeLayer])) return 'Face fills on a Field are drawn for the Base sheet and for layers on the base grid (same shape and size, no offset, no rotation) - this layer is offset, rotated or of another size, so its lines cross tile boundaries.';
+    if (curveType.kind !== 'straight') return 'Face fills need straight lines (curve/free mode is on; both are under Mehr).';
+    if (activeLayer === 'base') return null;
+    const l = additionalLayers[activeLayer];
+    if (!l.enabled) return isTimelineKeyframe(activeLayer)
+        ? 'This layer is a timeline keyframe and hidden - tick its checkbox to show and edit its colors; the timeline crossfades them on playback.'
+        : 'This layer is hidden.';
+    if (l.shapeSizeFactor !== shapeSizeFactor || (l.rotation || 0) !== 0) return 'Face fills are not drawn for this layer (its size or rotation differs from the base sheet).';
+    return null;
+}
+
+// The active sheet's face inputs. `sheet` = the layer's own shape/symmetry mode/
+// mirror axis override (null for the base), so the panel lists the trails of the
+// SAME face set the canvas draws.
+// Whether layer `i` is one of the timeline's keyframe layers (Group D item 4).
+function isTimelineKeyframe(i) { return i !== 'base' && !!timeline && timeline.keyframeLayerIds.includes(i); }
+
+function faceColorsGrid() {
+    return activeLayer === 'base'
+        ? { gridNodes: nodes, conns: connections, sheet: null }
+        : { gridNodes: additionalLayers[activeLayer].nodes, conns: additionalLayers[activeLayer].connections, sheet: faceSheetOverrideOfLayer(additionalLayers[activeLayer]) };
+}
+
+function faceColorsSig() {
+    const l = activeLayer === 'base' ? null : additionalLayers[activeLayer];
+    return JSON.stringify({
+        sheet: activeLayer, conns: faceColorsGrid().conns, shape: currentShape, mode: symmetryMode, n: faceColorsGrid().gridNodes.length,
+        layer: l && [l.enabled, l.shapeSizeFactor, l.rotation, l.shape, l.symmetryMode], kf: isTimelineKeyframe(activeLayer), size: shapeSizeFactor, curve: curveType.kind, net: (nw0 => nw0 ? (nw0.field ? 'field' : 'warp') : null)(netWarpBaseNow()),
+        store: faceAssignmentsFor(activeLayer).size,
+        farborgel: typeof window.farborgelBuildHarmonySelection === 'function' // the per-trail steppers need the module: rebuild when it arrives
+    });
+}
+
+// Called once per draw(): shows/hides the panel with the active sheet's face
+// fill and rebuilds it only when what it lists could have changed.
+function updateFaceColorsPanel() {
+    const groupEl = document.getElementById('face-colors-group');
+    if (!groupEl) return;
+    const visible = activeShowFaces();
+    if (groupEl.hidden === visible) groupEl.hidden = !visible;   // task 084: only when it changes
+    if (!visible) { faceColorsSignature = null; faceHover = null; return; }
+    // The cross-layer overlay (drawn over every sheet's fills at 65% alpha) hides per-sheet colors while a
+    // CURRENT result is displayed - same currency check draw() uses; a plain toggle, no panel rebuild.
+    const overlayNote = document.getElementById('face-colors-overlay-note');
+    if (overlayNote) overlayNote.hidden = !(crossLayerResult && crossLayerResultSignature === crossLayerConfigSignature());
+    if (faceColorsSig() !== faceColorsSignature) renderFaceColorsPanel();
+}
+
+function faceColorsAxisValue(rule, axis, k) {
+    const sys = OSTWALD_REFERENCE_SYSTEM;
+    if (axis.id === 'hue') return sys.hues[k].name;
+    if (axis.id === 'level') return rule.id === 'tetrad' ? sys.fullColorLevels.pairs[k].join(' / ') : sys.grayScale.letters[k];
+    return '';
+}
+
+// The arrows of the stepper buttons (the pairing editor's variant stepper, the Face Colors stepper): an inline SVG chevron in the UI's 20px icon style (stroke, currentColor), returned as markup for
+// innerHTML. The characters U+25C0 and U+25B6 they replace are drawn as blue emoji on iOS. The box is as wide as the old glyph (13px and 11.45px in the UI font), so the buttons keep their size.
+function pairingStepIcon(dir) {
+    const left = dir === 'left', w = left ? 13 : 11.45, vw = w * 1.2, cx = left ? 11.5 : 12.5;
+    return '<svg width="' + w + '" height="20" viewBox="' + (cx - vw / 2).toFixed(2) + ' 0 ' + vw.toFixed(2) + ' 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><path d="' + (left ? 'M15 5 L8 12 L15 19' : 'M9 5 L16 12 L9 19') + '"/></svg>';
+}
+
+function faceColorsStepper(k, c, title, onStep) {
+    const wrap = document.createElement('span');
+    wrap.className = 'pairing-variant';
+    const mk = (txt, delta) => {
+        const b = document.createElement('button');
+        b.className = 'layer-btn pairing-move-btn';
+        b.innerHTML = pairingStepIcon(txt);
+        UI.name(b, title);
+        b.addEventListener('click', () => onStep(delta));
+        return b;
+    };
+    const cnt = document.createElement('span');
+    cnt.className = 'pairing-variant-count';
+    cnt.textContent = `${k + 1}/${c}`;
+    cnt.dataset.k = String(k + 1);
+    cnt.dataset.c = String(c);
+    wrap.appendChild(mk('left', -1));
+    wrap.appendChild(cnt);
+    wrap.appendChild(mk('right', 1));
+    return wrap;
+}
+
+// (Re)colors every trail of the active sheet from its palette, then refreshes.
+function applyFaceColorsPalette() {
+    const { gridNodes, conns, sheet } = faceColorsGrid();
+    const group = sheetGroupElements(gridNodes, sheet);
+    if (group) {
+        const trails = computeFaceTrails(computeCellFaces(conns, gridNodes, null, null, sheet), group);
+        applyPaletteToTrails(faceAssignmentsFor(activeLayer), trails, facePaletteFor(activeLayer));
+    }
+    renderFaceColorsPanel();
+    redraw();
+}
+
+function renderFaceColorsPanel() {
+    const sheet = activeLayer;
+    const statusEl = document.getElementById('face-colors-status');
+    const ruleSel = document.getElementById('face-colors-rule');
+    const axesEl = document.getElementById('face-colors-axes');
+    const noteEl = document.getElementById('face-colors-note');
+    const listEl = document.getElementById('face-colors-list');
+    const resetBtn = document.getElementById('btn-face-colors-reset');
+    const unassignedEl = document.getElementById('face-colors-unassigned');
+    const unassignedText = document.getElementById('face-colors-unassigned-text');
+    if (!statusEl || !ruleSel || !axesEl || !noteEl || !listEl || !resetBtn || !unassignedEl || !unassignedText) return;
+    // task 050: a rule or axis that carries an i18n key (core/color.js, data only) is shown through the dictionary; the label in core stays the German/fallback text
+    const ruleText = o => (o.i18n && window.UI && UI.t ? UI.t(o.i18n) : o.label);
+    unassignedEl.hidden = true;
+    const kfNote = document.getElementById('face-colors-timeline-note');
+    if (kfNote) kfNote.hidden = !isTimelineKeyframe(sheet);
+    const titleEl = document.getElementById('face-colors-title');
+    if (titleEl) titleEl.textContent = sheet === 'base' ? 'Face Colors \u2014 Base' : `Face Colors \u2014 Layer ${sheet + 1}`; // which sheet's palette state this is
+    faceHover = null; // the rows being replaced may have been hovered; restored below if the pointer is still on one
+    axesEl.innerHTML = ''; listEl.innerHTML = ''; noteEl.textContent = '';
+
+    const store = faceAssignmentsFor(sheet);
+    const palette = facePaletteFor(sheet);
+    const reason = faceFillsUnavailableReason();
+    const { gridNodes, conns, sheet: sheetOv } = faceColorsGrid();
+    const group = reason ? null : sheetGroupElements(gridNodes, sheetOv);
+    const trails = group ? computeFaceTrails(computeCellFaces(conns, gridNodes, store, null, sheetOv), group) : [];
+
+    // Phase B-Farbstrategien follow-up (gray-as-selection round): self-healing resync, EVERY
+    // render (not a one-time latch) - ensureDefaultGrayFill() (core/facecolor.js, just run inside
+    // the computeCellFaces() call above) gives every unassigned trail a real store entry, but
+    // never touches this sheet's palette (facePaletteFor()) - nothing but this UI layer has sheet
+    // IDENTITY (the engine only sees geometry), so this is the one place that can reconnect them.
+    // Adopting the gray entries as palette.ruleId/idx/slots reaches the EXISTING, already-tested
+    // override mechanism (assignTrailSlot()/spreadPaletteToUnassigned(), both gated on
+    // palette.ruleId) for free - no new override pathway. Re-derived every render, not once: unlike
+    // an explicitly-applied old-system rule (whose series is deliberately frozen at the moment of
+    // application - see core/facecolor.js's own comment), this default has no "Apply" moment to
+    // freeze at - it silently grows/shrinks with the sheet's real trail count as it's edited, so
+    // palette.slots has to keep tracking that, not go stale. Only trails[0] (not an arbitrary store
+    // entry) is sampled - deterministic, and by this point in the function it is guaranteed to
+    // exist and be real (computeCellFaces() above already ran the eager fill). Never claims a sheet
+    // a Farborgel harmony already owns (lastHarmonyTypeFor(sheet) non-null - that store's entries
+    // carry rule: 'farborgel', never this rule) or one an explicit old-system rule already owns
+    // (palette.ruleId already something else) - and un-claims itself the moment a Farborgel harmony
+    // IS applied afterward, so a stale resync can never make the override stepper try to write a
+    // gray entry into a now-Farborgel-colored sheet.
+    if (lastHarmonyTypeFor(sheet) !== null) {
+        if (palette.ruleId === 'max-contrast-gray') { palette.ruleId = null; palette.slots = undefined; }
+    } else if (palette.ruleId === null || palette.ruleId === 'max-contrast-gray') {
+        const sample = trails.length ? store.get(trails[0].key) : null;
+        if (sample && sample.rule === 'max-contrast-gray') {
+            palette.ruleId = 'max-contrast-gray';
+            palette.idx = [0];
+            palette.slots = trails.length;
+        } else if (palette.ruleId === 'max-contrast-gray') {
+            palette.ruleId = null; palette.slots = undefined;
+        }
+    }
+
+    resetBtn.disabled = store.size === 0 && !palette.ruleId;
+    ruleSel.innerHTML = '';
+    const ph = document.createElement('option');
+    ph.value = ''; ph.textContent = 'Choose a harmony rule…';
+    ruleSel.appendChild(ph);
+    listHarmonyRules().forEach(r => {
+        const o = document.createElement('option');
+        o.value = r.id;
+        o.textContent = ruleText(r) + (r.verified === false ? ' – unverified' : '');
+        ruleSel.appendChild(o);
+    });
+    ruleSel.value = palette.ruleId || '';
+    ruleSel.disabled = trails.length === 0;
+
+    if (reason || !group) { statusEl.textContent = reason || 'Face colors are unavailable for this grid.'; faceColorsSignature = faceColorsSig(); return; }
+    statusEl.textContent = trails.length === 0
+        ? 'No faces yet — draw connections that enclose regions.'
+        : `${trails.length} face trail${trails.length === 1 ? '' : 's'} (all symmetry copies of a face share one color)`;
+
+    const rule = palette.ruleId ? getHarmonyRule(palette.ruleId) : null;
+    // Phase B-Farbstrategien follow-up (per-trail override for Farborgel harmonies): a
+    // Farborgel-colored sheet (lastHarmonyTypeFor(sheet) non-null) has no `rule` above - Farborgel
+    // is not a core/color.js-registered rule, by design (it's a real external engine, not a named,
+    // regeneratable series the same way) - but it still needs a per-trail stepper. The two cases
+    // are deliberately split from here on: `rule` alone still gates the axis-stepper row below
+    // (hue/level pickers built from rule.params/.note/.verified - fields with no Farborgel
+    // equivalent, since Farborgel's own "axes" are the anchor's hue/register, a genuinely
+    // different control, already live above this panel). The per-trail stepper row instead checks
+    // `rule || farborgelSelection`. farborgelSelection is regenerated here (once per render, not
+    // once per trail) via window.farborgelBuildHarmonySelection(anchor, type) - a pure function of
+    // (anchor, type), confirmed in ui-farbe.js's own assignFarborgelSlot() comment - so it always
+    // matches what afterAnchorChange() last actually applied to the store.
+    // Farborgel sub-page P3: read through ui-farbe.js's farborgelSelectionFor(), which returns the STORED selection
+    // for a 'custom' sheet (one composed on the standalone Farborgel page and handed back - it has no
+    // (anchor, type) recipe to regenerate from) and the regenerated one for the 7 ordinary types, as before.
+    const farborgelSelection = (lastHarmonyTypeFor(sheet) !== null && typeof window.farborgelSelectionFor === 'function')
+        ? window.farborgelSelectionFor(sheet)
+        : null;
+    // Uncolored trails while a rule is applied (new regions an edit created, anything reconciliation
+    // could not hand a color to): say so, and offer the explicit fill - never an automatic repaint.
+    if (rule) {
+        const missing = unassignedTrails(store, trails).length;
+        if (missing) {
+            unassignedText.textContent = `${missing} of ${trails.length} trail${trails.length === 1 ? '' : 's'} ${missing === 1 ? 'has' : 'have'} no palette color (e.g. new regions).`;
+            unassignedEl.hidden = false;
+        }
+    }
+    // The series in force: for a real core/color.js rule, frozen at the last full application (see
+    // core/facecolor.js) so an edit that changes the trail count doesn't change what a stepper
+    // offers; for Farborgel, the regenerated selection's own, real cardinality.
+    const seriesSlots = farborgelSelection ? farborgelSelection.members.length : (palette.slots || trails.length);
+    if (rule) {
+        harmonyRuleParams(rule, OSTWALD_REFERENCE_SYSTEM).forEach((axis, a) => {
+            const row = document.createElement('div');
+            row.className = 'fc-axis';
+            const lab = document.createElement('span');
+            lab.className = 'fc-axis-label';
+            const axisLabel = ruleText(rule.params.find(q => q.id === axis.id) || axis);
+            lab.textContent = axisLabel;
+            const val = document.createElement('span');
+            val.className = 'fc-axis-value';
+            val.textContent = faceColorsAxisValue(rule, axis, palette.idx[a]);
+            row.appendChild(lab);
+            row.appendChild(faceColorsStepper(palette.idx[a], axis.count, `Step ${axisLabel}`, delta => {
+                palette.idx[a] = (palette.idx[a] + delta + axis.count) % axis.count;
+                applyFaceColorsPalette();
+            }));
+            row.appendChild(val);
+            axesEl.appendChild(row);
+        });
+        noteEl.textContent = (rule.verified === false ? 'Unverified definition. ' : '') + (rule.note || '');
+    }
+
+    trails.forEach((t, i) => {
+        const row = document.createElement('div');
+        row.className = 'fc-row';
+        const sw = document.createElement('span');
+        sw.className = 'fc-swatch';
+        sw.style.background = t.color;
+        const a = store.get(t.key);
+        const lab = document.createElement('span');
+        lab.className = 'fc-label';
+        lab.textContent = `Trail ${i + 1} · ${t.faceCount} face${t.faceCount === 1 ? '' : 's'}`;
+        row.appendChild(sw);
+        row.appendChild(lab);
+        if (!a) { const d = document.createElement('span'); d.className = 'fc-default'; d.textContent = 'default'; row.appendChild(d); }
+        if (rule || farborgelSelection) {
+            // A stepper writes ONLY its own trail (assignTrailSlot()/assignFarborgelSlot()): never a
+            // re-run of the rule/selection over the others, which would erase the colors edits handed
+            // on. An uncolored trail shows a dash and takes the first (or last) slot of the series on
+            // its first click.
+            // Phase B-Farbstrategien follow-up (gray-as-selection round, then per-trail override for
+            // Farborgel harmonies): a trail's CURRENT position can come from any of three provenance
+            // shapes - the old rule-registry write (_writeSlot(), params.slot, always present after a
+            // full application), the gray-as-selection one (applyHarmonyToPattern(),
+            // params.memberIndex, no .slot key at all by construction), or a Farborgel harmony
+            // application/override (same params.memberIndex shape - assignFarborgelSlot() deliberately
+            // does NOT write params.slot: confirmed live that reusing gray's ".slot always honored"
+            // trick breaks under Area/Symmetry/Rings once M (a Farborgel harmony's cardinality,
+            // 2..24) is smaller than N (the trail count) - gray's own trick only works because its
+            // M always equals N. See assignFarborgelSlot()'s own comment, ui-farbe.js, for the full
+            // reasoning - a Farborgel override therefore survives re-applying the SAME strategy at the
+            // SAME harmony size (pinned by applyHarmonyToPattern()), not any later one, a real, weaker guarantee than gray's, not an oversight here). .slot is
+            // preferred when present (an old-system or gray override always writes it), so an
+            // overridden trail's real choice always wins over a stale memberIndex from before the
+            // override; a Farborgel override's own memberIndex is read back by the SAME fallback,
+            // just without that extra "survives anything" guarantee. matchRule is 'farborgel'
+            // specifically when there is no real core/color.js rule (a Farborgel-colored sheet) -
+            // otherwise the real rule's own id, exactly as before this round.
+            const matchRule = rule ? rule.id : 'farborgel';
+            const slotRaw = (a && a.rule === matchRule && a.params)
+                ? (Number.isInteger(a.params.slot) ? a.params.slot : (Number.isInteger(a.params.memberIndex) ? a.params.memberIndex : null))
+                : null;
+            const slot = (slotRaw !== null && slotRaw < seriesSlots) ? slotRaw : null;
+            const stepper = faceColorsStepper(slot === null ? 0 : slot, seriesSlots, 'Pick another color of this series for this trail', delta => {
+                const next = slot === null ? (delta > 0 ? 0 : seriesSlots - 1) : (slot + delta + seriesSlots) % seriesSlots;
+                if (rule) assignTrailSlot(store, palette, t.key, next, seriesSlots);
+                else if (typeof window.assignFarborgelSlot === 'function') window.assignFarborgelSlot(store, sheet, t.key, next);
+                renderFaceColorsPanel();
+                redraw();
+            });
+            if (slot === null) stepper.querySelector('.pairing-variant-count').textContent = `\u2013/${seriesSlots}`;
+            row.appendChild(stepper);
+        }
+        row.dataset.key = t.key;
+        row.addEventListener('mouseenter', () => { faceHover = { sheet, key: t.key }; redraw(); });
+        row.addEventListener('mouseleave', () => { if (faceHover && faceHover.key === t.key) { faceHover = null; redraw(); } });
+        listEl.appendChild(row);
+        if (row.matches(':hover')) faceHover = { sheet, key: t.key };
+    });
+    faceColorsSignature = faceColorsSig();
+}
+
+function initFaceColorsPanel() {
+    const ruleSel = document.getElementById('face-colors-rule');
+    const resetBtn = document.getElementById('btn-face-colors-reset');
+    if (ruleSel) ruleSel.addEventListener('change', () => {
+        const palette = facePaletteFor(activeLayer);
+        if (!ruleSel.value) { resetFaceColors(activeLayer); renderFaceColorsPanel(); redraw(); return; }
+        palette.ruleId = ruleSel.value;
+        // hue axis starts at the first hue, level axes at their middle - the lightest levels
+        // (gray letter 'a') are nearly white and would make a first application look like "nothing happened"
+        palette.idx = harmonyRuleParams(getHarmonyRule(ruleSel.value), OSTWALD_REFERENCE_SYSTEM).map(ax => ax.id === 'hue' ? 0 : ax.count >> 1);
+        palette.overrides = new Map(); // another rule = another series: old slot picks would mean something else
+        // Group D Phase B4 follow-up: switching to this (old-system) rule means the sheet is no longer
+        // "driven by a remembered Farborgel type" - forget it, so the next anchor nudge (Kreis/Dreieck/
+        // Register/a stepper) doesn't silently overwrite this rule's coloring with a Farborgel reapply.
+        setLastHarmonyTypeFor(activeLayer, null);
+        applyFaceColorsPalette();
+    });
+    if (resetBtn) resetBtn.addEventListener('click', () => {
+        resetFaceColors(activeLayer);
+        // Phase B-Farbstrategien follow-up (Reset-respects-strategy fix): without this, the next
+        // passive render refills the sheet through ensureDefaultGrayFill() alone - always-cyclic by
+        // design (unattended/per-redraw role, unchanged) - silently dropping the sheet's sticky
+        // distributionStrategyFor() preference right when a person expects a fresh start to still
+        // honor it. window.applyGrayDefault (ui-farbe.js) is the strategy-aware counterpart; guarded
+        // since ui-farbe.js may not be loaded in every embedding (e.g. a reduced shell) - the plain
+        // render/redraw below always runs regardless, so a sheet with no faces/trails (where
+        // applyGrayDefault() itself no-ops) still gets its panel refreshed as before.
+        if (typeof window.applyGrayDefault === 'function') window.applyGrayDefault();
+        renderFaceColorsPanel();
+        redraw();
+    });
+    // Group D Phase B4 follow-up: "Spread colors" (#btn-face-colors-spread) removed - it only ever acted on
+    // a rule-colored sheet (palette.ruleId), and nothing can set a rule anymore now that the rule row's own
+    // UI is gone (see index.html's #more-farbe comment). spreadPaletteToUnassigned() itself (core/facecolor.js)
+    // is untouched - generic, headlessly-tested infrastructure, not deleted, just unreached from here now.
+    const listEl = document.getElementById('face-colors-list');
+    if (listEl) listEl.addEventListener('mouseleave', () => { if (faceHover) { faceHover = null; redraw(); } });
+}
+
+// The selected trail's outline (the chip view of the phone layout, ui-phone-chips.js): sets the own slot faceSelected (core/state.js), never faceHover, and redraws only when the value changed.
+// key null clears it. Returns whether it changed.
+function setFaceSelected(sheet, key) {
+    const next = key === null || key === undefined ? null : { sheet: sheet, key: key };
+    const same = next === null ? faceSelected === null : (faceSelected !== null && faceSelected.sheet === next.sheet && faceSelected.key === next.key);
+    if (same) return false;
+    faceSelected = next;
+    redraw();
+    return true;
+}
+window.setFaceSelected = setFaceSelected;
+
+// The spatial morph's write and read access (morph stage e1; the UI of stage e2 is the only caller): setSpatialMorph(patch) merges a partial { enabled, mode, angleDeg } into the project's morph block, normalises the result
+// through spatialMorphNormalize() (an invalid field falls back to its own default, as in the session restore), assigns it and redraws ONLY when the block changed (spatialMorphEqual). Returns whether it changed;
+// a non-object patch or any error is ignored (false). It touches no timeline and no layer. The autosave needs nothing here: draw() ends in markDirty(), the writer compares the snapshot texts.
+// getSpatialMorph() returns a COPY of the block, so a caller never holds a reference into the model.
+function setSpatialMorph(patch) {
+    try {
+        if (patch === null || typeof patch !== 'object' || Array.isArray(patch)) return false;
+        if (typeof spatialMorphNormalize !== 'function' || typeof spatialMorphEqual !== 'function') return false;
+        const merged = Object.assign({}, spatialMorph);
+        for (const k of ['enabled', 'mode', 'angleDeg']) if (Object.prototype.hasOwnProperty.call(patch, k)) merged[k] = patch[k];
+        const next = spatialMorphNormalize(merged);
+        if (spatialMorphEqual(next, spatialMorph)) return false;
+        spatialMorph = next;
+        redraw();
+        return true;
+    } catch (err) {
+        return false;
+    }
+}
+function getSpatialMorph() {
+    return typeof spatialMorphNormalize === 'function' ? spatialMorphNormalize(spatialMorph) : { enabled: false, mode: 'linear', angleDeg: 0 };
+}
+window.setSpatialMorph = setSpatialMorph;
+window.getSpatialMorph = getSpatialMorph;
+
+// Updates #pattern-name-status for whichever sheet is currently active.
+// Called once per draw() (see there for why this is cached rather than
+// unconditional like updateCrossLayerStatus()).
+// Task 068c3b: the lage by a second click on the ACTIVE shape button. Base: setBaseLage (clears the lines, layers and timeline like a shape change; asks first when layers or a timeline would go);
+// refused with a text when the ordnung is above the lage-2 ceiling; silent while the developer switch is off. Layer: setLayerLage (clears that layer's lines; a timeline layer is locked).
+function sayLage(to, what) {
+    if (!window.say) return;
+    const t = (k, v, fb) => (window.UI && UI.t ? UI.t(k, v) : fb);
+    const text = what ? t('note.lage.' + to, { what }, `Lage ${to}: ${what} geleert. ` + (to === 2 ? 'Erneut klicken: zurück zu Lage 1.' : 'Erneut klicken: Lage 2.'))
+        : t('note.lage.' + to + '.none', null, `Lage ${to}. ` + (to === 2 ? 'Erneut klicken: zurück zu Lage 1.' : 'Erneut klicken: Lage 2.'));
+    window.say('lage-change', text, 'info');
+}
+function sayLageRefusal(r) {
+    if (!window.say || !r || r.ok) return;
+    const t = (k, v, fb) => (window.UI && UI.t ? UI.t(k, v) : fb);
+    if (r.reason === 'ordnung-limit') window.say('lage-change', t('reason.lage2.max', { n: r.limit, t: maxOrdnungFor('triangle', 2), q: maxOrdnungFor('square', 2), h: maxOrdnungFor('hex', 2) }, `Lage 2 gibt es nur bis Ordnung ${r.limit} (Dreieck ${maxOrdnungFor('triangle', 2)}, Quadrat ${maxOrdnungFor('square', 2)}, Sechseck ${maxOrdnungFor('hex', 2)}).`), 'warn');
+    else if (r.reason === 'in-timeline') window.say('lage-change', t('reason.lage.timeline', null, 'Die Ebene gehört zur Zeitleiste; ihre Lage ist gesperrt.'), 'warn');
+}
+function toggleBaseLage() {
+    const spec = baseGridSpecNow(), to = spec.lage === 1 ? 2 : 1;
+    if (to === 2) {   // the refusals first: no question for a change that cannot happen
+        if (spec.ordnung > maxOrdnungFor(spec.shape, 2)) { sayLageRefusal({ ok: false, reason: 'ordnung-limit', limit: maxOrdnungFor(spec.shape, 2) }); return; }
+    }
+    const loss = shapeChangePlan(spec.shape).loss;
+    const go = () => {
+        const r = setBaseLage(to);
+        if (!r.ok) { sayLageRefusal(r); return; }
+        sayLage(to, shapeLossWhat(loss));
+        redraw();
+    };
+    if ((loss.layers || loss.timeline) && window.timelineConfirm && window.UI && UI.t) {
+        window.timelineConfirm({ title: UI.t('lage.confirm.title'), text: UI.t('lage.confirm.text', { what: shapeLossWhat(loss) }), confirmLabel: UI.t('shape.confirm.go'), onConfirm: go });
+        return;
+    }
+    go();
+}
+function toggleLayerLage(layer) {
+    const to = layerGridSpecOf(layer).lage === 1 ? 2 : 1, hadLines = layer.connections.length > 0;
+    const r = setLayerLage(layer, to);
+    if (!r.ok) { sayLageRefusal(r); return; }
+    sayLage(to, hadLines ? shapeLossWhat({ lines: true }) : '');
+    redraw();
+}
+
+// Task 068c3a: what a change of the BASE shape does. -> { same, from, to, clamped: { from, to } | null, loss: { lines, layers, timeline, colors } }.
+// to = gridSpecOnShape (the ordnung stays, clamped; the lage stays). The loss is what rebuildGrid() clears: the base's lines and colours, every layer and the timeline.
+function shapeChangePlan(target) {
+    const from = baseGridSpecNow(), same = target === currentShape;
+    const to = same ? from : gridSpecOnShape(from, target);
+    return { same, from, to, clamped: !same && to.ordnung < from.ordnung ? { from: from.ordnung, to: to.ordnung } : null,
+        loss: { lines: connections.length > 0, layers: additionalLayers.length, timeline: !!timeline, colors: baseFaceAssignments instanceof Map && baseFaceAssignments.size > 0 } };
+}
+// Task 080 (B4): the aspect-ratio lock and the width / height counts. UI state only (never saved): the lock is open while the area is not square or after a click on it; a restore resets it (the hook below) so a
+// square shows it closed. The limits come from validateGridSize (core/forms.js) - no second table.
+let sizeLockOpen = false;
+function sizeLockIsOpen() { return sizeLockOpen || !gridIsSquare(); }
+// the allowed counts of one axis against the other count -> { min, max }
+function sizeAxisRange(axis, other) {
+    let min = null, max = null;
+    for (let v = 1; v <= 9; v++) { if ((axis === 'x' ? validateGridSize(v, other) : validateGridSize(other, v)).ok) { if (min === null) min = v; max = v; } }
+    return { min, max };
+}
+// what typing v on an axis asks for -> { x, y, clamped }: locked: X = Y = v; unlocked: v clamped into the axis range against the held other count
+function sizeTargetFor(axis, v) {
+    if (!sizeLockIsOpen()) return { x: v, y: v, clamped: false };
+    const other = axis === 'x' ? gridSizeY() : gridSizeX(), r = sizeAxisRange(axis, other), c = Math.min(r.max, Math.max(r.min, v));
+    return { x: axis === 'x' ? c : other, y: axis === 'y' ? c : other, clamped: c !== v };
+}
+function sizeRatioNote() { if (window.say) window.say('size-ratio', window.UI && UI.t ? UI.t('size.ratio.max') : 'Seitenverhältnis höchstens 1:3', 'info'); }
+// the ONE way a size / format change of the base runs (the width and height handlers and the lock): the plan (a dry run) first, a dialog only when colour groups would be lost, then resizeBase(x, y), the layer
+// views, the playback layer and the notice. o.sync() puts the fields back to the state in force (nothing changed, cancelled, or done); o.done(r) runs after a change.
+function sizeChangeRun(x, y, o) {
+    const plan = sizeChangePlan(x, y);
+    if (plan.same) { o.sync(); return; }
+    const doSizeChange = () => {
+        const r = resizeBase(x, y);
+        o.sync();
+        if (o.done) o.done(r);
+        renderLayerTabs(); // the layer objects were replaced - the layer views follow
+        updateOffsetControls();
+        updateTimelineControls();
+        if (timeline && timeline.playbackLayerIndex !== null) applyTimelineFrame(); // the playback layer's render substitute is read afresh at the new size
+        saySizeChange(r);
+        redraw();
+    };
+    if (plan.loss.colors && window.timelineConfirm && window.UI && UI.t) {
+        window.timelineConfirm({ title: UI.t('size.confirm.title'), text: UI.t('size.confirm.text', { n: plan.colorsCount, m: plan.colorsTotal }), confirmLabel: UI.t('size.confirm.go'), onConfirm: doSizeChange, returnFocus: () => { o.sync(); } });   // cancel: the fields go back to the size in force
+        return;
+    }
+    doSizeChange();
+}
+// the lock button: open it (nothing changes, Y = X), or close it - at X != Y the area becomes square again (Y := X, the same dialog for lost colours; cancel leaves it open and the format as it is)
+function sizeLockToggle() {
+    if (!sizeLockIsOpen()) { sizeLockOpen = true; if (window.uiSync) window.uiSync(); return; }
+    if (gridSizeX() === gridSizeY()) { sizeLockOpen = false; if (window.uiSync) window.uiSync(); return; }
+    sizeChangeRun(gridSizeX(), gridSizeX(), { sync: () => { if (window.uiSync) window.uiSync(); }, done: () => { sizeLockOpen = false; } });
+}
+
+// Tasks 074/075: what a change of the BASE size does. -> { same, from, to, loss: { lines, layers, timeline, colors }, colorsCount, colorsTotal }. Only colour groups can still be lost (a dry run of resizeBase()
+// says how many: faces that merge or vanish at the new size); layers, timeline, lines and free points are carried along.
+function sizeChangePlan(target, targetY) {
+    if (targetY === undefined) targetY = target;
+    const plan = { same: gridSizeX() === target && gridSizeY() === targetY, from: shapeSizeFactor, to: target, loss: { lines: false, layers: 0, timeline: false, colors: false }, colorsCount: 0, colorsTotal: 0 };
+    if (plan.same) return plan;
+    let r = null;
+    try { r = resizeBase(target, targetY, { dryRun: true }); } catch (e) { r = null; }
+    if (r) { plan.colorsCount = r.lost.colorsCount; plan.colorsTotal = r.lost.colorsTotal; plan.loss.colors = r.lost.colorsCount > 0; }
+    return plan;
+}
+// The notice after a size change: "Größe 3 -> 5. Linien und freie Punkte erhalten. Ebenen, Zeitleiste und Farben angepasst. Nicht erhalten: 2 von 5 Farbgruppen." (only what applies).
+function sizeChangeText(r) {
+    const t = (k, v, fb) => (window.UI && UI.t ? UI.t(k, v) : fb);
+    const and = t('shape.lost.and', undefined, 'und');
+    const list = (a) => (a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' ' + and + ' ' + a[a.length - 1]);
+    const keptWords = [], adjWords = [];
+    if (r.kept.lines) keptWords.push(t('size.kept.lines', undefined, 'Linien'));
+    if (r.kept.free) keptWords.push(t('size.kept.free', undefined, 'freie Punkte'));
+    if (r.kept.layers) adjWords.push(t('size.adj.layers', undefined, 'Ebenen'));
+    if (r.kept.timeline) adjWords.push(t('size.adj.timeline', undefined, 'Zeitleiste'));
+    if (r.kept.colors) adjWords.push(t('size.adj.colors', undefined, 'Farben'));
+    const parts = [t('note.size.head', { from: r.from, to: r.to }, `Größe ${r.from} -> ${r.to}.`)];
+    if (keptWords.length) parts.push(t('note.size.kept', { what: list(keptWords) }, `${list(keptWords)} erhalten.`));
+    if (adjWords.length) parts.push(t('note.size.adjusted', { what: list(adjWords) }, `${list(adjWords)} angepasst.`));
+    if (r.lost.colorsCount) parts.push(t('note.size.colorsLost', { n: r.lost.colorsCount, m: r.lost.colorsTotal }, `Nicht erhalten: ${r.lost.colorsCount} von ${r.lost.colorsTotal} Farbgruppen.`));
+    if (r.hints && r.hints.fieldNet) { const sz = r.toX === r.toY ? r.to : r.toX + '/' + r.toY; parts.push(currentShape !== 'square' ? t('note.size.fieldNetNoNetMin', { size: sz }, `Feld-Netz braucht mindestens Größe 3: bei Größe ${sz} kein Netz.`) : currentShape !== 'square' ? t('note.size.fieldNetNoNet', { size: sz }, `Feld-Netz gilt nur bei ungeraden Größen: bei Größe ${sz} kein Netz.`) : t('note.size.fieldNet', { size: sz }, `Feld-Netz gilt bei Größe ${sz} als Einzel.`)); }   // task 092: the triangle and the hexagon have no Single net
+    return parts.join(' ');
+}
+function saySizeChange(r) {
+    if (r.changed && window.say) window.say('size-change', sizeChangeText(r), 'info');
+}
+// "Linien, Ebenen, Zeitleiste und Farben" - the words of what a shape change clears (only what is there), joined as a list.
+function shapeLossWhat(loss) {
+    const t = (k, fb) => (window.UI && UI.t ? UI.t(k) : fb);
+    const parts = [];
+    if (loss.lines) parts.push(t('shape.lost.lines', 'Linien'));
+    if (loss.layers) parts.push(t('shape.lost.layers', 'Ebenen'));
+    if (loss.timeline) parts.push(t('shape.lost.timeline', 'Zeitleiste'));
+    if (loss.colors) parts.push(t('shape.lost.colors', 'Farben'));
+    return parts.length < 2 ? parts.join('') : parts.slice(0, -1).join(', ') + ' ' + t('shape.lost.and', 'und') + ' ' + parts[parts.length - 1];
+}
+// The notice after a shape change: the clamp ("Ordnung auf {n} begrenzt ...") and what was cleared. null when there is nothing to say.
+function shapeChangeText(clampedTo, what) {
+    const t = (k, v, fb) => (window.UI && UI.t ? UI.t(k, v) : fb);
+    const parts = [];
+    if (clampedTo !== null && clampedTo !== undefined) parts.push(t('note.shape.clamp', { n: clampedTo }, `Ordnung auf ${clampedTo} begrenzt (höchstens ${clampedTo} bei dieser Form).`));
+    if (what) parts.push(t('note.shape.cleared', { what }, `Geleert: ${what}.`));
+    return parts.length ? parts.join(' ') : null;
+}
+function sayShapeChange(plan) {
+    if (plan.same) return;
+    const text = shapeChangeText(plan.clamped ? plan.clamped.to : null, shapeLossWhat(plan.loss));
+    if (text && window.say) window.say('shape-change', text, 'info');
+}
+
+// Task 071 / 071b: the tooltip of the v2 name: the grid (order, shape, position, main group, nodes) and every distinct line (node numbers, letter and the sectors it touches, overline, aA). Every word and
+// explanation is a key of the glossary (core/glossary.js -> ui-i18n.js glossary.*): the tooltip owns no text of its own.
+function patternNameTooltip(v2, spec) {
+    const T = (key, vars) => (window.UI && UI.t ? UI.t(key, vars) : key);
+    const term = id => T(glossaryEntry(id).termKey), text = id => T(glossaryEntry(id).textKey);
+    const SHAPE_KEY = { triangle: 'shape.triangle', square: 'shape.square', hex: 'shape.hex' };
+    const lines = [`${v2.grid}: ${term('order')} ${spec.ordnung}, ${T(SHAPE_KEY[spec.shape])}, ${term('position')} ${spec.lage}, ${v2.rotation ? T('sym.rotation') : term('maingroup') + ' ' + v2.group}, ${getGridNodeCount(spec)} ${term('nodes')}`];   // task 072c: the mode "nur Drehung" (v2.rotation) names the rotation instead of the main group
+    const seen = new Set();
+    v2.tokens.forEach(tk => {
+        if (seen.has(tk.token)) return; seen.add(tk.token);
+        const sectors = lineKeySectors(tk.key, spec.shape);   // task 072c2: the rank of the letter in the series of the shape (was: the index in the whole alphabet, "g = 7 Sektoren" in the square)
+        let line = `${tk.display}: ${term('nodenumber')} ${tk.key.z1}, ${tk.key.z2}; ${term('letter')} ${tk.key.buchstabe}${sectors === null ? '' : ` (${sectors === 1 ? T('glossary.sectors.one', { n: sectors }) : T('glossary.sectors.other', { n: sectors })})`}`;
+        if (tk.key.gegen) line += `; ${term('bar')}: ${text('bar')}`;
+        if (tk.spiegelgleich) line += `; ${term('both')}: ${text('both')}`;
+        lines.push(line);
+    });
+    if (v2.rotation) {   // task 072c: the explanations that only the pure-rotation name needs, once each
+        lines.push(`${term('direction')}: ${text('direction')}`);   // the order of the numbers means something in every pure-rotation name
+        if (v2.tokens.some(tk => tk.law1c)) lines.push(`${term('law1c')}: ${text('law1c')}`);
+        lines.push(`${term('sourceform')}: ${text('sourceform')}`);
+    }
+    return lines.join('\n');
+}
+
+// Task 068c2: the read-outs of the active sheet's grid - the info card's line "Gitter: {name} · Knoten: {n}" (#grid-info-status) and the tooltips of the two
+// ordnung steppers ("Ordnung {o}: {n} Knoten"). Derived from the spec only (getGridNodeCount, the grid part of the v2 name); written only when the text changes.
+function updateGridInfoLine() {
+    const t = (key, vars, fallback) => (window.UI && UI.t ? UI.t(key, vars) : fallback);
+    const textOf = (spec) => {
+        const n = getGridNodeCount(spec), code = gridCodeFor(spec) || '';   // task 071: the grid part of the v2 name, from the one function (core/orbits.js gridCodeFor)
+        return { n, code };
+    };
+    const set = (el, prop, value) => { if (el && (prop === 'text' ? el.textContent !== value : el.getAttribute('title') !== value)) { if (prop === 'text') el.textContent = value; else el.setAttribute('title', value); } };
+    const active = activeLayer !== 'base' && additionalLayers[activeLayer] ? layerGridSpecOf(additionalLayers[activeLayer]) : baseGridSpecNow();
+    const a = textOf(active);
+    set(document.getElementById('grid-info-status'), 'text', t('info.grid.line', { name: a.code, n: a.n }, `Gitter: ${a.code} · Knoten: ${a.n}`));
+    const base = baseGridSpecNow(), b = textOf(base);
+    set(document.getElementById('nav-node-stepper'), 'title', t('tip.order', { o: base.ordnung, n: b.n }, `Ordnung ${base.ordnung}: ${b.n} Knoten`));
+    const lay = additionalLayers[activeLayer];
+    const lg = document.getElementById('layer-node-count-input');
+    if (lg && lay) { const s = layerGridSpecOf(lay), c = textOf(s); set(lg.closest('.stepper'), 'title', t('tip.order', { o: s.ordnung, n: c.n }, `Ordnung ${s.ordnung}: ${c.n} Knoten`)); }
+}
+
+function updatePatternNameStatus() {
+    const statusEl = select('#pattern-name-status');
+    if (!statusEl) return;
+    updateGridInfoLine();
+
+    const sig = patternNameSignature();
+    if (sig !== patternNameCacheSignature) {
+        // Roadmap 1.12 stage 1 pass 2 (node-resolution fix follow-through):
+        // activeGridOverride() instead of omitting the argument - this
+        // previously always computed the name against the BASE's own
+        // grid regardless of activeLayer, so a differently-sized/scaled
+        // layer's displayed name was silently wrong (orbit ids resolved
+        // against the wrong node set, same bug class the shipped fix
+        // addressed for rendering/interaction - just not yet wired here).
+        // Roadmap [orbits.js shape-mismatch fix]: gridOverride captured
+        // once (not called twice) - its own .shape field (correctly
+        // undefined for the base sheet) is threaded through as the new
+        // shapeOverride argument, so a layer whose shape differs from
+        // the base's gets its OWN shape's symmetry group, not the
+        // base's (the crash/wrong-result this fix addresses).
+        // Roadmap 1.12 stage 5 (symmetryMode axis) part 2: gridOverride's
+        // own .symmetryMode field (correctly undefined for the base
+        // sheet, falling through to computeThemeLineName()'s own global-
+        // symmetryMode default there) threaded through as the mode
+        // argument, replacing the bare `undefined` this call previously
+        // always passed regardless of activeLayer - the design session's
+        // own finding: a layer's displayed pattern name was silently
+        // computed under the BASE's symmetryMode, not its own.
+        const gridOverride = activeGridOverride();
+        // task 071: a main-group pattern (full 3* / 4* / 6*, no free endpoint, at least one line) shows the v2 name - the same function as the export name; every other case keeps the old name
+        const sheetSpec = activeLayer !== 'base' && additionalLayers[activeLayer] ? layerGridSpecOf(additionalLayers[activeLayer]) : baseGridSpecNow();
+        const sheetMode = gridOverride && gridOverride.symmetryMode !== undefined ? gridOverride.symmetryMode : symmetryMode;
+        const v2 = gridDisplayNameFor(sheetSpec, activeConnections(), sheetMode) || gridRotationNameFor(sheetSpec, activeConnections(), sheetMode);   // task 072c: or the pure-rotation name (display only)
+        patternNameCacheValue = v2 ? (v2.rotation ? v2.display + '\n' + v2.source : v2.display) : computeThemeLineName(activeConnections(), gridOverride && gridOverride.symmetryMode, gridOverride, gridOverride && gridOverride.shape);
+        patternNameCacheTip = v2 ? patternNameTooltip(v2, sheetSpec) : null;
+        patternNameCacheSignature = sig;
+    }
+    // Roadmap [orbits.js free-endpoint fix]: computeThemeLineName() now
+    // returns null both when nothing's drawn yet AND when the active
+    // sheet's connections include a free-endpoint node (1.3(a) - no
+    // orbit under the fixed symmetry group by construction, see
+    // core/orbits.js's computeThemeLineOrbits()) - these are genuinely
+    // different situations and shouldn't share one fallback text; the
+    // old unconditional "No theme lines yet" would be actively
+    // misleading for a sheet that clearly has visible lines.
+    // the tooltip belongs to the v2 name only; the old name and the placeholders have none
+    if (patternNameCacheTip) { if (statusEl.elt.getAttribute('title') !== patternNameCacheTip) statusEl.elt.setAttribute('title', patternNameCacheTip); }
+    else if (statusEl.elt.hasAttribute('title')) statusEl.elt.removeAttribute('title');
+    // task 071c: write only when the text CHANGES (compared with the DOM value, not with the signature): .html() replaced the content on every draw() and the browser restarted the tooltip each time
+    const nameText = patternNameCacheValue ? patternNameCacheValue : activeConnections().some(c => c.length === 2) ? 'Name unavailable (includes free endpoints)' : 'No theme lines yet';
+    if (statusEl.elt.textContent !== nameText) statusEl.html(nameText);
+}
+
+// ----------------- CROSS-LAYER FACE COMPUTE (Roadmap 1.10b-ii-b) -----
+// Synchronous, user-initiated compute - NOT wired into every redraw()
+// the way 1.10a's per-sheet showFaces is (see the 1.10b-ii-b design
+// session for why: post spatial-hash-fix real times are sub-second to
+// a few seconds, too long to re-run on every click/drag the way single-
+// sheet face detection already does). No rendering yet - coloring and
+// canvas display are 1.10b-ii-c; this is compute + timing + staleness
+// feedback only.
+let crossLayerResult = null;          // last computeCrossLayerFaces() result, or null if never computed
+let crossLayerResultSignature = null; // crossLayerConfigSignature() at the time crossLayerResult was computed
+let crossLayerResultTimeMs = 0;       // that compute's real elapsed time, for the status line
+
+// Roadmap 1.10b-ii-d (performance follow-up): offscreen cache for
+// drawCrossLayerFaceFillsAcrossCanvas()'s own output - real profiling
+// found that pass costs ~390ms at 915 faces/23x23 tiles, almost entirely
+// canvas draw-call volume (fill()/vertex()), and it was being re-run from
+// scratch on EVERY draw() (including plain mouseMoved() redraws, see
+// draw() below), not just when the underlying result actually changed.
+// crossLayerFillBuffer holds the rendered-once image; crossLayerFillBufferSignature
+// is the crossLayerResultSignature it was rendered for - draw() only
+// re-renders into the buffer when these disagree (i.e. a new compute was
+// accepted since the buffer was last built), and just blits the buffer
+// (a single image() call, measured ~0.001ms) otherwise. null/null is
+// deliberately never "equal" to a real signature, so the very first
+// current result always triggers one real render, same as before caching
+// existed.
+let crossLayerFillBuffer = null;
+let crossLayerFillBufferSignature = null;
+
+// Builds the {baseConn, layers} input computeCrossLayerFaces() (and
+// estimateCrossLayerSegmentCount()) expect - base sheet's complete
+// connections, plus one entry per ENABLED additional layer (sheetId =
+// its additionalLayers[] index, matching how 1.10b-i's own live testing
+// already addressed sheets), each with its own complete connections and
+// offset. Mirrors collectCrossLayerSegments()'s/drawShapeCell()'s own
+// completeness filter ([id,id] only - a connection started by one click
+// and never finished stays [id]).
+// Roadmap 1.12 stage 5 (symmetryMode axis) part 2: symmetryMode included
+// per layer now too, mirroring offsetX/offsetY above - core/faces.js's
+// collectCrossLayerSegments() (via _planCrossLayerNeighborhood()) needs
+// it to gather THIS layer's own segments under its own symmetryMode,
+// not the base's (design session's flagged highest-risk fix).
+function buildCrossLayerInput() {
+    const baseConn = connections.filter(c => c.length === 2);
+    const layers = additionalLayers
+        .map((layer, i) => ({
+            sheetId: i,
+            connections: layer.connections.filter(c => c.length === 2),
+            offsetX: layer.offsetX,
+            offsetY: layer.offsetY,
+            symmetryMode: layer.symmetryMode,
+            enabled: layer.enabled
+        }))
+        .filter(l => l.enabled);
+    return { baseConn, layers };
+}
+
+// Roadmap 1.12 stage 1: cross-layer face detection (computeCrossLayerFaces(),
+// core/faces.js) assumes every sheet shares ONE lattice, translated by a
+// constant offset (_planCrossLayerNeighborhood()'s single shared v1/v2/R/M,
+// see the 1.12 stage-1 design session's own finding) - correct for 1.9's
+// offset-only layers, but NOT for a layer whose own scale (shapeSizeFactor)
+// differs from the base's, which has a genuinely different lattice period.
+// Computing anyway would silently produce wrong faces, not just imprecise
+// ones - refused outright rather than computed with a caveat, same "don't
+// silently compute wrong" principle as computeLayerCellFaces()'s own guard
+// (core/tiling.js). Returns the actual mismatched layers (not just a
+// boolean) so the status message can name them.
+//
+// Roadmap 1.12 stage 3: also excludes a layer with a nonzero rotation,
+// even at matching scale - renamed from scaleMismatchedEnabledLayers()
+// since it's no longer just a scale check. _planCrossLayerNeighborhood()/
+// _meshBasisVectors() (core/faces.js) assume every included layer shares
+// the base's EXACT v1/v2 - decomposeLatticeOffset() decomposes a layer's
+// offset against the BASE's own (unrotated) lattice vectors, and
+// collectCrossLayerSegments() calls drawShapeCell() with no rotation-
+// awareness at all. A same-scale-but-rotated layer would previously have
+// PASSED this guard (it only checked shapeSizeFactor) and gone on to
+// silently compute wrong cross-layer face geometry.
+// Roadmap 1.12 stage 4 (UI) guard fix: also excludes a layer whose own
+// shape differs from the base's - found while implementing the per-layer
+// shape control (a differently-shaped layer was previously reachable
+// only via direct state manipulation, never through this guard's own
+// live path). "Every sheet shares ONE lattice" (this function's own
+// docblock above) fails even more fundamentally for a shape mismatch
+// than for the scale/rotation cases already excluded - a hex lattice and
+// a triangle lattice aren't the same lattice TYPE, so
+// _planCrossLayerNeighborhood()/_meshBasisVectors() (core/faces.js)
+// would otherwise silently compute cross-layer faces against the wrong
+// basis entirely, not just an imprecise one.
+function incompatibleEnabledLayersForCrossLayerFaces() {
+    return additionalLayers
+        .map((layer, i) => ({ index: i, layer }))
+        .filter(({ layer }) => layer.enabled && (layer.shapeSizeFactor !== shapeSizeFactor || (layer.rotation || 0) !== 0 || layer.shape !== currentShape || !layerSpecMatchesBase(layerGridSpecOf(layer), gridSpec)));
+}
+
+// A cheap fingerprint of everything a cross-layer compute result
+// actually depends on - base connections, and each ENABLED layer's own
+// connections/offset. Used to detect staleness (see
+// updateCrossLayerStatus()) without needing to hook every individual
+// mutation site (mousePressed(), undo/redo/clear, layer add/remove/
+// enable-toggle, offset inputs) - updateCrossLayerStatus() is instead
+// called once per draw() (see there), which already fires after every
+// one of those via their own redraw() calls.
+function crossLayerConfigSignature() {
+    const { baseConn, layers } = buildCrossLayerInput();
+    return JSON.stringify({
+        base: baseConn,
+        net: netWarpActive() ? netTransformNow() : null,
+        layers: layers.map(l => ({ sheetId: l.sheetId, conns: l.connections, ox: l.offsetX, oy: l.offsetY }))
+    });
+}
+
+// Soft time hint (1.10b-ii-b design session, point 2): grounded in the
+// post-spatial-hash-fix real O(S^2)-ish scaling (2,400 segments -> real
+// 250ms, 3,600 -> real 598ms) extrapolated to ~1.7s at 6,000 and
+// ~3-5s at 10,000 segments - informational only, never a hard refusal.
+function crossLayerTimeHint(estimatedSegments) {
+    if (estimatedSegments >= 10000) return 'this will likely take several seconds';
+    if (estimatedSegments >= 6000) return 'this may take a moment';
+    return '';
+}
+
+// Updates #cross-layer-status: before any compute (or once the config
+// has changed since the last one), shows the live segment estimate's
+// time hint (or nothing, if fast); after a compute that's still current
+// for the present config, shows the result summary instead. Called once
+// per draw() (cheap - estimateCrossLayerSegmentCount()'s own cost is
+// one real but tiny single-connection collectCellSegments() probe,
+// negligible next to drawTessellation()'s own per-redraw cost) rather
+// than from every individual mutation site, so no interaction point
+// (however it changes connections/layers/offsets) can be missed.
+function updateCrossLayerStatus() {
+    const statusEl = optionalSelect('#cross-layer-status');   // null: the status line was removed with the compute button
+    if (!statusEl) return;
+
+    if (netWarpActive()) {
+        statusEl.html('Cross-layer face detection is off while a net transform is active (faces are not detected on a warped net).');
+        return;
+    }
+    const mismatched = incompatibleEnabledLayersForCrossLayerFaces();
+    if (mismatched.length > 0) {
+        const names = mismatched.map(({ index }) => `Layer ${index + 1}`).join(', ');
+        // Roadmap 1.12 stage 4 (UI): wording updated alongside
+        // incompatibleEnabledLayersForCrossLayerFaces()'s own new shape
+        // check above - "size or rotation" alone became misleading for a
+        // layer flagged ONLY because its shape differs (matching scale
+        // and rotation otherwise), which the new per-layer shape control
+        // makes reachable for the first time.
+        statusEl.html(`Cross-layer face detection needs every enabled layer to share the base's shape, scale and rotation - ${names} ${mismatched.length === 1 ? 'has' : 'have'} an independent shape, size or rotation. Match the base or disable to compute.`);
+        return;
+    }
+
+    const { baseConn, layers } = buildCrossLayerInput();
+    const estimate = estimateCrossLayerSegmentCount(baseConn.length, layers);
+    const currentSignature = crossLayerConfigSignature();
+
+    if (crossLayerResult && crossLayerResultSignature === currentSignature) {
+        statusEl.html(`${crossLayerResult.faces.length} faces found (${Math.round(crossLayerResultTimeMs)} ms)`);
+    } else if (crossLayerResult) {
+        const hint = crossLayerTimeHint(estimate);
+        statusEl.html(`Outdated (last: ${crossLayerResult.faces.length} faces) - recompute to update` + (hint ? `; ${hint}` : ''));
+    } else {
+        const hint = crossLayerTimeHint(estimate);
+        statusEl.html(hint ? `Estimated ~${estimate} segments - ${hint}` : '');
+    }
+}
+
+// The Compute button's click handler. Sets the disabled/"Computing…"
+// state FIRST, then defers the actual (synchronous, blocking) compute
+// to the next tick via setTimeout(fn, 0) - a plain synchronous call
+// here would freeze the main thread in the SAME tick as the click,
+// before the browser gets a chance to paint the disabled button/label
+// change, making the button appear to do nothing until the result
+// suddenly appears (1.10b-ii-b design session, point 3).
+function computeCrossLayerFacesFlow() {
+    const computeBtn = optionalSelect('#btn-compute-cross-layer');   // null since the button was removed: the compute itself still runs (from the console), only the button's states are skipped
+    const statusEl = optionalSelect('#cross-layer-status');
+
+    // Roadmap 1.12 stage 1: refuse outright rather than compute wrong
+    // faces - see incompatibleEnabledLayersForCrossLayerFaces()'s own
+    // comment. Checked here too (not just in updateCrossLayerStatus()'s
+    // proactive display) as the actual hard safety net: the button could
+    // in principle still be clicked while the status text hasn't caught
+    // up for some reason, and this is the call that would do real,
+    // silently-wrong work.
+    if (netWarpActive()) { updateCrossLayerStatus(); return; } // refused visibly, like the mismatch case below
+    const mismatched = incompatibleEnabledLayersForCrossLayerFaces();
+    if (mismatched.length > 0) {
+        updateCrossLayerStatus();
+        return;
+    }
+
+    if (computeBtn) { computeBtn.elt.disabled = true; computeBtn.html('Computing…'); }
+    if (statusEl) statusEl.html('Computing…');
+
+    setTimeout(() => {
+        const { baseConn, layers } = buildCrossLayerInput();
+        const t0 = performance.now();
+        const result = computeCrossLayerFaces(baseConn, layers);
+        const t1 = performance.now();
+
+        crossLayerResult = result;
+        crossLayerResultTimeMs = t1 - t0;
+        crossLayerResultSignature = crossLayerConfigSignature();
+
+        if (computeBtn) { computeBtn.elt.disabled = false; computeBtn.html('Compute Cross-Layer Faces'); }
+        updateCrossLayerStatus();
+        // Roadmap 1.10b-ii-c: redraw() so the newly computed result
+        // actually renders (drawCrossLayerFaceFillsAcrossCanvas(), see
+        // draw()) - 1.10b-ii-b never needed this (no rendering existed
+        // yet, only the status-text summary updateCrossLayerStatus()
+        // handles), so it was correctly absent there; without it here,
+        // the canvas silently keeps showing whatever it last rendered
+        // (compute-and-display would stop being one action in practice,
+        // even though the result IS computed and non-stale) until some
+        // UNRELATED interaction happens to trigger its own redraw().
+        redraw();
+    }, 0);
+}
+
+// The mouse press. p5 calls it for a real mouse press AND, in 1.9.0, for every touch tap twice more (at touchstart, and for the emulated mousedown): touch and pen
+// taps therefore go through tapPress() below, touchStarted is defined (installTapInput) so p5 stops calling this at touchstart, and the emulated mousedown that
+// follows a tap is recognised here and dropped. Mouse and touch resolve their node the same way, nodeHit() (the nearest node within the pointer's radius).
+function mousePressed(e) {
+    if (tapDetector && e && tapDetector.consumeEmulatedMouse(e.clientX, e.clientY)) return;
+    pressAt(mouseX, mouseY, 'mouse', nodeHit(mouseX, mouseY, 'mouse'));
+}
+
+// The press itself, in sketch units: select a node, connect, create a free endpoint, or take an Alt-net construction click. `hit` is { id } from nodeHit():
+// the node this press resolved (the nearest within the pointer's radius), id null for none. It used to be the FIRST node in array order within 18 units for the
+// mouse; that loop is gone (B4c). pointerType is not read here.
+function pressAt(x, y, pointerType, hit) {
+    if (x < 0 || x > width || y < 0 || y > height) return;
+    if (altNetActive) { handleAltNetClick(x, y); return; }
+    // Roadmap 1.12 stage 1 (node-resolution fix): activeNodes() instead
+    // of the bare global `nodes` - both the hit-test below and 1.3(a)'s
+    // free-endpoint creation previously always read/wrote the base's
+    // array regardless of activeLayer, so a free-endpoint node created
+    // while a layer was active silently landed in the BASE's node
+    // space (and id range) instead of that layer's own.
+    const activeNodeArr = activeNodes();
+    // Roadmap 1.6 / Group E phase 2: under a net warp a node is DRAWN at F(node), so that is where the
+    // click must land; a free endpoint is stored in regular space at F^-1(click) so it is drawn where
+    // it was clicked (core/netwarp.js docblock, "FREE ENDPOINTS").
+    const netWarp = netWarpBaseNow();
+    let foundId = hit.id;
+    const hitLayer = activeLayer === 'base' ? null : additionalLayers[activeLayer];
+    if (foundId === null && freeEndpointsEnabled && netWarp && netWarpIsClosed(netWarp) && !netWarpInsideNet(netWarp, { x: x, y: y })) {
+        // Closed net: there is nothing outside the net to attach a free endpoint to - refuse, visibly.
+        if (window.say) window.say('net-free', 'A free endpoint cannot be placed outside the net (Single and Field are closed nets).', 'warn');
+        return;
+    }
+    if (foundId === null && freeEndpointsEnabled) {
+        const newId = Math.max(...activeNodeArr.map(n => n.id), 0) + 1;
+        // a field: the click is mapped back into the CENTRAL tile's own coordinates (core/netwarp.js netWarpFieldLocal())
+        // a layer: back through F^-1 and then into the layer's own canonical frame (layerFreeNodeFromClick()), so the node lands where it was clicked
+        const at = hitLayer ? layerFreeNodeFromClick(hitLayer, { x: x, y: y }, netWarp) : netWarp && netWarp.field ? netWarpFieldLocal(netWarp, { x: x, y: y }) : (netWarp ? invertNetWarp(netWarp, { x: x, y: y }) : { x: x, y: y });
+        activeNodeArr.push({ id: newId, x: at.x, y: at.y, free: true });
+        foundId = newId;
+    }
+    if (foundId !== null) {
+        const conns = activeConnections();
+        if (!conns.length || conns[conns.length - 1].length === 2) conns.push([foundId]);
+        else conns[conns.length - 1].push(foundId);
+        clearActiveRedoStack(); // Clear redo stack on manual add
+        redraw();
+    }
+}
+
+// ---- Touch and pen taps (Phase 2, B2) -----------------------------------------------------------------------------------------------------------------
+// core/pointer-tap.js decides what a tap is (pure, tested in tools/ui/test-pointer-tap.js); this wires it to the page. pointerdown is taken in the capture phase
+// on the canvas container, pointermove / pointerup / pointercancel on window (a touch pointer is captured by its first target and ends there). No touch event is
+// prevented, so scrolling and pinch zoom are the browser's. A defined touchStarted switches off p5's own fallback (_ontouchstart: UA contains "safari", touchStarted
+// undefined -> mousePressed(e)); p5 still updates mouseX / mouseY at touchstart, whether or not touchStarted exists.
+let tapDetector = null;
+function installTapInput() {
+    if (typeof createTapDetector !== 'function') return;   // the script is missing: the old behaviour stays as it was
+    const box = document.getElementById('canvas-container');
+    if (!box) return;
+    tapDetector = createTapDetector({ now: () => performance.now() });
+    box.addEventListener('pointerdown', e => { tapDetector.down(e); }, true);
+    window.addEventListener('pointermove', e => { tapDetector.move(e); });
+    window.addEventListener('pointerup', e => { const tap = tapDetector.up(e); if (tap) tapPress(tap); });
+    window.addEventListener('pointercancel', e => { tapDetector.cancel(e); });
+    window.touchStarted = function () { };   // defined, empty, not returning false
+}
+
+// Task 078 (B2): the p5 canvas follows canvasW x canvasH (core/state.js sets them: setGridSize, resizeBase, a shape change of a non-square base). The off-screen fill buffer is dropped (it is
+// created at the canvas size on the next draw), and the CSS display size follows (style.css --canvas-ratio: set only for a non-square canvas, so a square one is styled exactly as before).
+function canvasSizeSync() {
+    if (width !== canvasW || height !== canvasH) {
+        resizeCanvas(canvasW, canvasH, true);   // no redraw here: the caller redraws once everything is final
+        if (crossLayerFillBuffer && crossLayerFillBuffer.remove) crossLayerFillBuffer.remove();
+        crossLayerFillBuffer = null; crossLayerFillBufferSignature = null;
+    }
+    const root = document.documentElement;   // style.css --canvas-ratio = W / H; absent (the CSS default 1) for a square canvas
+    if (canvasW === canvasH) root.style.removeProperty('--canvas-ratio'); else root.style.setProperty('--canvas-ratio', String(canvasW / canvasH));
+    canvasFitSync();
+}
+// Task 078b: the window-height limit of a NON-square canvas (style.css --canvas-hfit / --canvas-wu). The head above the canvas is MEASURED (the container's top in the document: the nav rows differ per width,
+// a fixed number would not), the window height is innerHeight; a square canvas removes both variables, so nothing about it changes. Runs from canvasSizeSync() and on resize / orientationchange.
+function canvasFitSync() {
+    const root = document.documentElement, box = document.querySelector('#canvas-container');
+    if (canvasW === canvasH || !box) { root.style.removeProperty('--canvas-hfit'); root.style.removeProperty('--canvas-wu'); return; }
+    const gap = parseFloat(getComputedStyle(root).getPropertyValue('--gap')) || 8;
+    const head = box.getBoundingClientRect().top + window.scrollY;
+    root.style.setProperty('--canvas-hfit', Math.max(0, window.innerHeight - head - gap) + 'px');
+    root.style.setProperty('--canvas-wu', String(canvasW));
+}
+
+// client pixels -> sketch units, the way p5 does it for mouseX / mouseY (getMousePos in p5 1.9.0: (clientX - rect.left) / (canvas.scrollWidth / width))
+function clientToSketch(clientX, clientY) {
+    const cv = document.querySelector('#canvas-container canvas');
+    if (!cv) return { x: -1, y: -1 };
+    const r = cv.getBoundingClientRect();
+    const sx = cv.scrollWidth / width || 1, sy = cv.scrollHeight / height || 1;
+    return { x: (clientX - r.left) / sx, y: (clientY - r.top) / sy };
+}
+
+// A valid tap, at pointerup. The state pressAt reads that only mouseMoved() writes is stale here (the emulated mousemove comes ~75 ms later): the Alt-net side preview
+// (altNetPending.previewSide, read by the third construction click). The same update mouseMoved() makes, with the tap's position, comes first: sideOfLine(p, q, m)
+// takes the point m, here the tap's own point p (mouseMoved() passes { x: mouseX, y: mouseY }), so the side is the side of PQ the tap lands on. (Until this was fixed both
+// calls passed x and y as two arguments, m.y was undefined and the side was always -1.) A finger has no hover, so the preview shown BEFORE the third tap is the last
+// value (+1 after the second click); the tap then writes the side from its own position and the polygon is built on that side.
+function tapPress(tap) {
+    const p = clientToSketch(tap.x, tap.y);
+    if (altNetActive && altNetPending && altNetPending.q !== undefined) altNetPending.previewSide = sideOfLine(altNetPending.p, altNetPending.q, p);
+    pressAt(p.x, p.y, tap.pointerType, nodeHit(p.x, p.y, tap.pointerType));
+}
+
+// Phase 2 (touch), B4b / B4c: a press picks the NEAREST node within a radius (core/pick-node.js), not the first in array order within 18 units - first for
+// touch and pen (B4b), then for the mouse (B4c). drawnHitNodes() is read-only: the active nodes where they are DRAWN (a layer's offset and rotation, then a net
+// warp), the same positions the dots and the hover use. The radius: mouse 18 units; touch and pen max(18, 22 css px / scale) - but with free endpoints on, a tap
+// farther than 18 units from every node must still be able to create one, which the 22 px radius would forbid on a grid denser than ~22 px, so then the fine
+// radius 18 decides (nearest within it selects, else a free node).
+const HOVER_RADIUS = 10;   // sketch units: the red hover dot (draw()), unchanged since before B4c
+function drawnHitNodes() {
+    const arr = activeNodes(), netWarp = netWarpBaseNow(), hitLayer = activeLayer === 'base' ? null : additionalLayers[activeLayer];
+    return arr.map(nd => { const q = hitLayer ? layerNodeDrawnPosition(hitLayer, nd) : nd; const p = netWarp ? applyNetWarp(netWarp, q) : q; return { id: nd.id, x: p.x, y: p.y }; });
+}
+function nodeHit(x, y, pointerType) {
+    const cv = document.querySelector('#canvas-container canvas');
+    const scale = cv && width && height ? Math.min(cv.scrollWidth / width, cv.scrollHeight / height) : NaN;   // task 078: a canvas of any W x H is shown with one scale on both axes (the smaller one is the safe pick radius)
+    const radius = freeEndpointsEnabled ? hitRadius('mouse', scale) : hitRadius(pointerType, scale);
+    const n = pickNodeAt(drawnHitNodes(), x, y, radius);
+    return { id: n ? n.id : null };
+}
+
+function addRandomConnection() {
+    // Roadmap 1.12 stage 1 (node-resolution fix): same activeNodes()
+    // swap as mousePressed() - previously always picked from the bare
+    // global `nodes`, so a "random connection" added to a layer would
+    // reference the BASE's node ids even while that layer was active.
+    const activeNodeArr = activeNodes();
+    if (activeNodeArr.length < 2) return;
+    let i = floor(random(activeNodeArr.length)); let j = floor(random(activeNodeArr.length));
+    if (i === j) return; activeConnections().push([activeNodeArr[i].id, activeNodeArr[j].id]);
+}
+
+// ----------------- ANIMATION EXPORT: PNG SEQUENCE AS A ZIP (task 116, stage 2 of tasks/114-animationsexport-plan.md) -----------------
+// One frame of the timeline (or of the spatial morph, which follows timeline.elapsedMs) at progress t is setTimelineProgress(t) + redraw() + canvas.toBlob(): no clock is read while the timeline is paused.
+// runAnimationExport() is the whole procedure with its dependencies handed in (env), so tools/anim/test-anim-png-driver.js runs it on stand-ins; animExportEnv() wires the real page. The building blocks
+// (frame times, names, ZIP, estimate, limits) are core/anim-export.js. The eight timeline functions are only CALLED here. Nothing in draw() changes.
+// Codes: ok, cancelled, tooBig, static (bilinear), noTimeline, unresolved, otherClockPlaying, error.
+function timelineImageCheckIdle() {
+    const C = timelineImageCheck;
+    return C.timer === null && C.job.i >= C.job.queue.length;
+}
+// null when an export may start, else the code that says why not (nothing is changed).
+function animExportPrecheck(env) {
+    const tl = env.timeline();
+    if (!tl || !Array.isArray(tl.keyframeLayerIds) || tl.keyframeLayerIds.length < 2 || !Array.isArray(tl.segmentDurationsMs) || tl.segmentDurationsMs.length < 1) return 'noTimeline';
+    for (let s = 0; s < tl.segmentDurationsMs.length; s++) if (!env.segmentOk(s)) return 'unresolved';
+    if (env.otherClockPlaying()) return 'otherClockPlaying';
+    const sm = env.morphBlock();
+    if (sm && sm.enabled && sm.mode === 'bilinear') return 'static';
+    return null;
+}
+// opts = { fps | frames, density (1 | 2), bytesPerFrame (the estimate), format ('png' default | 'svg'), noFaces (svg only) }; env.onProgress({ phase: 'prepare' | 'frame', i, n, ms }).
+// format 'svg' (task 117): a frame is generateSVGString() after setProgress(t), no redraw, no pixel density, no canvas; deflate-raw per entry; with noFaces the face flags are off ONLY inside env.svgFrame, which is
+// synchronous: they are back before the first await of the frame.
+// The state is put back in every case (also a cancel and an error): the position, paused; the status text; the pixel density; the playback layer's frame.
+async function runAnimationExport(env, opts) {
+    const why = animExportPrecheck(env);
+    if (why) return { ok: false, code: why };
+    const svg = opts.format === 'svg';
+    if (svg && !env.deflate) return { ok: false, code: 'noCompression' };
+    const tl = env.timeline(), total = env.totalMs();
+    let ft;
+    try { ft = animFrameTimes(opts.frames !== undefined ? { frames: opts.frames } : { totalMs: total, fps: opts.fps }); }
+    catch (e) { return { ok: false, code: 'error', message: String(e && e.message || e) }; }
+    const est = animExportEstimate({ frames: ft.n, bytesPerFrame: opts.bytesPerFrame });
+    if (!est.withinLimits) return { ok: false, code: 'tooBig', allowedFrames: est.allowedFrames, estimate: est };
+    const saved = { elapsedMs: tl.elapsedMs, startTime: tl.startTime, netLive: tl.netLive, currentFrame: tl.currentFrame, status: env.status.get(), density: svg ? null : env.density.get() };
+    let position = tl.elapsedMs;
+    if (tl.playing) position = Math.max(0, Math.min(total, env.millis() - tl.startTime));   // the same pause as toggleTimelinePlayback()
+    env.pauseTimeline(position);
+    let packedNow = null;
+    const zip = animZipWriter(svg ? { method: 'deflate', deflate: () => packedNow } : { method: 'store' });
+    let result;
+    try {
+        env.onProgress({ phase: 'prepare', i: 0, n: ft.n, ms: 0 });
+        const t0 = env.now();
+        while (!env.idle() && env.now() - t0 < 15000) { if (env.shouldCancel()) break; await env.sleep(50); }
+        if (!env.idle()) env.pauseBackground();   // still busy after 15 s: park the check for the export (its timer is re-armed by the next render of the pairing editor), else it takes a second of every frame
+        if (!svg) env.density.set(opts.density);
+        for (let i = 0; i < ft.n; i++) {
+            if (env.shouldCancel()) { result = { ok: false, code: 'cancelled', done: i }; break; }
+            const f0 = env.now();
+            env.setProgress(ft.times[i]);
+            if (svg) {
+                const bytes = env.encode(env.svgFrame(opts.noFaces === true));   // synchronous: the face flags are already back here, before the first await
+                packedNow = await env.deflate(bytes);
+                await zip.add(animFrameName(i + 1, ft.n, 'svg'), bytes, env.makeBlob([packedNow], 'application/octet-stream'));   // the Blob of the PACKED bytes goes into the parts
+                packedNow = null;
+            } else {
+                env.redraw();
+                const blob = await env.toBlob();
+                if (!blob) throw new Error('the canvas gave no image');
+                const bytes = new Uint8Array(await blob.arrayBuffer());
+                await zip.add(animFrameName(i + 1, ft.n, 'png'), bytes, blob);   // the Blob goes into the parts, the bytes are dropped after the CRC
+            }
+            env.onProgress({ phase: 'frame', i: i + 1, n: ft.n, ms: env.now() - f0 });
+            await env.sleep(0);
+        }
+        if (!result) {
+            const z = zip.finish();
+            env.download(env.makeBlob(z.parts, 'application/zip'), svg ? 'world_of_forms_animation_svg.zip' : 'world_of_forms_animation.zip');
+            result = { ok: true, code: 'ok', n: ft.n, bytes: z.size };
+        }
+    } catch (e) {
+        result = { ok: false, code: 'error', message: String(e && e.message || e) };
+    } finally {
+        if (!svg) { try { env.density.set(saved.density); } catch (e) { } }   // a failing density must not stop the rest of the restore (no block comment here: the old source-text tests strip comments with a regex)
+        tl.elapsedMs = position; tl.playing = false; tl.startTime = saved.startTime; tl.netLive = saved.netLive;
+        env.applyFrame();   // applyTimelineFrame(): the playback layer and currentFrame of the restored position
+        tl.currentFrame = saved.currentFrame;
+        env.status.set(saved.status);
+        env.syncLoop();
+        env.redraw();
+    }
+    return result;
+}
+// One SVG frame of the CURRENT state. noFaces: the face fills are switched off by their flags (showFaces of the base and of every layer, which the keyframes, the playback layer and the morph follow), so
+// they are never computed; the result is the same SVG minus its polygon group (measured, task 117). Synchronous on purpose: the flags are back before the caller's next await.
+function animExportSvgString(noFaces) {
+    if (!noFaces) return generateSVGString();
+    const base = showFaces, layers = additionalLayers.map((l) => l.showFaces);
+    showFaces = false;
+    additionalLayers.forEach((l) => { l.showFaces = false; });
+    try { return generateSVGString(); }
+    finally { showFaces = base; additionalLayers.forEach((l, k) => { l.showFaces = layers[k]; }); }
+}
+// raw deflate (what a ZIP entry of method 8 holds) through the built-in CompressionStream
+async function animExportDeflate(bytes) {
+    const out = new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream('deflate-raw')));
+    return new Uint8Array(await out.arrayBuffer());
+}
+// the estimate of an SVG sequence from ONE probe frame of the state that is shown now (nothing is changed): sizes and times
+async function animExportProbeSvg(env, noFaces) {
+    const t0 = env.now();
+    const bytes = env.encode(env.svgFrame(noFaces));
+    const genMs = env.now() - t0, p0 = env.now();
+    const packed = await env.deflate(bytes);
+    return { raw: bytes.length, packed: packed.length, genMs, packMs: env.now() - p0 };
+}
+// "1,2 MB" / "1.2 MB" (kB below a MiB); lang 'de' writes the comma.
+function animExportSizeText(bytes, lang) {
+    const mb = bytes / 1048576, v = mb >= 1 ? mb : Math.max(1, bytes / 1024), s = (v >= 10 ? Math.round(v) : Math.round(v * 10) / 10).toString();
+    return (lang === 'de' ? s.replace('.', ',') : s) + (mb >= 1 ? ' MB' : ' kB');
+}
+// the real page behind the env
+function animExportEnv(extra) {
+    const cv = () => document.querySelector('#canvas-container canvas');
+    const statusEl = () => document.getElementById('timeline-status');
+    return Object.assign({
+        timeline: () => timeline,
+        totalMs: () => totalTimelineDurationMs(timeline),
+        segmentOk: (s) => resolveTimelineKeyframeCoords(timeline, s).ok,
+        otherClockPlaying: () => additionalLayers.some(l => l.animation && l.animation.playing) || !!(baseNetAnimation && baseNetAnimation.playing),
+        morphBlock: () => getSpatialMorph(),
+        setProgress: (t) => setTimelineProgress(t),
+        redraw: () => redraw(),
+        toBlob: () => new Promise((resolve) => { const c = cv(); if (!c) resolve(null); else c.toBlob((b) => resolve(b), 'image/png'); }),
+        density: { get: () => pixelDensity(), set: (d) => { if (pixelDensity() !== d) pixelDensity(d); } },
+        millis: () => millis(),
+        now: () => performance.now(),
+        sleep: (ms) => new Promise((r) => setTimeout(r, ms)),
+        idle: () => timelineImageCheckIdle(),
+        pauseBackground: () => timelineImageCheckStop(),
+        svgFrame: (noFaces) => animExportSvgString(noFaces),
+        encode: (text) => new TextEncoder().encode(text),
+        deflate: (typeof CompressionStream === 'function') ? animExportDeflate : null,
+        status: { get: () => { const e = statusEl(); return e ? e.innerHTML : ''; }, set: (h) => { const e = statusEl(); if (e) e.innerHTML = h; } },
+        pauseTimeline: (position) => { timeline.elapsedMs = position; timeline.playing = false; syncAnimationLoopState(); },
+        applyFrame: () => applyTimelineFrame(),
+        syncLoop: () => syncAnimationLoopState(),
+        makeBlob: (parts, type) => new Blob(parts, { type }),
+        download: (blob, name) => downloadBlob(blob, name, 'application/zip'),
+        onProgress: () => { },
+        shouldCancel: () => false,
+    }, extra || {});
+}
+// ---- the dialog block (index.html #export-anim) ----
+const animExportUi = { fps: 24, density: 1, frames: null, running: false, cancel: false, seq: 0, format: 'png', faces: true, probe: null };
+function animExportT(name, params) { const key = 'export.anim.' + name; return (window.UI && UI.t) ? UI.t(key, params) : key; }
+function animExportLang() { return (window.UI && UI.lang) || 'de'; }
+function animExportEls() {
+    const g = (id) => document.getElementById(id);
+    return { block: g('export-anim'), fps: g('export-anim-fps'), frames: g('export-anim-frames'), s1: g('export-anim-size1'), s2: g('export-anim-size2'), estimate: g('export-anim-estimate'), msg: g('export-anim-msg'),
+        start: g('export-anim-start'), progress: g('export-anim-progress'), progressText: g('export-anim-progress-text'), cancel: g('export-anim-cancel'), run: g('export-anim-run'), formats: ['export-png', 'export-json', 'export-svg'].map(g),
+        fmtPng: g('export-anim-fmt-png'), fmtSvg: g('export-anim-fmt-svg'), sizeGroup: g('export-anim-size-group'), facesGroup: g('export-anim-faces-group'), facesOn: g('export-anim-faces-on'), facesOff: g('export-anim-faces-off'), net: g('export-anim-netnote') };
+}
+function animExportCancelIfRunning() {
+    if (!animExportUi.running) return false;
+    animExportUi.cancel = true;
+    return true;
+}
+function animExportTimeText(ms) { const s = Math.max(1, Math.round(ms / 1000)); return s < 90 ? animExportT('timeSec', { n: s }) : animExportT('timeMin', { n: Math.round(s / 60) }); }
+// the bytes of one frame of the sequence in the ZIP: PNG from the picture that is shown now (size per pixel x the pixels of the chosen density), SVG from the probe frame (packed size); null while the probe is missing
+async function animExportBytesPerFrame() {
+    const U = animExportUi;
+    if (U.format === 'svg') {
+        if (!U.probe || U.probe.faces !== U.faces) { U.probe = null; const r = await animExportProbeSvg(animExportEnv(), !U.faces); U.probe = Object.assign({ faces: U.faces }, r); }
+        return { bytes: U.probe.packed, perFrameMs: U.probe.genMs + U.probe.packMs };
+    }
+    const c = document.querySelector('#canvas-container canvas');
+    const blob = c ? await new Promise((r) => c.toBlob((b) => r(b), 'image/png')) : null;
+    const per = blob && c.width * c.height ? blob.size / (c.width * c.height) : 0.25;
+    return { bytes: Math.round(per * width * height * U.density * U.density), perFrameMs: 0 };
+}
+// what the dialog shows now: visibility, option texts, the estimate and the message; the start button follows
+async function animExportRefresh(keepMsg) {
+    const E = animExportEls(), U = animExportUi;
+    if (!E.block || U.running) return;
+    const have = !!(timeline && timeline.keyframeLayerIds.length >= 2 && timeline.segmentDurationsMs.length >= 1);
+    E.block.hidden = !have;
+    if (!have) return;
+    const seq = ++U.seq, env = animExportEnv(), total = env.totalMs(), auto = Math.max(2, Math.round(total / 1000 * U.fps)), svg = U.format === 'svg';
+    if (U.frames === null) E.frames.value = String(auto);
+    Array.prototype.forEach.call(E.fps.options, (o) => { o.textContent = animExportT('fpsValue', { n: o.value }); });
+    E.fps.value = String(U.fps);
+    E.s1.textContent = animExportT('size1', { w: width, h: height }); E.s2.textContent = animExportT('size2', { w: width * 2, h: height * 2 });
+    E.s1.setAttribute('aria-pressed', String(U.density === 1)); E.s2.setAttribute('aria-pressed', String(U.density === 2));
+    E.fmtPng.setAttribute('aria-pressed', String(!svg)); E.fmtSvg.setAttribute('aria-pressed', String(svg));
+    E.facesOn.setAttribute('aria-pressed', String(U.faces)); E.facesOff.setAttribute('aria-pressed', String(!U.faces));
+    E.sizeGroup.hidden = svg; E.facesGroup.hidden = !svg;
+    E.net.hidden = !(svg && netLinesOn); E.net.textContent = E.net.hidden ? '' : animExportT('svgNetNote');
+    const n = Number(E.frames.value), whole = Number.isInteger(n) && n >= 2;
+    let code = animExportPrecheck(env), text = '';
+    if (code === 'noTimeline') { E.block.hidden = true; return; }
+    if (!code && svg && !env.deflate) code = 'noCompression';
+    if (!code && !whole) { code = 'framesInvalid'; }
+    let est = null;
+    if (!code) {
+        if (svg && (!U.probe || U.probe.faces !== U.faces)) { E.estimate.textContent = animExportT('probing'); E.start.disabled = true; E.msg.textContent = ''; await env.sleep(0); if (seq !== U.seq || U.running) return; }
+        let b;
+        try { b = await animExportBytesPerFrame(); } catch (e) { E.msg.textContent = animExportT('error', { msg: String(e && e.message || e) }); E.estimate.textContent = ''; E.start.disabled = true; return; }
+        if (seq !== U.seq || U.running) return;
+        est = animExportEstimate({ frames: n, bytesPerFrame: b.bytes });
+        text = svg ? animExportT('estimateSvg', { size: animExportSizeText(est.totalBytes, animExportLang()), n, time: animExportTimeText(n * b.perFrameMs) }) : animExportT('estimate', { size: animExportSizeText(est.totalBytes, animExportLang()), n });
+        if (!est.withinLimits) code = svg ? 'tooBigSvg' : 'tooBig';
+    }
+    E.estimate.textContent = text;
+    if (!keepMsg || code) E.msg.textContent = code ? animExportT(code === 'otherClockPlaying' ? 'otherClock' : code, { max: est ? est.allowedFrames : '' }) : '';
+    E.start.disabled = !!code;
+}
+function animExportDialogOpened() {
+    const E = animExportEls();
+    animExportUi.probe = null;   // the probe frame belongs to the state that was shown when the dialog opened
+    if (E.msg) E.msg.textContent = '';
+    animExportRefresh();
+}
+async function animExportStart() {
+    const E = animExportEls(), U = animExportUi;
+    if (U.running || E.start.disabled) return;
+    const n = Number(E.frames.value), svg = U.format === 'svg';
+    const b = await animExportBytesPerFrame();
+    const opts = { frames: n, density: U.density, bytesPerFrame: b.bytes, format: U.format, noFaces: svg && !U.faces };
+    U.running = true; U.cancel = false;
+    const lock = (on) => { [E.fps, E.frames, E.s1, E.s2, E.fmtPng, E.fmtSvg, E.facesOn, E.facesOff, E.start].concat(E.formats).forEach((el) => { if (el) el.disabled = on; }); E.run.hidden = !on; E.start.hidden = on; };
+    lock(true);
+    E.msg.textContent = ''; E.progress.max = n; E.progress.value = 0; E.progressText.textContent = animExportT('prepare');
+    const env = animExportEnv({
+        shouldCancel: () => U.cancel,
+        onProgress: (p) => {
+            if (p.phase === 'prepare') { E.progressText.textContent = animExportT('prepare'); return; }
+            E.progress.value = p.i;
+            E.progressText.textContent = animExportT('progress', { i: p.i, n: p.n }) + (p.ms > 2500 ? ' · ' + animExportT('slow', { s: (p.ms / 1000).toFixed(1) }) : '');
+        },
+    });
+    const res = await runAnimationExport(env, opts);
+    U.running = false; U.cancel = false;
+    lock(false);
+    let key = res.code === 'ok' ? 'done' : (res.code === 'otherClockPlaying' ? 'otherClock' : (res.code === 'tooBig' && svg ? 'tooBigSvg' : res.code));
+    E.msg.textContent = animExportT(key, { n: res.n, size: res.bytes ? animExportSizeText(res.bytes, animExportLang()) : '', max: res.allowedFrames, msg: res.message });
+    await animExportRefresh(true);   // the outcome of this run stays in the message line unless the options now say something else
+}
+function animExportInit() {
+    const E = animExportEls(), U = animExportUi;
+    if (!E.block) return;
+    E.fps.addEventListener('change', () => { U.fps = Number(E.fps.value) || 24; U.frames = null; animExportRefresh(); });
+    E.frames.addEventListener('input', () => { U.frames = E.frames.value; animExportRefresh(); });
+    E.s1.addEventListener('click', () => { U.density = 1; animExportRefresh(); });
+    E.s2.addEventListener('click', () => { U.density = 2; animExportRefresh(); });
+    E.fmtPng.addEventListener('click', () => { U.format = 'png'; animExportRefresh(); });
+    E.fmtSvg.addEventListener('click', () => { U.format = 'svg'; animExportRefresh(); });
+    E.facesOn.addEventListener('click', () => { U.faces = true; animExportRefresh(); });
+    E.facesOff.addEventListener('click', () => { U.faces = false; animExportRefresh(); });
+    E.start.addEventListener('click', () => { animExportStart(); });
+    E.cancel.addEventListener('click', () => { animExportCancelIfRunning(); });
+}

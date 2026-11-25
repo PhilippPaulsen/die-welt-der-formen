@@ -1,0 +1,669 @@
+/*
+ * The bilingual dictionary (sheets redesign, commit 1). Data and a few functions; no DOM at load, no state saved. Loaded BEFORE ui.js (which exposes it as UI.t, UI.lang, UI.setLang and UI.applyI18n) and before the
+ * UI scripts that route a string through UI.t.
+ *
+ *   DICT                { key: { de, en } }; a text may hold {placeholders} ({n}, {k}, {m}), the same ones in both languages.
+ *   t(key, params)      the text in the current language; {name} is replaced from params. Falls back to the German text, then to the key itself; never throws.
+ *   lang / setLang(l)   'de' or 'en'; DEFAULT_LANG is the one constant that says which one the page starts in. ?lang=en or ?lang=de in the URL selects it at load (a preview: nothing is saved).
+ *   applyI18n(root)     writes the dictionary strings into the elements of root (default: the document) that carry one of three attributes:
+ *                         data-i18n="key"        the element's TEXT (its own text node; the children stay) when it has own text; an element WITHOUT own text (an icon button, a group, an input) gets its
+ *                                                NAME instead: aria-label, and title when it has one. This is what the repo's data-i18n keys have always meant ("the key of the string this element carries").
+ *                         data-i18n-label="key"  aria-label (and title when the element has one): for an element that has its own visible text AND a different name ("Geo", name "Geometrisch").
+ *                         data-i18n-title="key"  title only.
+ *                       Only a key that exists is applied; an element is never emptied.
+ *
+ * What changes language: only the strings that go through this dictionary (the elements above, and the scripts that call UI.t). With the default language (German) the page is NOT rewritten: the markup
+ * keeps its German text exactly as authored, and the dictionary German of a markup key is checked against it by tools/ui/test-i18n.js. Nothing here changes <html lang>.
+ */
+(function (root) {
+  'use strict';
+
+  const DEFAULT_LANG = 'de';
+  const LANGS = ['de', 'en'];
+
+  const DICT = {
+    // ---- the markup of index.html that already carried a data-i18n key (the German is the authored text; the English is new) ----
+    'fold.3': { de: '3-zählig', en: '3-fold' },
+    'fold.6': { de: '6-zählig', en: '6-fold' },
+    'fold.hint': { de: 'Nur beim Sechseck, und nur mit Drehung.', en: 'Hexagon only, and only with rotation.' },
+    'fold.title': { de: 'Zähligkeit (Sechseck)', en: 'Fold (hexagon)' },
+    'group.netKind': { de: 'Gesetz', en: 'Law' },   // task 122: the Sin / Tan / Geo group is the LAW of Netzart 1; "Netzart" is the stepper before it
+    'group.shape': { de: 'Form', en: 'Shape' },
+    'group.symmetry': { de: 'Symmetrie', en: 'Symmetry' },
+    'help': { de: 'Hilfe', en: 'Help' },
+    'info': { de: 'Info', en: 'Info' },
+    'info.card': { de: 'Info', en: 'Info' },
+    'layer.align': { de: 'An Basis angleichen', en: 'Align to base' },
+    'layer.fold.3': { de: '3-zählig', en: '3-fold' },
+    'layer.fold.6': { de: '6-zählig', en: '6-fold' },
+    'layer.fold.group': { de: 'Ebene: Zähligkeit', en: 'Layer: fold' },
+    'layer.mesh.group': { de: 'Ebene: Versatz um eine Masche', en: 'Layer: shift by one mesh width' },
+    'layer.node.group': { de: 'Ebene: Ordnung', en: 'Layer: order' },
+    'layer.node.input': { de: 'Ebene: Ordnung', en: 'Layer: order' },
+    'layer.node.less': { de: 'Ebene: Ordnung niedriger', en: 'Layer: lower order' },
+    'layer.node.more': { de: 'Ebene: Ordnung höher', en: 'Layer: higher order' },
+    'layer.shape.group': { de: 'Ebene: Form', en: 'Layer: shape' },
+    'layer.shape.square': { de: 'Quadrat', en: 'Square' },
+    'layer.shape.triangle': { de: 'Dreieck', en: 'Triangle' },
+    'layer.size.group': { de: 'Ebene: Größe', en: 'Layer: size' },
+    'layer.size.input': { de: 'Ebene: Größe', en: 'Layer: size' },
+    'layer.size.less': { de: 'Ebene: Größe weniger', en: 'Layer: smaller size' },
+    'layer.size.more': { de: 'Ebene: Größe mehr', en: 'Layer: larger size' },
+    'layers.rail': { de: 'Ebenen', en: 'Layers' },
+    'layers.strip': { de: 'Ebenen', en: 'Layers' },
+    'layers.table': { de: 'Ebenen', en: 'Layers' },
+    'layers.remove.cancel': { de: 'Abbrechen', en: 'Cancel' },
+    'layers.remove.confirm': { de: 'Entfernen', en: 'Remove' },
+    'layers.remove.title': { de: 'Ebene entfernen?', en: 'Remove layer?' },
+    'more': { de: 'Mehr', en: 'More' },
+    'more.form': { de: 'Mehr', en: 'More' },
+    'more.netz': { de: 'Mehr', en: 'More' },
+    'more.rail': { de: 'Mehr', en: 'More' },
+    'more.rail.button': { de: 'Mehr: Kurve, Frei, Freie Endpunkte, Alternatives Netz', en: 'More: curve, free, free endpoints, alternative net' },
+    'net.focus': { de: 'Fokus', en: 'Focus' },
+    'net.focus.exact': { de: 'Fokus, genau', en: 'Focus, exact' },
+    'net.focus.group': { de: 'Fokus', en: 'Focus' },
+    'net.focus.less': { de: 'Fokus weniger', en: 'Less focus' },
+    'net.focus.more': { de: 'Fokus mehr', en: 'More focus' },
+    'net.focus.value': { de: 'Fokus', en: 'Focus' },
+    'net.kind.geometric': { de: 'Geometrisch', en: 'Geometric' },
+    'net.kind.off': { de: 'Aus, regelmäßiges Netz', en: 'Off, regular net' },
+    'net.kind.sinus': { de: 'Sinus', en: 'Sine' },
+    'net.kind.tangens': { de: 'Tangens', en: 'Tangent' },
+    'net.strength': { de: 'Stärke', en: 'Strength' },
+    'net.strength.exact': { de: 'Stärke, genau', en: 'Strength, exact' },
+    'net.strength.group': { de: 'Stärke', en: 'Strength' },
+    'net.strength.less': { de: 'Stärke weniger', en: 'Less strength' },
+    'net.strength.more': { de: 'Stärke mehr', en: 'More strength' },
+    'net.strength.value': { de: 'Stärke', en: 'Strength' },
+    'node.group': { de: 'Ordnung', en: 'Order' },
+    'node.input': { de: 'Ordnung', en: 'Order' },
+    'node.less': { de: 'Ordnung niedriger', en: 'Lower order' },
+    'node.more': { de: 'Ordnung höher', en: 'Higher order' },
+    'rail.farborgel': { de: 'Farborgel (öffnet in neuem Tab)', en: 'Color Organ (opens in a new tab)' },
+    'rail.formorgel': { de: 'Formorgel (öffnet in neuem Tab)', en: 'Form Organ (opens in a new tab)' },
+    'rail.paste': { de: 'Muster einfügen (ein aus dem Katalog kopiertes Muster, als neue Ebene)', en: 'Paste Pattern (a pattern copied from the catalog, as a new layer)' },
+    // ---- task 116: the animation export block of the Download dialog (index.html #export-anim, sketch.js animExport*) ----
+    'export.anim.title': { de: 'Animation (Zeitleiste / Raum-Morph)', en: 'Animation (timeline / spatial morph)' },
+    'export.anim.format': { de: 'Format', en: 'Format' },
+    'export.anim.formatPng': { de: 'PNG-Folge', en: 'PNG sequence' },
+    'export.anim.fps': { de: 'Bildrate', en: 'Frame rate' },
+    'export.anim.fpsValue': { de: '{n} Bilder/s', en: '{n} frames/s' },
+    'export.anim.frames': { de: 'Bilder', en: 'Frames' },
+    'export.anim.size': { de: 'Größe', en: 'Size' },
+    'export.anim.size1': { de: '1× ({w}×{h})', en: '1× ({w}×{h})' },
+    'export.anim.size2': { de: '2× ({w}×{h})', en: '2× ({w}×{h})' },
+    'export.anim.estimate': { de: 'Geschätzt: {size} · {n} Bilder', en: 'Estimated: {size} · {n} frames' },
+    'export.anim.start': { de: 'Animation exportieren', en: 'Export animation' },
+    'export.anim.prepare': { de: 'Die Zeitleiste prüft noch im Hintergrund …', en: 'The timeline is still checking in the background …' },
+    'export.anim.progress': { de: 'Bild {i} von {n}', en: 'Frame {i} of {n}' },
+    'export.anim.slow': { de: 'Langsam: {s} s je Bild.', en: 'Slow: {s} s per frame.' },
+    'export.anim.cancel': { de: 'Abbrechen', en: 'Cancel' },
+    'export.anim.cancelled': { de: 'Abgebrochen. Nichts wurde gespeichert.', en: 'Cancelled. Nothing was saved.' },
+    'export.anim.done': { de: 'Fertig: {n} Bilder, {size}.', en: 'Done: {n} frames, {size}.' },
+    'export.anim.tooBig': { de: 'Zu groß: bei dieser Größe höchstens {max} Bilder. Weniger Bilder oder 1× wählen.', en: 'Too large: at most {max} frames at this size. Choose fewer frames or 1×.' },
+    'export.anim.static': { de: 'Bilinear ist statisch: alle Bilder wären gleich.', en: 'Bilinear is static: all frames would be identical.' },
+    'export.anim.unresolved': { de: 'Die Zeitleiste ist nicht darstellbar (Linienzahl der Keyframes verschieden).', en: 'The timeline cannot be shown (the keyframes have different line counts).' },
+    'export.anim.otherClock': { de: 'Eine Ebenen- oder Netz-Animation läuft. Erst anhalten.', en: 'A layer or net animation is playing. Stop it first.' },
+    'export.anim.framesInvalid': { de: 'Bilder: eine ganze Zahl ab 2.', en: 'Frames: a whole number, 2 or more.' },
+    'export.anim.formatSvg': { de: 'SVG-Folge', en: 'SVG sequence' },
+    'export.anim.faces': { de: 'Flächen', en: 'Faces' },
+    'export.anim.facesOn': { de: 'mit Flächen', en: 'with faces' },
+    'export.anim.facesOff': { de: 'ohne Flächen', en: 'without faces' },
+    'export.anim.estimateSvg': { de: 'Geschätzt: {size} gepackt · {n} Bilder · ca. {time}', en: 'Estimated: {size} packed · {n} frames · about {time}' },
+    'export.anim.probing': { de: 'Schätze die Größe …', en: 'Estimating the size …' },
+    'export.anim.tooBigSvg': { de: 'Zu groß: höchstens {max} Bilder bei dieser Größe. Weniger Bilder oder ohne Flächen wählen.', en: 'Too large: at most {max} frames at this size. Choose fewer frames or without faces.' },
+    'export.anim.svgNetNote': { de: 'Die Netz-Linien (Anzeigehilfe) stehen im PNG, nicht im SVG.', en: 'The net lines (display aid) are in the PNG, not in the SVG.' },
+    'export.anim.noCompression': { de: 'Dieser Browser kann nicht komprimieren (CompressionStream fehlt).', en: 'This browser cannot compress (CompressionStream is missing).' },
+    'export.anim.timeSec': { de: '{n} s', en: '{n} s' },
+    'export.anim.timeMin': { de: '{n} min', en: '{n} min' },
+    'export.anim.error': { de: 'Export fehlgeschlagen: {msg}', en: 'Export failed: {msg}' },
+    'restart.cancel': { de: 'Abbrechen', en: 'Cancel' },
+    'restart.confirm': { de: 'Neu anfangen', en: 'Start over' },
+    'restart.open': { de: 'Neu anfangen', en: 'Start over' },
+    'restart.text': { de: 'Das aktuelle Muster mit allen Ebenen, Farben und der Zeitleiste wird verworfen. Das lässt sich nicht rückgängig machen.', en: 'The current pattern with all layers, colors and the timeline will be discarded. This cannot be undone.' },
+    'restart.title': { de: 'Neu anfangen?', en: 'Start over?' },
+    'shape.hex': { de: 'Sechseck', en: 'Hexagon' },
+    'shape.square': { de: 'Quadrat', en: 'Square' },
+    'shape.triangle': { de: 'Dreieck', en: 'Triangle' },
+    'size.group': { de: 'Größe', en: 'Size' },
+    'size.lock': { de: 'Seitenverhältnis koppeln (Quadrat)', en: 'Lock aspect ratio (square)' },
+    'size.x.input': { de: 'Größe Breite (1 bis 9)', en: 'Size width (1 to 9)' },
+    'size.y.input': { de: 'Größe Höhe (1 bis 9)', en: 'Size height (1 to 9)' },
+    'size.y.less': { de: 'Höhe weniger', en: 'Lower' },
+    'size.y.more': { de: 'Höhe mehr', en: 'Taller' },
+    'size.ratio.max': { de: 'Seitenverhältnis höchstens 1:3', en: 'Aspect ratio at most 1:3' },
+    'size.input': { de: 'Größe', en: 'Size' },
+    'size.less': { de: 'Größe weniger', en: 'Smaller' },
+    'size.more': { de: 'Größe mehr', en: 'Larger' },
+    'sym.mirror': { de: 'Spiegelung', en: 'Mirror' },
+    'sym.rotation': { de: 'Drehung', en: 'Rotation' },
+    'tab.farbe': { de: 'Farbe', en: 'Color' },
+    'tab.form': { de: 'Form', en: 'Shape' },
+    'tab.netz': { de: 'Netz', en: 'Net' },
+    'tabs.nav': { de: 'Bereiche', en: 'Sections' },
+    'timeline.clear': { de: 'Zeitleiste entfernen', en: 'Remove timeline' },
+    'timeline.confirm.cancel': { de: 'Abbrechen', en: 'Cancel' },
+    'timeline.confirm.remove': { de: 'Entfernen', en: 'Remove' },
+    'timeline.confirm.title': { de: 'Zeitleiste entfernen?', en: 'Remove timeline?' },
+    'timeline.strip': { de: 'Zeitleiste', en: 'Timeline' },
+
+    // ---- more markup of index.html (task 041): the Farbe tab's harmony/hue/register/distribution buttons, the harmony select and the triangle anchor; the German is the authored text, keys from tools/i18n/untranslated-de.json ----
+    'index.kreis-gegenfarben-dreier-vie': { de: 'Kreis: Gegenfarben, Dreier, Vierer (erneut tippen: Farbton wählen)', en: 'Circle: complementary colors, triples, quadruples (tap again: choose hue)' },
+    'index.dreieck-schwarz-weiss-schatt': { de: 'Dreieck: Schwarz, Weiß, Schatten, Wert (erneut tippen: Register wählen)', en: 'Triangle: black, white, shadow, value (tap again: choose register)' },
+    'index.kreis-harmonien-kardinalitae': { de: 'Kreis-Harmonien: Kardinalität', en: 'Circle harmonies: cardinality' },
+    'index.gegenfarben-2-farben': { de: 'Gegenfarben (2 Farben)', en: 'Complementary colors (2 colors)' },
+    'index.dreier-3-farben': { de: 'Dreier (3 Farben)', en: 'Triples (3 colors)' },
+    'index.vierer-4-farben': { de: 'Vierer (4 Farben)', en: 'Quadruples (4 colors)' },
+    'index.dreieck-harmonien-reihen': { de: 'Dreieck-Harmonien: Reihen', en: 'Triangle harmonies: series' },
+    'index.weiss-weissgleiche': { de: 'Weiß (Weißgleiche)', en: 'White (isotints)' },
+    'index.wert-wertgleich': { de: 'Wert (Wertgleich)', en: 'Value (equal value)' },
+    'index.farbton-weiter': { de: 'Farbton weiter', en: 'Next hue' },
+    'index.farbton-zurueck': { de: 'Farbton zurück', en: 'Previous hue' },
+    'index.register-weiter': { de: 'Register weiter', en: 'Next register' },
+    'index.register-zurueck': { de: 'Register zurück', en: 'Previous register' },
+    'index.verteilung-zyklisch-farben-d': { de: 'Verteilung: Zyklisch (Farben der Reihe nach)', en: 'Distribution: cyclic (colors in sequence)' },
+    'index.verteilung-flaeche-nach-flae': { de: 'Verteilung: Fläche (nach Flächengröße)', en: 'Distribution: area (by face size)' },
+    'index.verteilung-symmetrie-nach-sy': { de: 'Verteilung: Symmetrie (nach Symmetrie-Gruppen)', en: 'Distribution: symmetry (by symmetry group)' },
+    'index.verteilung-ringe-von-aussen-': { de: 'Verteilung: Ringe (von außen nach innen)', en: 'Distribution: rings (outside in)' },
+    'index.harmonie-waehlen': { de: 'Harmonie wählen', en: 'Choose harmony' },
+    'index.harmonie-waehlen-alternative': { de: 'Harmonie wählen (Alternative zu den 7 Tasten - auch für künftige weitere Harmonien reserviert)', en: 'Choose harmony (alternative to the 7 buttons, also reserved for future harmonies)' },
+    'index.harmonie': { de: 'Harmonie…', en: 'Harmony…' },
+    'index.weiss': { de: 'Weiß', en: 'White' },
+    'index.wert': { de: 'Wert', en: 'Value' },
+    'index.anker-register-dreieck-aktue': { de: 'Anker: Register (Dreieck, aktueller Farbton)', en: 'Anchor: register (triangle, current hue)' },
+    // ---- index.html follow-up (task 042): the black isotints, the anchor widgets' names, the circle overlay, and the short visible texts of the net kind buttons (Aus, Geo; the long names are net.kind.*) ----
+    'index.schwarz-schwarzgleiche': { de: 'Schwarz (Schwarzgleiche)', en: 'Black (isotints)' },
+    'index.anker-ansicht': { de: 'Anker-Ansicht', en: 'Anchor view' },
+    'index.anker-farbton': { de: 'Anker Farbton', en: 'Anchor hue' },
+    'index.anker-register': { de: 'Anker Register', en: 'Anchor register' },
+    'index.anker-vorschau': { de: 'Anker-Vorschau', en: 'Anchor preview' },
+    'index.kreis': { de: 'Kreis', en: 'Circle' },
+    'index.anker-farbton-kreis': { de: 'Anker: Farbton (Kreis)', en: 'Anchor: hue (circle)' },
+    'index.schwarz': { de: 'Schwarz', en: 'Black' },
+    // ---- task 122 (3C-3): the Netzart stepper of the Netz row, the Moebius net (3C) controls and their reasons. Names after Hinterreiter vol. II ("Netzart 1", "Netzart 3C, Das Moebiusnetz"); the matrix cell (1.1, 2.2) only in the tooltip ----
+    'net.art.group': { de: 'Netzart', en: 'Net type' },
+    'net.art.value': { de: 'Netzart', en: 'Net type' },
+    'net.art.more': { de: 'Nächste Netzart', en: 'Next net type' },
+    'net.art.less': { de: 'Vorherige Netzart', en: 'Previous net type' },
+    'net.art.name.off': { de: 'Netzart aus, kein Netz', en: 'Net type off, no net' },
+    'net.art.name.n1': { de: 'Netzart 1, Barenscharen', en: 'Net type 1, Barenscharen (bar families)' },
+    'net.art.name.n3c': { de: 'Netzart 3C, Möbiusnetz', en: 'Net type 3C, Möbius net' },
+    'net.art.tip.off': { de: 'Kein Netz: das regelmäßige Gitter.', en: 'No net: the regular grid.' },
+    'net.art.tip.n1': { de: 'Netzart 1 (Matrix 1.1): zwei Barenscharen mit Sinus-, Tangens- oder geometrischen Abständen.', en: 'Net type 1 (matrix 1.1): two bar families with sine, tangent or geometric spacing.' },
+    'net.art.tip.n3c': { de: 'Netzart 3, Variante C (Matrix 2.2): das Möbiusnetz, ein Gesamtnetz aus lauter Geraden (Hinterreiter Band II, S. 47 bis 52).', en: 'Net type 3, variant C (matrix 2.2): the Möbius net, one net made of straight lines only (Hinterreiter vol. II, pp. 47 to 52).' },
+    'net.art.reason.min': { de: 'Kleinste Stufe: kein Netz.', en: 'Smallest step: no net.' },
+    'net.art.reason.shape': { de: 'Für diese Form gibt es keine Netzart.', en: 'This shape has no net type.' },
+    'net.3c.invalid.triHalf': { de: 'Kein Netz: Am Dreieck gibt es das Möbiusnetz nur im ganzen Format (die Mittelachse schneidet Dreiecke). „ganz“ wählen.', en: 'No net: on the triangle the Möbius net exists in the full format only (the middle axis cuts triangles). Choose “full”.' },
+    'net.3c.invalid.short.triHalf': { de: 'Am Dreieck nur ganzes Format.', en: 'Triangle: full format only.' },
+    'net.3c.invalid.aMin': { de: 'Kein Netz: Am Quadrat und am Sechseck hat das Möbiusnetz a ≥ 2 (am Dreieck a ≥ 1). a auf 2 oder mehr stellen.', en: 'No net: on the square and the hexagon the Möbius net needs a ≥ 2 (a ≥ 1 on the triangle). Set a to 2 or more.' },
+    'net.3c.invalid.short.aMin': { de: 'Quadrat, Sechseck: a mindestens 2.', en: 'Square, hexagon: a at least 2.' },
+    'net.3c.invalid.hexHalf': { de: 'Kein Netz: Am Sechseck gibt es das Möbiusnetz vorerst nur im ganzen Format. „ganz“ wählen.', en: 'No net: on the hexagon the Möbius net exists in the full format only for now. Choose “full”.' },
+    'net.3c.invalid.short.hexHalf': { de: 'Sechseck: vorerst nur ganz.', en: 'Hexagon: full format only.' },
+    'net.3c.invalid.other': { de: 'Kein Netz: Dieses Möbiusnetz ist für diese Form ungültig.', en: 'No net: this Möbius net is not valid for this shape.' },
+    'net.art.reason.n3c.triHalf': { de: 'Am Dreieck gibt es das Möbiusnetz nur im ganzen Format: die Mittelachse schneidet Dreiecke.', en: 'On the triangle the Möbius net exists in the full format only: the middle axis cuts triangles.' },
+    'net.art.reason.n3c.hexHalf': { de: 'Am Sechseck gibt es das Möbiusnetz vorerst nur im ganzen Format.', en: 'On the hexagon the Möbius net exists in the full format only for now.' },
+    'net.art.later.n2': { de: 'Weitere Netzarten sind noch nicht umgesetzt: Netzart 2 braucht Trapez-, Hauptpunkt- oder Hyperbelrahmen.', en: 'Further net types are not built yet: net type 2 needs a trapezoid, principal-point or hyperbola frame.' },
+    'net.art.later.n3ab': { de: 'Netzart 3A und 3B brauchen einen runden Rahmen oder einen Stern und gekrümmte Linien.', en: 'Net types 3A and 3B need a round or star-shaped frame and curved lines.' },
+    'net.art.later.n4': { de: 'Netzart 4 (Tangentenscharen) folgt später; die geraden Familien 4E und 4C brauchen erst eine geprüfte Knotenformel.', en: 'Net type 4 (tangent families) follows later; the straight families 4E and 4C first need a verified node formula.' },
+    'net.art.later.n5': { de: 'Die Netzarten 5 bis 10 brauchen gekrümmte Linien (Kreise, Spiralen).', en: 'Net types 5 to 10 need curved lines (circles, spirals).' },
+    'net.art.reason.needsN1': { de: 'Das Gesetz gilt für Netzart 1. Netzart 1 wählen.', en: 'The law applies to net type 1. Choose net type 1.' },
+    'net.art.list.title': { de: 'Netzarten', en: 'Net types' },
+    'net.art.list.ok': { de: 'verfügbar', en: 'available' },
+    'net.art.list.row': { de: '{name}: {state}', en: '{name}: {state}' },
+    'net.art.list.later': { de: 'Netzart {label}', en: 'Net type {label}' },
+    'net.3c.format.group': { de: 'Format', en: 'Format' },
+    'net.3c.format.full': { de: 'ganz', en: 'full' },
+    'net.3c.format.half': { de: 'halb', en: 'half' },
+    'net.3c.format.fullTitle': { de: 'Format: ganz, von Rand zu Rand', en: 'Format: full, edge to edge' },
+    'net.3c.format.halfTitle': { de: 'Format: halb, bis zur Mittelachse', en: 'Format: half, up to the middle axis' },
+    'net.3c.a.group': { de: 'a: Maschen am unteren Rand', en: 'a: meshes at the lower edge' },
+    'net.3c.a.value': { de: 'a', en: 'a' },
+    'net.3c.a.more': { de: 'a größer', en: 'a larger' },
+    'net.3c.a.less': { de: 'a kleiner', en: 'a smaller' },
+    'net.3c.b.group': { de: 'b: Maschen am oberen Rand', en: 'b: meshes at the upper edge' },
+    'net.3c.b.value': { de: 'b', en: 'b' },
+    'net.3c.b.more': { de: 'b größer', en: 'b larger' },
+    'net.3c.b.less': { de: 'b kleiner', en: 'b smaller' },
+    'net.3c.info': { de: 'W {w} · Streckung {s}', en: 'W {w} · stretch {s}' },
+    'net.3c.warn.stretch': { de: 'Streckung {s}: die Maschen sind stark verzerrt (Richtwert höchstens 2; Hinterreiter Band II, S. 17, eine Auslegung).', en: 'Stretch {s}: the meshes are strongly distorted (guide value at most 2; Hinterreiter vol. II, p. 17, an interpretation).' },
+    'net.3c.warn.wLow': { de: 'W {w}: unter dem Optimum von {lo} bis {hi} Maschen (Hinterreiter Band II, S. 17).', en: 'W {w}: below the optimum of {lo} to {hi} meshes (Hinterreiter vol. II, p. 17).' },
+    'net.3c.warn.wHigh': { de: 'W {w}: über dem Optimum von {lo} bis {hi} Maschen (Hinterreiter Band II, S. 17).', en: 'W {w}: above the optimum of {lo} to {hi} meshes (Hinterreiter vol. II, p. 17).' },
+    'net.3c.frame': { de: 'Das Netz füllt die ganze Leinwand ({w} × {h}); ihr Seitenverhältnis bestimmt die Streckung.', en: 'The net fills the whole canvas ({w} × {h}); its aspect ratio decides the stretch.' },
+    'net.3c.suggest.title': { de: 'Vorschläge', en: 'Suggestions' },
+    'net.3c.suggest.item': { de: '{a},{b} {fmt} · W {w} · {s}', en: '{a},{b} {fmt} · W {w} · {s}' },
+    'net.3c.suggest.itemTitle': { de: '{a}, {b}, Format {fmt}: W {w}, Streckung {s}', en: '{a}, {b}, format {fmt}: W {w}, stretch {s}' },
+    'net.3c.suggest.none': { de: 'Für {w} × {h} gibt es keine Kombination mit Streckung höchstens 2; die am wenigsten verzerrte ist {a},{b} {fmt} (Streckung {s}).', en: 'For {w} × {h} there is no combination with a stretch of at most 2; the least distorted is {a},{b} {fmt} (stretch {s}).' },
+    // ---- task 123: the limits of the a / b steppers, the reasons a Netzart 1 control gives under 3C, the measures section, the 3C face lock and the 3C timeline texts (the English texts of core/netwarp.js are mapped by ui-net-art.js) ----
+    'net.art.reason.aMin': { de: 'a ist mindestens 2.', en: 'a is at least 2.' },
+    'net.art.reason.aMin1': { de: 'a ist mindestens 1.', en: 'a is at least 1.' },
+    'net.art.reason.aMax': { de: 'a muss kleiner als b sein.', en: 'a must be smaller than b.' },
+    'net.art.reason.bMin': { de: 'b muss größer als a sein.', en: 'b must be larger than a.' },
+    'net.art.reason.bMax': { de: 'b ist höchstens 12.', en: 'b is at most 12.' },
+    'net.art.reason.needsN1.reverse': { de: 'Umkehren gilt für Netzart 1.', en: 'Reverse applies to net type 1.' },
+    'net.art.reason.needsN1.axes': { de: 'Die Achsen gelten für Netzart 1.', en: 'The axes apply to net type 1.' },
+    'net.art.reason.needsN1.focus': { de: 'Der Fokus gilt für Netzart 1.', en: 'The focus applies to net type 1.' },
+    'net.art.reason.needsN1.strength': { de: 'Die Stärke gilt für Netzart 1.', en: 'The strength applies to net type 1.' },
+    'net.3c.measure.title': { de: 'Maße', en: 'Measures' },
+    'net.3c.warn.title': { de: 'Hinweis zum Netz', en: 'Note on the net' },
+    'net.3c.lock.face': { de: 'Flächenfüllung beim Möbiusnetz: nur für die Basis-Ebene und Ebenen auf dem Basisgitter (gleiche Form und Größe, kein Versatz, keine Drehung).', en: 'Face fills on the Möbius net: the base sheet and layers on the base grid only (same shape and size, no offset, no rotation).' },
+    'net.3c.compat.kind': { de: 'Das Möbiusnetz (3C) ist gegen das Gitter um 45° gedreht und lässt sich nicht mit einem regelmäßigen, Feld-, Einzel- oder gekachelten Netz mischen.', en: 'The Möbius net (3C) is turned 45° against the grid and cannot be interpolated with a regular, Field, Single or Tiled net.' },
+    'net.3c.compat.format': { de: 'Das Format des Möbiusnetzes unterscheidet sich ({a} und {b}).', en: 'The Möbius net format differs ({a} and {b}).' },
+    'net.3c.compat.cls': { de: 'Die Auslassklasse des Möbiusnetzes am Sechseck unterscheidet sich ({a} und {b}).', en: 'The omission class of the Möbius net on the hexagon differs ({a} and {b}).' },
+    'net.3c.compat.family': { de: 'Die Familie des Möbiusnetzes unterscheidet sich ({a} und {b}).', en: 'The Möbius net family differs ({a} and {b}).' },
+    'net.3c.tl.incompatible': { de: 'Netz nicht animiert zwischen Keyframe {a} und {b}: {reason} Dort wird das Autor-Netz gezeigt.', en: 'Net not animated between keyframes {a} and {b}: {reason} The author net is shown there.' },
+    'net.3c.tl.note': { de: 'Netz: {reason} - das Autor-Netz wird gezeigt', en: 'Net: {reason} - the author net is shown' },
+    'net.3c.rule': { de: 'Gewählt werden darf jede gültige Kombination (a ab 2, am Dreieck ab 1; b bis 12); die Vorschläge zeigen nur b bis 9.', en: 'Any valid combination may be chosen (a from 2, on the triangle from 1; b up to 12); the suggestions only show b up to 9.' },
+    'net.kind.off.short': { de: 'Aus', en: 'Off' },
+    'net.kind.geometric.short': { de: 'Geo', en: 'Geo' },
+    // ---- index.html follow-up 2 (task 043): the shadow harmony button and the harmony select's options ----
+    'index.schatten-schattenreihe': { de: 'Schatten (Schattenreihe)', en: 'Shadow (shadow series)' },
+    'index.gegenfarben': { de: 'Gegenfarben', en: 'Complementary colors' },
+    'index.dreier': { de: 'Dreier', en: 'Triples' },
+    'index.vierer': { de: 'Vierer', en: 'Quadruples' },
+    'index.schatten': { de: 'Schatten', en: 'Shadow' },
+    // ---- whole sentences of the form / layer / layers / timeline scripts (task 043): {n} {k} {from} {to}; singular and plural are separate keys, the script picks by k === 1 ----
+    'reason.node.max.square': { de: 'Höchste Ordnung beim Quadrat: {n}.', en: 'Highest order for the square: {n}.' },
+    'reason.node.max.other': { de: 'Höchste Ordnung bei dieser Form: {n}.', en: 'Highest order for this shape: {n}.' },
+    'note.size.field': { de: 'Feld-Netz: nur ungerade Größen, deshalb {from} \u2192 {to}.', en: 'Field net: odd sizes only, so {from} \u2192 {to}.' },
+    // ---- core (task 050): the two net-kind notes of sketch.js ({from} {size} {kept}) and the harmony-rule texts of core/color.js (the German is the label there, character for character) ----
+    'note.catalog.version': { de: 'Dieser Link oder dieses Muster stammt aus einer anderen Version des Generators und kann nicht geladen werden.', en: 'This link or pattern was made for another version of the generator and cannot be loaded.' },
+    'note.catalog.invalid': { de: 'Dieser Link oder dieses Muster passt nicht zum aktuellen Gitter und kann nicht geladen werden.', en: 'This link or pattern is not valid for the current grid and cannot be loaded.' },
+    'info.grid.line': { de: 'Gitter: {name} · Knoten: {n}', en: 'Grid: {name} · Nodes: {n}' },
+    'tip.order': { de: 'Ordnung {o}: {n} Knoten', en: 'Order {o}: {n} nodes' },
+    'shape.lost.lines': { de: 'Linien', en: 'lines' },
+    'shape.lost.layers': { de: 'Ebenen', en: 'layers' },
+    'shape.lost.timeline': { de: 'Zeitleiste', en: 'timeline' },
+    'shape.lost.colors': { de: 'Farben', en: 'colors' },
+    'shape.lost.and': { de: 'und', en: 'and' },
+    'note.shape.clamp': { de: 'Ordnung auf {n} begrenzt (höchstens {n} bei dieser Form).', en: 'Order limited to {n} (at most {n} for this shape).' },
+    'note.shape.cleared': { de: 'Geleert: {what}.', en: 'Cleared: {what}.' },
+    'size.confirm.title': { de: 'Größe ändern?', en: 'Change size?' },
+    'size.confirm.text': { de: 'Beim Größenwechsel gehen {n} von {m} Farbgruppen verloren (Flächen verschmelzen oder entfallen). Das lässt sich nicht rückgängig machen.', en: 'Changing the size discards {n} of {m} color groups (faces merge or vanish). This cannot be undone.' },
+    'size.confirm.go': { de: 'Ändern', en: 'Change' },
+    'note.size.head': { de: 'Größe {from} -> {to}.', en: 'Size {from} -> {to}.' },
+    'note.size.kept': { de: '{what} erhalten.', en: '{what} kept.' },
+    'size.adj.layers': { de: 'Ebenen', en: 'layers' },
+    'size.adj.timeline': { de: 'Zeitleiste', en: 'timeline' },
+    'size.adj.colors': { de: 'Farben', en: 'colors' },
+    'note.size.adjusted': { de: '{what} angepasst.', en: '{what} adjusted.' },
+    'note.size.colorsLost': { de: 'Nicht erhalten: {n} von {m} Farbgruppen.', en: 'Not kept: {n} of {m} color groups.' },
+    'note.size.fieldNetNoNet': { de: 'Feld-Netz gilt nur bei ungeraden Größen: bei Größe {size} kein Netz.', en: 'The field net applies only at odd sizes: at size {size} there is no net.' },
+    'note.size.fieldNetNoNetMin': { de: 'Feld-Netz braucht mindestens Größe 3: bei Größe {size} kein Netz.', en: 'The field net needs size 3 or more: at size {size} there is no net.' },
+    'note.size.fieldNet': { de: 'Feld-Netz gilt bei Größe {size} als Einzel.', en: 'Field net is read as Single at size {size}.' },
+    'size.kept.lines': { de: 'Linien', en: 'Lines' },
+    'size.kept.free': { de: 'freie Punkte', en: 'free points' },
+    'shape.confirm.title': { de: 'Form wechseln?', en: 'Change shape?' },
+    'shape.confirm.text': { de: 'Beim Wechsel gehen {what} verloren. Das lässt sich nicht rückgängig machen.', en: 'Changing the shape discards {what}. This cannot be undone.' },
+    'shape.confirm.go': { de: 'Wechseln', en: 'Change' },
+    'shape.lage.state': { de: '{name}, Lage {n}. Erneut klicken: Lage {m}', en: '{name}, position {n}. Click again: position {m}' },
+    'reason.lage2.max': { de: 'Lage 2 gibt es nur bis Ordnung {n} (Dreieck {t}, Quadrat {q}, Sechseck {h}).', en: 'Position 2 is only available up to order {n} (triangle {t}, square {q}, hexagon {h}).' },
+    'reason.lage.timeline': { de: 'Die Ebene gehört zur Zeitleiste; ihre Lage ist gesperrt.', en: 'The layer belongs to the timeline; its position is locked.' },
+    'note.lage.2': { de: 'Lage 2: {what} geleert. Erneut klicken: zurück zu Lage 1.', en: 'Position 2: {what} cleared. Click again: back to position 1.' },
+    'note.lage.2.none': { de: 'Lage 2. Erneut klicken: zurück zu Lage 1.', en: 'Position 2. Click again: back to position 1.' },
+    'note.lage.1': { de: 'Lage 1: {what} geleert. Erneut klicken: Lage 2.', en: 'Position 1: {what} cleared. Click again: position 2.' },
+    'note.lage.1.none': { de: 'Lage 1. Erneut klicken: Lage 2.', en: 'Position 1. Click again: position 2.' },
+    'lage.confirm.title': { de: 'Lage wechseln?', en: 'Change position?' },
+    'lage.confirm.text': { de: 'Beim Wechsel gehen {what} verloren. Das lässt sich nicht rückgängig machen.', en: 'Changing the position discards {what}. This cannot be undone.' },
+    'glossary.order.term': { de: 'Ordnung', en: 'order' },
+    'glossary.order': { de: 'Die Teilungen je Seite des Netzes (ganze Zahl ab 1).', en: 'The divisions per side of the net (an integer from 1).' },
+    'glossary.position.term': { de: 'Lage', en: 'position' },
+    'glossary.position': { de: 'Lage 1: die Knoten des Netzes; Lage 2: dazu die Mitten aller kleinsten Maschen.', en: 'Position 1: the nodes of the net; position 2: plus the centres of all smallest meshes.' },
+    'glossary.maingroup.term': { de: 'Hauptgruppe', en: 'main group' },
+    'glossary.maingroup': { de: 'Die volle Symmetriegruppe der Form: 3* beim Dreieck, 4* beim Quadrat, 6* beim Sechseck. Nur für sie gibt es einen systematischen Namen.', en: 'The full symmetry group of the shape: 3* for the triangle, 4* for the square, 6* for the hexagon. Only it has a systematic name.' },
+    'glossary.formsign.term': { de: 'Formzeichen', en: 'shape sign' },
+    'glossary.formsign': { de: 'd Dreieck, q Quadrat, * Sechseck.', en: 'd triangle, q square, * hexagon.' },
+    'glossary.nodes.term': { de: 'Knoten', en: 'nodes' },
+    'glossary.nodes': { de: 'Die Anzahl der Knoten des Gitters.', en: 'The number of nodes of the grid.' },
+    'glossary.nodenumber.term': { de: 'Knotennummer', en: 'node number' },
+    'glossary.nodenumber': { de: 'Der Rang einer Knotenbahn unter der Hauptgruppe: nach dem Abstand von der Mitte senkrecht zur Seite, bei Gleichstand nach der Lage entlang der Seite.', en: 'The rank of a node orbit under the main group: by its distance from the centre perpendicular to the side, ties by the position along it.' },
+    'glossary.family.term': { de: 'Familie', en: 'family' },
+    'glossary.family': { de: 'Die zwei Knotennummern einer Linie, die größere zuerst; ab Nummer 10 mit Punkt geschrieben (12.3).', en: 'The two node numbers of a line, the larger first; written with a dot from number 10 (12.3).' },
+    'glossary.letter.term': { de: 'Buchstabe', en: 'letter' },
+    'glossary.letter': { de: 'Die Zahl der Sektoren, die die gerade Strecke berührt, vom Ende z1 im schattierten Sektor gelesen. Reihen: Dreieck a e i n, Quadrat a d g k n, Sechseck a c e g i l n.', en: 'The number of sectors the straight segment touches, read from the end z1 in the shaded sector. Series: triangle a e i n, square a d g k n, hexagon a c e g i l n.' },
+    'glossary.sector.term': { de: 'Sektor', en: 'sector' },
+    'glossary.sector': { de: 'Einer der gleichen Ausschnitte, in die die Hauptgruppe die Form teilt; der schattierte Sektor ist der Ausgangssektor.', en: 'One of the equal parts into which the main group divides the shape; the shaded sector is the starting sector.' },
+    'glossary.bar.term': { de: 'Überstrich', en: 'overline' },
+    'glossary.bar': { de: 'Die Strecke läuft gegen den Uhrzeigersinn aus dem schattierten Sektor.', en: 'The segment runs counter-clockwise from the shaded sector.' },
+    'glossary.lower.term': { de: 'Kleinbuchstabe', en: 'lower-case letter' },
+    'glossary.lower': { de: 'Die Linie ist ein Drehling.', en: 'The line is a rotational form (Drehling).' },
+    'glossary.mirror.term': { de: 'Großbuchstabe', en: 'capital letter' },
+    'glossary.mirror': { de: 'Die Linie ist ein Spiegeling.', en: 'The line is a mirror pair (Spiegeling).' },
+    'glossary.both.term': { de: 'aA', en: 'aA' },
+    'glossary.both': { de: 'Klein- und Großbuchstabe zugleich: die Linie ist zugleich Drehling und Spiegeling.', en: 'Lower-case and capital together: the line is a rotational form and a mirror pair at once.' },
+    'glossary.nameform.term': { de: 'Namensaufbau', en: 'name structure' },
+    'glossary.nameform': { de: 'Ordnung, Formzeichen, Lage, dann die Hauptgruppe und die Linien, mit + verbunden: 4q1/4* 52a+66d.', en: 'Order, shape sign, position, then the main group and the lines joined by +: 4q1/4* 52a+66d.' },
+    'glossary.direction.term': { de: 'Zugrichtung', en: 'direction of travel' },
+    'glossary.direction': { de: 'Nur Drehung: Ein Drehling und sein spiegelgleicher haben dieselben Zahlen; die Reihenfolge der Zahlen sagt, welcher gemeint ist (32a und 23a). Bei gleichen Zahlen steht ein Unterstrich vor der zweiten (5_5i). Kommen beide im Muster vor, steht ein Großbuchstabe: 52A.', en: 'Rotation only: a rotational form and its mirror-equal partner share the same numbers; the order of the numbers says which one is meant (32a and 23a). With equal numbers an underscore precedes the second (5_5i). Where both occur in the pattern, a capital letter stands: 52A.' },
+    'glossary.law1c.term': { de: 'Gesetz 1c', en: 'law 1c' },
+    'glossary.law1c': { de: 'Eine Linie, die in einer Seite des Netzes liegt, gilt zugleich als Spiegeling (aA), auch wenn sie geometrisch zwei Drehlinge ergibt.', en: 'A line that lies in a side of the net counts as a mirror pair at the same time (aA), even if geometrically it gives two rotational forms.' },
+    'glossary.sourceform.term': { de: 'Quellform', en: 'source form' },
+    'glossary.sourceform': { de: 'Die Schreibweise Hinterreiters: Ordnung und Formzeichen (△ Dreieck, □ Quadrat, * Sechseck), Schrägstrich, dann die Linien mit dem Index der Drehgruppe (₄ Quadrat, ₆ Sechseck, beim Dreieck keiner), z. B. 4□/ 52A₄.', en: 'Hinterreiter\'s notation: order and shape sign (△ triangle, □ square, * hexagon), slash, then the lines with the index of the rotation group (₄ square, ₆ hexagon, none for the triangle), e.g. 4□/ 52A₄.' },
+    'glossary.sectors.one': { de: '{n} Sektor', en: '{n} sector' },
+    'glossary.sectors.other': { de: '{n} Sektoren', en: '{n} sectors' },
+    'info.glossary.title': { de: 'Begriffe', en: 'Terms' },
+    'note.timeline.lageMix': { de: 'Ebene nicht hinzugefügt: Sie liegt auf einer anderen Lage des Gitters als der vorige Keyframe. Keyframes müssen dieselbe Lage haben.', en: 'Layer not added: it is on another position (Lage) of the grid than the previous keyframe. Keyframes must share the same Lage.' },
+    'note.session.oldSchema': { de: 'Die gespeicherte Sitzung stammt aus einer älteren Version des Generators und kann nicht wiederhergestellt werden. Sie wurde beiseitegelegt, der Generator startet neu.', en: 'The saved session comes from an older version of the generator and cannot be restored. It was set aside and the generator starts fresh.' },
+    'note.net.minNodes': { de: 'Sin und Tan brauchen mindestens Ordnung {to}; Ordnung von {from} auf {to} gesetzt.', en: 'Sin and Tan need at least order {to}; order changed from {from} to {to}.' },
+    'note.net.fieldOddSizeNoNet': { de: 'Feld braucht ungerade Größen in X und Y (3, 5, 7, 9); bei {size} gibt es hier kein Netz. Die Größe bleibt {kept}.', en: 'The field needs odd sizes in X and Y (3, 5, 7, 9); at {size} there is no net here. The size stays {kept}.' },
+    'note.net.fieldMinSizeNoNet': { de: 'Feld braucht in X und Y mindestens Größe 3; bei {size} gibt es hier kein Netz. Die Größe bleibt {kept}.', en: 'Field needs size 3 or more in X and Y; at {size} there is no net here. The size stays {kept}.' },
+    'note.net.fieldMinSize': { de: 'Feld braucht in X und Y mindestens Größe 3; {size} passt nicht, deshalb Einzelnetz. Die Größe bleibt {kept}.', en: 'Field needs size 3 or more in X and Y; {size} does not fit, so single net. The size stays {kept}.' },
+    'note.net.fieldOddSize': { de: 'Feld braucht eine ungerade Größe (3, 5, 7, 9); {size} passt nicht, deshalb Einzelnetz. Die Größe bleibt {kept}.', en: 'Field needs an odd size (3, 5, 7, 9); {size} does not fit, so single net. The size stays {kept}.' },
+    'rule.isotint': { de: 'Isotints (Weißgleiche)', en: 'Isotints' },
+    'rule.isotone': { de: 'Isotones (Schwarzgleiche)', en: 'Black (isotints)' },
+    'rule.shadowSeries': { de: 'Shadow series (Schattenreihe)', en: 'Shadow series' },
+    'rule.axis.direction': { de: 'Richtung', en: 'Direction' },
+    'layers.remove.title.n': { de: 'Ebene {n} entfernen?', en: 'Remove layer {n}?' },
+    'layers.remove.lines.one': { de: 'Die eine Linie dieser Ebene geht verloren. Das lässt sich nicht rückgängig machen.', en: 'The one line of this layer will be lost. This cannot be undone.' },
+    'layers.remove.lines.other': { de: 'Die {k} Linien dieser Ebene gehen verloren. Das lässt sich nicht rückgängig machen.', en: 'The {k} lines of this layer will be lost. This cannot be undone.' },
+    'layers.remove.keyframe.none': { de: 'Diese Ebene ist ein Keyframe der Timeline. Sie wird entfernt, ihr Keyframe verlässt die Timeline, und die Linienzuordnungen der angrenzenden Segmente gehen verloren. Das lässt sich nicht rückgängig machen.', en: 'This layer is a keyframe of the timeline. It will be removed, its keyframe leaves the timeline, and the line pairings of the adjacent segments will be lost. This cannot be undone.' },
+    'layers.remove.keyframe.one': { de: 'Diese Ebene ist ein Keyframe der Timeline und hat eine Linie. Sie wird entfernt, ihr Keyframe verlässt die Timeline, und die Linienzuordnungen der angrenzenden Segmente gehen verloren. Das lässt sich nicht rückgängig machen.', en: 'This layer is a keyframe of the timeline and has one line. It will be removed, its keyframe leaves the timeline, and the line pairings of the adjacent segments will be lost. This cannot be undone.' },
+    'layers.remove.keyframe.other': { de: 'Diese Ebene ist ein Keyframe der Timeline und hat {k} Linien. Sie wird entfernt, ihr Keyframe verlässt die Timeline, und die Linienzuordnungen der angrenzenden Segmente gehen verloren. Das lässt sich nicht rückgängig machen.', en: 'This layer is a keyframe of the timeline and has {k} lines. It will be removed, its keyframe leaves the timeline, and the line pairings of the adjacent segments will be lost. This cannot be undone.' },
+    'timeline.dia.text.one': { de: 'Die Linienzuordnung des angrenzenden Segments geht verloren (Zuordnung, Umkehrung und Symmetrie-Variante der Linien). Die Ebene selbst bleibt erhalten. Das lässt sich nicht rückgängig machen.', en: 'The line pairing of the adjacent segment will be lost (pairing, reversal and symmetry variant of the lines). The layer itself is kept. This cannot be undone.' },
+    'timeline.dia.text.other': { de: 'Die Linienzuordnung von {k} angrenzenden Segmenten geht verloren (Zuordnung, Umkehrung und Symmetrie-Variante der Linien). Die Ebene selbst bleibt erhalten. Das lässt sich nicht rückgängig machen.', en: 'The line pairings of {k} adjacent segments will be lost (pairing, reversal and symmetry variant of the lines). The layer itself is kept. This cannot be undone.' },
+    // ---- the plain texts of the tables of ui-form / ui-layer / ui-layers / ui-net / ui-timeline (task 044): reasons, names, states; the German is the text written in the script ----
+    'reason.node.min': { de: 'Niedrigste Ordnung: 1.', en: 'Lowest order: 1.' },
+    'reason.node.min.trig': { de: 'Sin und Tan brauchen mindestens Ordnung {n}.', en: 'Sin and Tan need at least order {n}.' },
+    'reason.size.min': { de: 'Kleinste Größe: 1.', en: 'Smallest size: 1.' },
+    'reason.size.max': { de: 'Größte Größe: 9.', en: 'Largest size: 9.' },
+    'reason.size.field.min': { de: 'Im Feld-Netz sind nur ungerade Größen von 3 bis 9 möglich; 3 ist die kleinste.', en: 'In the field net only odd sizes from 3 to 9 are possible; 3 is the smallest.' },
+    'reason.size.fieldSq.min': { de: 'Im Feld-Netz ist 3 die kleinste Größe.', en: 'In the field net 3 is the smallest size.' },
+    'reason.fold.hex': { de: 'Die Zähligkeit (3 oder 6) gilt nur beim Sechseck.', en: 'The fold (3 or 6) applies to the hexagon only.' },
+    'reason.fold.rotation': { de: 'Die Zähligkeit gilt nur mit Drehung.', en: 'The fold applies with rotation only.' },
+    'more.label.fold3': { de: 'Mehr – aktive Zähligkeit: 3', en: 'More – active fold: 3' },
+    'layers.dia.add': { de: 'Ebene {n} zur Zeitleiste hinzufügen', en: 'Add layer {n} to timeline' },
+    'layers.dia.remove': { de: 'Ebene {n} aus der Zeitleiste entfernen', en: 'Remove layer {n} from timeline' },
+    'layers.dia.none': { de: 'Ebene zur Zeitleiste hinzufügen', en: 'Add layer to timeline' },
+    'layers.dia.in': { de: 'in der Zeitleiste', en: 'in the timeline' },
+    'layers.dia.out': { de: 'nicht in der Zeitleiste', en: 'not in the timeline' },
+    'layers.x.none': { de: 'Ebene entfernen', en: 'Remove layer' },
+    'layers.chip.inactive': { de: 'nicht aktiv', en: 'not active' },
+    'layers.eye.kf.on': { de: 'Keyframe, zusätzlich sichtbar', en: 'Keyframe, also visible' },
+    'layers.x.name': { de: 'Ebene {n} entfernen', en: 'Remove layer {n}' },
+    'layers.add': { de: 'Ebene hinzufügen', en: 'Add layer' },
+    'reason.net.notApplicable': { de: 'Netz gilt für das Quadrat, Basis-Ebene.', en: 'The net applies to the square, base layer.' },
+    'reason.net.needsKind': { de: 'Die Stärke gilt für Sin, Tan und Geo.', en: 'The strength applies to Sin, Tan and Geo.' },
+    'reason.strength.max': { de: 'Größte Stärke: 1,0.', en: 'Largest strength: 1.0.' },
+    'reason.strength.min': { de: 'Kleinste Stärke: 0,0.', en: 'Smallest strength: 0.0.' },
+    'reason.strength.exact': { de: 'Die Stärke liegt zwischen 0,00 und 1,00.', en: 'The strength is between 0.00 and 1.00.' },
+    'reason.focus.max': { de: 'Größter Fokus: 1,0.', en: 'Largest focus: 1.0.' },
+    'reason.focus.min': { de: 'Kleinster Fokus: −1,0.', en: 'Smallest focus: −1.0.' },
+    'reason.focus.exact': { de: 'Der Fokus liegt zwischen −1,00 und 1,00.', en: 'The focus is between −1.00 and 1.00.' },
+    'timeline.net.auto.on': { de: 'Netz aufnehmen: automatisch (an)', en: 'Record net: automatic (on)' },
+    'timeline.net.auto.off': { de: 'Netz aufnehmen: automatisch (aus)', en: 'Record net: automatic (off)' },
+    'timeline.net.always': { de: 'Netz aufnehmen: immer', en: 'Record net: always' },
+    'timeline.net.never': { de: 'Netz aufnehmen: nie', en: 'Record net: never' },
+    'timeline.net.still': { de: 'das Netz bewegt sich nicht mit der Zeitleiste', en: 'the net does not move with the timeline' },
+    'timeline.clear.text': { de: 'Alle Keyframes, Linienzuordnungen und Netz-Schnappschüsse der Zeitleiste werden verworfen. Die Ebenen selbst bleiben erhalten. Das lässt sich nicht rückgängig machen.', en: 'All keyframes, line pairings and net snapshots of the timeline will be discarded. The layers themselves are kept. This cannot be undone.' },
+    'timeline.dia.title': { de: 'Ebene {n} aus der Zeitleiste entfernen?', en: 'Remove layer {n} from timeline?' },
+    // ---- the rest of the plain table texts of ui-layers / ui-timeline (task 045): names, states, hint; the German is the text written in the script ----
+    'layers.eye.none': { de: 'Ebene sichtbar', en: 'Layer visible' },
+    'layers.base': { de: 'Basis', en: 'Base' },
+    'layers.layer': { de: 'Ebene {n}', en: 'Layer {n}' },
+    'layers.chip.active': { de: 'aktiv', en: 'active' },
+    'layers.eye.name': { de: 'Ebene {n} sichtbar', en: 'Layer {n} visible' },
+    'layers.eye.on': { de: 'sichtbar', en: 'visible' },
+    'layers.eye.off': { de: 'ausgeblendet', en: 'hidden' },
+    'layers.eye.kf.off': { de: 'Keyframe, ausgeblendet', en: 'Keyframe, not additionally visible' },
+    'layers.more.open': { de: 'offen', en: 'open' },
+    'layers.more.closed': { de: 'geschlossen', en: 'closed' },
+    'layers.hint': { de: 'Symbol antippen', en: 'Tap an icon' },
+    'timeline.play': { de: 'Abspielen', en: 'Play' },
+    'timeline.pause': { de: 'Pause', en: 'Pause' },
+    // ---- the Mehr popover's name line and the Farbe tab's reasons / anchor texts (task 046); the German is the text written in the script; layers.hint is the popover's hint, too ----
+    'more.state.on': { de: 'an', en: 'on' },
+    'more.state.off': { de: 'aus', en: 'off' },
+    'farbe.reason.fillOff': { de: 'Fläche füllen einschalten', en: 'Turn on face fill' },
+    'farbe.reason.organLoading': { de: 'Farborgel lädt noch.', en: 'Color Organ is still loading.' },
+    'farbe.anchor.hueTitle': { de: 'Farbton {n}', en: 'Hue {n}' },
+    'farbe.anchor.hueContext': { de: 'für Farbton {n}/24', en: 'for hue {n}/24' },
+    'farbe.organ.error': { de: 'Farborgel: {message}', en: 'Color Organ: {message}' },
+    // ---- strings of the scripts of the phone layout that carry a key ----
+    'notice.close': { de: 'Hinweis schließen', en: 'Close notice' },
+    'more.farbe.button': { de: 'Mehr: Farben zurücksetzen, Knoten, Farborgel, Info, Download', en: 'More: reset colors, nodes, Color Organ, info, download' },
+    'lines.button': { de: 'Linien: an/aus, Linienstärke', en: 'Lines: on/off, line width' },
+    'lines.weight': { de: 'Linienstärke', en: 'Line width' },
+    'netz.lines.button': { de: 'Netzlinien zeigen', en: 'Show net lines' },
+    'netz.reverse': { de: 'Richtung umkehren', en: 'Reverse direction' },
+    'net.axes.both': { de: 'Beide Achsen', en: 'Both axes' },
+    'net.axes.x': { de: 'Nur X', en: 'X only' },
+    'net.axes.y': { de: 'Nur Y', en: 'Y only' },
+    'trails.none': { de: 'Keine Flächen', en: 'No faces' },
+    'trails.label.one': { de: 'Spur {k} · {m} Fläche', en: 'Trail {k} · {m} face' },
+    'trails.label.other': { de: 'Spur {k} · {m} Flächen', en: 'Trail {k} · {m} faces' },
+    'trails.prev': { de: 'Vorherige Farbe dieser Spur', en: 'Previous color of this trail' },
+    'trails.next': { de: 'Nächste Farbe dieser Spur', en: 'Next color of this trail' },
+    'trails.group': { de: 'Spuren', en: 'Trails' },
+
+    // ---- the sheets redesign: the layer sheet ----
+    'layer.shape.hexagon': { de: 'Sechseck', en: 'Hexagon' },
+    'layer.sym.group': { de: 'Ebene: Symmetrie', en: 'Layer: symmetry' },
+    'layer.sym.none': { de: 'Keine Symmetrie', en: 'No symmetry' },
+    'layer.sym.mirror': { de: 'Spiegelung', en: 'Mirror' },
+    'layer.sym.rotational': { de: 'Drehsymmetrie', en: 'Rotational symmetry' },
+    'layer.nodes': { de: 'Ebene: Ordnung', en: 'Layer: order' },
+    'layer.size': { de: 'Ebene: Größe', en: 'Layer: size' },
+    'layer.shiftX': { de: 'Versatz X', en: 'Shift X' },
+    'layer.shiftY': { de: 'Versatz Y', en: 'Shift Y' },
+    'layer.meshX': { de: 'Eine Masche in X', en: 'One mesh width in X' },
+    'layer.meshY': { de: 'Eine Masche in Y', en: 'One mesh width in Y' },
+    'layer.rotation': { de: 'Drehung', en: 'Rotation' },
+    'layer.shiftX.more': { de: 'Versatz X mehr', en: 'Shift X more' },
+    'layer.shiftX.less': { de: 'Versatz X weniger', en: 'Shift X less' },
+    'layer.shiftY.more': { de: 'Versatz Y mehr', en: 'Shift Y more' },
+    'layer.shiftY.less': { de: 'Versatz Y weniger', en: 'Shift Y less' },
+    'layer.rotation.more': { de: 'Drehung mehr', en: 'Rotation more' },
+    'layer.rotation.less': { de: 'Drehung weniger', en: 'Rotation less' },
+
+    // ---- the timeline sheet ----
+    'timeline.notKeyframe': { de: 'Gewählte Ebene ist kein Keyframe', en: 'The selected layer is not a keyframe' },
+    'timeline.noKeyframes': { de: 'Noch keine Keyframes', en: 'No keyframes yet' },
+    'timeline.need2': { de: 'Mindestens zwei Keyframes nötig', en: 'At least two keyframes needed' },
+    'timeline.recaptureNet': { de: 'Netz der gewählten Ebene neu aufnehmen', en: 'Recapture the net of the selected layer' },
+    'timeline.pairing': { de: 'Linienzuordnung', en: 'Line pairing' },
+    'timeline.remove': { de: 'Zeitleiste entfernen', en: 'Remove timeline' },
+    'timeline.segment': { de: 'Segment', en: 'Segment' },
+    'timeline.line': { de: 'Linie {n}', en: 'Line {n}' },
+    'timeline.endUp': { de: 'Ende nach oben', en: 'Move end up' },
+    'timeline.endDown': { de: 'Ende nach unten', en: 'Move end down' },
+    'timeline.reverse': { de: 'Richtung umkehren', en: 'Reverse direction' },
+    'timeline.variantPrev': { de: 'Vorherige Variante', en: 'Previous variant' },
+    'timeline.variantNext': { de: 'Nächste Variante', en: 'Next variant' },
+    'timeline.listAll': { de: 'Alle Zuordnungen', en: 'All pairings' },
+    'timeline.resetPairing': { de: 'Zuordnung zurücksetzen', en: 'Reset pairing' },
+    'timeline.pairingDefault': { de: 'Zuordnung ist Standard', en: 'Pairing is the default' },
+    'timeline.listBack': { de: 'Zurück zur Zuordnung', en: 'Back to the pairing' },
+    'timeline.conclusiveOnly': { de: 'Nur schlüssige Zuordnungen', en: 'Only conclusive pairings' },
+    'timeline.conclusiveCount': { de: '{kept} von {total} schlüssig', en: '{kept} of {total} conclusive' },
+    'timeline.conclusiveChecking': { de: 'wird geprüft {done} von {total}', en: 'checking {done} of {total}' },
+    'timeline.conclusiveNone': { de: 'Keine schlüssige Zuordnung. Filter ausschalten, um alle zu sehen.', en: 'No conclusive pairing. Switch the filter off to see all.' },
+    'timeline.conclusiveFree': { de: 'Ebene hat freie Linienenden, Filter nicht anwendbar', en: 'A layer has free line ends, the filter does not apply' },
+    'timeline.pairingCount': { de: '{shown} von {total} Zuordnungen', en: '{shown} of {total} pairings' },
+    'timeline.pairingRow': { de: 'Zuordnung {order}, Σd² {value} px²', en: 'Pairing {order}, Σd² {value} px²' },
+    'timeline.default': { de: 'Standard', en: 'Default' },
+    'timeline.net.none': { de: 'Netz: nicht animiert', en: 'Net: not animated' },
+    'timeline.net.partial': { de: 'Netz: Keyframe {n} ohne Netz', en: 'Net: keyframe {n} without a net' },
+    'timeline.net.pending': { de: 'Netz: zweiten Keyframe hinzufügen', en: 'Net: add a second keyframe' },
+    'timeline.net.incompatible': { de: 'Netz: nicht animierbar', en: 'Net: cannot be animated' },
+    'timeline.net.constant': { de: 'Netz: gleich in allen Keyframes', en: 'Net: same in all keyframes' },
+    'timeline.net.animated': { de: 'Netz: animiert ({n} Keyframes)', en: 'Net: animated ({n} keyframes)' },
+
+    // ---- the Netz sheet ----
+    'net.strengthFine': { de: 'Stärke fein', en: 'Strength (fine)' },
+    'net.focusFine': { de: 'Fokus fein', en: 'Focus (fine)' },
+    'net.strengthFine.more': { de: 'Stärke fein mehr', en: 'Strength (fine) more' },
+    'net.strengthFine.less': { de: 'Stärke fein weniger', en: 'Strength (fine) less' },
+    'net.focusFine.more': { de: 'Fokus fein mehr', en: 'Focus (fine) more' },
+    'net.focusFine.less': { de: 'Fokus fein weniger', en: 'Focus (fine) less' },
+    'net.domain.single': { de: 'Einzeln', en: 'Single' },
+    'net.domain.tiled': { de: 'Gekachelt', en: 'Tiled' },
+    'net.domain.field': { de: 'Feld', en: 'Field' },
+    'net.family.square': { de: '\u25a1N', en: '\u25a1N' },
+    'net.family.triangle': { de: '\u25b3N', en: '\u25b3N' },
+    'net.family.hex': { de: '*N', en: '*N' },
+    'net.family.info.square': { de: 'Netzfamilie \u25a1N (Quadratnetz, Hinterreiter Band II, S. 10).', en: 'Net family \u25a1N (square net, Hinterreiter vol. II, p. 10).' },
+    'net.family.info.triangle': { de: 'Netzfamilie \u25b3N (Dreiecknetz, Hinterreiter Band II, S. 14).', en: 'Net family \u25b3N (triangle net, Hinterreiter vol. II, p. 14).' },
+    'net.family.info.hex': { de: 'Netzfamilie *N (Sechsecknetz, Hinterreiter Band II, S. 14).', en: 'Net family *N (hexagon net, Hinterreiter vol. II, p. 14).' },
+    'net.readout.fieldCutHex': { de: 'Feld: {n} × {m} Sechsecke, Rand angeschnitten', en: 'Field: {n} × {m} hexagons, edge cut' },
+    'net.readout.fieldCut': { de: 'Feld: {n} × {m} Kacheln, Rand angeschnitten', en: 'Field: {n} × {m} tiles, edge cut' },
+    'net.readout.field2': { de: 'Feld: {n} × {m} Kacheln', en: 'Field: {n} × {m} tiles' },
+    'net.readout.field': { de: 'Feld: {n} × {n} Kacheln', en: 'Field: {n} × {n} tiles' },
+    'net.readout.tiled': { de: 'Gekachelt: {n} × {n}', en: 'Tiled: {n} × {n}' },
+    'net.readout.single': { de: 'Einzeln: ein Netz', en: 'Single: one net' },
+    'net.domain.single.title': { de: 'Einzeln: ein geschlossenes Netz, wie in Hinterreiters Figuren (Größe 1 füllt die Fläche)', en: "Single: one closed net, as in Hinterreiter's figures (Shape Size 1 fills the canvas)" },
+    'net.domain.tiled.title': { de: 'Gekachelt: die gewarpte Kachel wird so oft über die Fläche wiederholt, wie die Größe sagt, jede Kopie gleich', en: 'Tiled: the warped tile is repeated across the canvas by Shape Size, every copy alike' },
+    'net.domain.field.titleSq': { de: 'Feld: das Gesetz spannt über alle X × Y Kacheln; jede Kachel ist eine skalierte Kopie des angeklickten Musters (Größe 3 bis 9)', en: 'Field: the law spans all X x Y tiles; each tile is a scaled copy of the clicked pattern (size 3 to 9)' },
+    'net.domain.field.titleEven': { de: 'Feld: das Gesetz spannt über alle Kacheln; jede Kachel ist eine skalierte Kopie des angeklickten Musters (Größe 3 bis 9)', en: 'Field: the law spans all tiles; each tile is a scaled copy of the clicked pattern (size 3 to 9)' },
+    'net.domain.field.title': { de: 'Feld: das Gesetz spannt über alle Größe × Größe Kacheln; jede Kachel ist eine skalierte Kopie des angeklickten Musters (ungerade Größe 3, 5, 7, 9)', en: 'Field: the law spans all Shape Size x Shape Size tiles; each tile is a scaled copy of the clicked pattern (odd Shape Size 3, 5, 7, 9)' },
+    'net.alternate.title': { de: 'Nur bei Gekachelt: jede zweite Kachel spiegeln, damit die Maschenweiten über die Nähte weiterlaufen (eine Deutung: das Buch zeigt das für Linienmotive, nicht für die Abstandsfunktion)', en: 'Only in Tiled mode: mirror every other tile so mesh widths run on across tile seams (an interpretation - the book shows this for line motifs, not for the spacing function)' },
+    'net.hint.fieldMin': { de: 'Feld braucht in X und Y mindestens Größe 3.', en: 'Field needs size 3 or more in X and Y.' },
+    'net.hint.optimum': { de: 'Nach Hinterreiter (Band II, S. 17) wirken Quadratnetze mit 7 bis 12 Maschen am besten; dieses Netz hat {w}.', en: 'According to Hinterreiter (vol. II, p. 17) square nets work best with 7 to 12 meshes; this net has {w}.' },
+    'net.hint.fieldOdd': { de: 'Feld braucht ungerade Größen in X und Y (3, 5, 7, 9).', en: 'Field needs odd Shape Sizes in X and Y (3, 5, 7, 9).' },
+    'net.macro': { de: 'Macro-Zellen (Macro × Micro)', en: 'Macro cells (macro × micro)' },
+    'net.focus.title': { de: 'Wo die breiteste (Sinus) / schmalste (Tangens) Masche in der Kachel liegt: -1 = linker Rand, 0 = Mitte, +1 = rechter Rand', en: 'Where the widest (sinus) / narrowest (tangens) mesh sits in the tile: -1 = left edge, 0 = centre, +1 = right edge' },
+    'net.alternate': { de: 'Kacheln spiegeln', en: 'Mirror alternate tiles' },
+    'net.reason.fieldOdd': { de: 'Feld braucht ungerade Größen in X und Y', en: 'Field needs odd shape sizes in X and Y' },
+    'net.reason.focus': { de: 'Der Fokus gilt für Netzart 1 mit Sin und Tan.', en: 'The focus applies to net type 1 with Sin and Tan.' },   // task 123: true for Aus, Geo and 3C alike
+
+    // ---- the phone layout's labels (sheets redesign, commit 6a): the sub-tab names, the sheet hosts (also the names of their "..." buttons), the tool row and sub-tab row groups ----
+    'subtab.raster': { de: 'Raster', en: 'Grid' },
+    'subtab.ebenen': { de: 'Ebenen', en: 'Layers' },
+    'subtab.zeit': { de: 'Zeit', en: 'Time' },
+    'subtab.harmonie': { de: 'Harmonie', en: 'Harmony' },
+    'subtab.spuren': { de: 'Spuren', en: 'Trails' },
+    'subtab.art': { de: 'Art', en: 'Type' },
+    'subtab.achsen': { de: 'Achsen', en: 'Axes' },
+    'phone.tools': { de: 'Werkzeuge', en: 'Tools' },
+    'phone.subtabs': { de: 'Unterbereiche', en: 'Sub-sections' },
+    'farbe.strategy.group': { de: 'Verteilungsstrategie', en: 'Distribution strategy' },
+    'layers.more': { de: 'Ebenen-Einstellungen', en: 'Layer settings' },
+    'timeline.more': { de: 'Zeitleiste: Mehr', en: 'Timeline: more' },
+    // ---- the spatial morph: the Morph button, its block and the status line (morph stage e2a; ui-morph.js) ----
+    'morph.group': { de: 'Morph', en: 'Morph' },
+    'morph.sheet': { de: 'Morph', en: 'Morph' },
+    'morph.button': { de: 'Morph', en: 'Morph' },
+    'morph.toggle': { de: 'Morph an oder aus', en: 'Morph on or off' },
+    'morph.modes': { de: 'Morph-Art', en: 'Morph type' },
+    'morph.mode.linear': { de: 'Linear', en: 'Linear' },
+    'morph.mode.radial': { de: 'Radial', en: 'Radial' },
+    'morph.mode.bilinear': { de: 'Bilinear', en: 'Bilinear' },
+    'morph.angle': { de: 'Winkel', en: 'Angle' },
+    'morph.angle.more': { de: 'Winkel mehr', en: 'Angle up' },
+    'morph.angle.less': { de: 'Winkel weniger', en: 'Angle down' },
+    'morph.angle.value': { de: '{deg}\u00B0', en: '{deg}\u00B0' },
+    'morph.angle.linearOnly': { de: 'Winkel: nur bei linear', en: 'Angle: linear only' },
+    'morph.status.needsTwoKeyframes': { de: 'Zwei Keyframe-Ebenen nötig', en: 'Two keyframe layers needed' },
+    'morph.status.shapeMismatch': { de: 'Keyframes: Form verschieden', en: 'Keyframes differ in shape' },
+    'morph.status.lineCountMismatch': { de: 'Keyframes: Linienzahl verschieden', en: 'Keyframes differ in line count' },
+    'morph.status.parameterMismatch': { de: 'Keyframes: Größe/Symmetrie verschieden', en: 'Keyframes differ in size or symmetry' },
+    'morph.status.alignmentFailed': { de: 'Zuordnung nicht möglich', en: 'Pairing not possible' },
+    'morph.status.renderError': { de: 'Morph nicht darstellbar', en: 'Morph cannot be drawn' },
+    'morph.status.netActive': { de: 'Netz verzerrt Linien', en: 'Net warps lines' },
+    'morph.status.netFacesNeedField': { de: 'Flächen im Morph nur bei Feld-Netz', en: 'Morph faces: field net only' },
+    'morph.status.bilinearStatic': { de: 'Bilinear: ohne Zeitverlauf', en: 'Bilinear: no time progress' },
+    'morph.status.seamOpen': { de: 'Naht offen: Ebene {layers}', en: 'Seam open: layer {layers}' },
+    'morph.status.base': { de: 'Basis', en: 'base' },
+
+    // ---- the Info card (sheets redesign, commit 6b): the sections "Netz" and "Zeitleiste"; each line is one key, the German is the text of the markup; short on purpose (6c): no line over 140 characters ----
+    'info.net.title': { de: 'Netz', en: 'Net' },
+    'info.net.kinds': { de: 'Sinus: Maschen zum Kachelrand hin schmaler. Tangens: breiter. Geometrisch: gleiches Verhältnis.', en: 'Sine: meshes get narrower towards the tile edge. Tangent: wider. Geometric: same ratio each step.' },
+    'info.net.field': { de: 'Feld: ein Gesetz über alle Kacheln; Größe 3 bis 9.', en: 'Field: one law across all tiles; size 3 to 9.' },
+    'info.net.locks': { de: 'Solange ein Netz aktiv ist, sind Kurve und Frei aus.', en: 'While a net is active, Curve and Free are off.' },
+    'info.tl.title': { de: 'Zeitleiste', en: 'Timeline' },
+    'info.tl.keyframes': { de: 'Ein Keyframe ist eine Ebene mit gefüllter Raute. Sie muss zum vorigen passen (Form, Ordnung, Lage, Größe, Symmetrie, Linienzahl).', en: 'A keyframe is a layer with a filled diamond. It must match the previous one (shape, order, position, size, symmetry, number of lines).' },
+    'info.tl.net': { de: 'Das Netz bewegt sich nur, wenn jeder Keyframe ein Netz hat und je zwei benachbarte Netze zusammenpassen.', en: 'The net only moves when every keyframe has a net and each two neighbouring nets fit together.' },
+
+    // ---- common ----
+    'common.atMin': { de: 'Kleinster Wert erreicht.', en: 'Smallest value reached.' },
+    'common.atMax': { de: 'Größter Wert erreicht.', en: 'Largest value reached.' },
+    // the German keeps the full stop the two scripts that say it have always written (ui-layer.js, ui-layers.js)
+    'common.noLayer': { de: 'Keine Ebene aktiv.', en: 'No layer active.' }
+  };
+
+  let lang = DEFAULT_LANG;
+
+  function fill(text, params) {
+    if (!params || typeof params !== 'object') return text;
+    return text.replace(/\{(\w+)\}/g, function (m, name) { return Object.prototype.hasOwnProperty.call(params, name) && params[name] !== undefined && params[name] !== null ? String(params[name]) : m; });
+  }
+
+  function keyText(key) { try { return String(key); } catch (e) { return ''; } }
+  // The text of a key: the current language, else German, else the key itself. Never throws (an unknown key, a bad params object, a non-string key).
+  function t(key, params) {
+    try {
+      const e = Object.prototype.hasOwnProperty.call(DICT, key) ? DICT[key] : null;
+      if (!e) return keyText(key);
+      const text = (typeof e[lang] === 'string' && e[lang] !== '') ? e[lang] : (typeof e.de === 'string' && e.de !== '' ? e.de : keyText(key));
+      return fill(text, params);
+    } catch (err) { return keyText(key); }
+  }
+  function has(key) { try { return Object.prototype.hasOwnProperty.call(DICT, key); } catch (e) { return false; } }
+
+  // the language the URL asks for (?lang=en | ?lang=de), else the default; the search string comes in as a parameter so a test can feed it
+  function langFromSearch(search) {
+    const m = /(?:^|[?&])lang=([A-Za-z]+)(?:&|$)/.exec(String(search || ''));
+    const l = m ? m[1].toLowerCase() : '';
+    return LANGS.indexOf(l) >= 0 ? l : DEFAULT_LANG;
+  }
+
+  // ---- the DOM part (a function of a root element; none of it runs at load unless the language is not the default) ----
+  function ownTextNode(el) {
+    const kids = el.childNodes || [];
+    for (let i = 0; i < kids.length; i++) if (kids[i].nodeType === 3 && /\S/.test(kids[i].nodeValue || '')) return kids[i];
+    return null;
+  }
+  function setName(el, text) {
+    el.setAttribute('aria-label', text);
+    if (el.hasAttribute('title')) el.setAttribute('title', text);
+  }
+  function applyEl(el) {
+    const k = el.getAttribute('data-i18n'), kl = el.getAttribute('data-i18n-label'), kt = el.getAttribute('data-i18n-title');
+    if (k && has(k)) {
+      const own = ownTextNode(el);
+      if (own) { own.nodeValue = t(k); }
+      else setName(el, t(k));
+    }
+    if (kl && has(kl)) setName(el, t(kl));
+    if (kt && has(kt)) el.setAttribute('title', t(kt));
+  }
+  function applyI18n(rootEl) {
+    const r = rootEl || (typeof document !== 'undefined' ? document : null);
+    if (!r || typeof r.querySelectorAll !== 'function') return 0;
+    const list = r.querySelectorAll('[data-i18n], [data-i18n-label], [data-i18n-title]');
+    let n = 0;
+    for (let i = 0; i < list.length; i++) { applyEl(list[i]); n++; }
+    if (r.nodeType === 1 && (r.hasAttribute('data-i18n') || r.hasAttribute('data-i18n-label') || r.hasAttribute('data-i18n-title'))) { applyEl(r); n++; }
+    return n;
+  }
+
+  function setLang(l) {
+    const next = LANGS.indexOf(l) >= 0 ? l : DEFAULT_LANG;
+    const changed = next !== lang;
+    lang = next;
+    if (typeof document !== 'undefined' && document.documentElement) {
+      applyI18n(document);
+      if (changed && typeof document.dispatchEvent === 'function' && typeof Event === 'function') document.dispatchEvent(new Event('langchange'));
+    }
+    return lang;
+  }
+
+  const api = {
+    DICT: DICT, DEFAULT_LANG: DEFAULT_LANG, LANGS: LANGS,
+    t: t, has: has, langFromSearch: langFromSearch, applyI18n: applyI18n, setLang: setLang,
+    get lang() { return lang; }
+  };
+  root.uiI18n = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+
+  // the URL selects the language BEFORE any script builds a string; the markup is rewritten only when it is not the default (German stays as authored)
+  if (typeof location !== 'undefined' && location && typeof location.search === 'string') {
+    const wanted = langFromSearch(location.search);
+    if (wanted !== DEFAULT_LANG) {
+      lang = wanted;
+      if (typeof document !== 'undefined' && document.addEventListener) {
+        const go = function () { applyI18n(document); };
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
+      }
+    }
+  }
+})(typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : this));
