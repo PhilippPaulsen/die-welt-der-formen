@@ -24,19 +24,43 @@ try { listed = cp.execFileSync('git', ['ls-files', '--cached', '--others', '--ex
 check('none tracked by git or addable (git ls-files --cached --others --exclude-standard)', listed.length === 0, listed.join(', '));
 const gi = fs.readFileSync(path.join(ROOT, '.gitignore'), 'utf8').split('\n').map(l => l.trim());
 for (const ext of ['woff', 'woff2', 'otf', 'ttf']) check(`.gitignore blocks *Suisse*.${ext}`, gi.includes(`*[Ss]uisse*.${ext}`));
-const css = fs.readFileSync(path.join(ROOT, 'style.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
-const faces = [...css.matchAll(/@font-face\s*\{[^}]*\}/g)].map(m => m[0]);
-const urls = faces.map(f => (f.match(/url\(\s*["']?([^"')]+)/) || [])[1]);
-check('style.css declares 4 faces, family "SuisseIntl", each a ' + BASE + 'suisseintl-<cut>.woff2 URL with format("woff2") and font-display: swap',
-    faces.length === 4 && faces.every(f => /font-family:\s*"SuisseIntl"/.test(f) && /format\("woff2"\)/.test(f) && /font-display:\s*swap/.test(f)) && urls.every(u => /^https:\/\/bachmann-paulsen\.de\/fonts\/suisseintl-[a-z]+\.woff2$/.test(u || '')), urls.join(', '));
-check('style.css has no other font-family name than var(--font-ui) / inherit / SuisseIntl', !/font-family:\s*"Suisse"/.test(css) && (css.match(/font-family:\s*[^;]+;/g) || []).every(d => /SuisseIntl|var\(--font-ui\)|inherit/.test(d)));
-let bad = [];
-for (const f of fs.readdirSync(ROOT).filter(n => n.endsWith('.html'))) {
-    const s = fs.readFileSync(path.join(ROOT, f), 'utf8');
-    const m = s.match(/<link rel="preload"[^>]*as="font"[^>]*>/g) || [];
-    if (!(m.length === 1 && m[0].includes(BASE + 'suisseintl-book.woff2') && /crossorigin/.test(m[0]))) bad.push(f);
-    if (/assets\/Suisse/i.test(s)) bad.push(f + ' (assets/Suisse)');
+// The site root and studio/ (generated copy of the generator, tools/sync-studio.sh) follow the same rules.
+const SCOPES = [{ label: '', dir: ROOT }];
+if (fs.existsSync(path.join(ROOT, 'studio'))) SCOPES.push({ label: 'studio/', dir: path.join(ROOT, 'studio') });
+for (const { label, dir } of SCOPES) {
+    const css = fs.readFileSync(path.join(dir, 'style.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    const faces = [...css.matchAll(/@font-face\s*\{[^}]*\}/g)].map(m => m[0]);
+    const remote = faces.filter(f => /url\(/.test(f));
+    const urls = remote.map(f => (f.match(/url\(\s*["']?([^"')]+)/) || [])[1]);
+    const urlOk = u => /^https:\/\/bachmann-paulsen\.de\/fonts\/suisseintl-[a-z]+\.woff2$/.test(u || '');
+    const faceOk = f => /font-family:\s*"SuisseIntl"/.test(f) && /format\("woff2"\)/.test(f) && /font-display:\s*swap/.test(f);
+    if (!label) {
+        check('style.css declares 4 faces, family "SuisseIntl", each a ' + BASE + 'suisseintl-<cut>.woff2 URL with format("woff2") and font-display: swap',
+            faces.length === 4 && faces.every(faceOk) && urls.every(urlOk), urls.join(', '));
+    } else {
+        // studio/ is the generator's own style.css: Book + Semibold from the font host, plus a local() metrics fallback face
+        check(label + 'style.css: every @font-face with a url() is a "SuisseIntl" face from ' + BASE + ' (woff2, swap); at least Book and Semibold; the rest is local()',
+            remote.length >= 2 && remote.every(faceOk) && urls.every(urlOk) && faces.filter(f => !/url\(/.test(f)).every(f => /src:\s*local\(/.test(f)), urls.join(', '));
+    }
+    check(label + 'style.css has no other font-family name than var(--font-ui) / inherit / SuisseIntl', !/font-family:\s*"Suisse"/.test(css) && (css.match(/font-family:\s*[^;]+;/g) || []).every(d => /SuisseIntl|var\(--font-ui\)|inherit/.test(d)));
+    let bad = [];
+    // preload: the site pages and the studio entry pages (generator, Farborgel). studio/gallery.html has none by design,
+    // but must not point at assets/Suisse or another font host.
+    const pages = fs.readdirSync(dir).filter(n => n.endsWith('.html'));
+    if (label) pages.push('color-harmony/ui/index.html');
+    for (const f of pages) {
+        const s = fs.readFileSync(path.join(dir, f), 'utf8');
+        const m = s.match(/<link rel="preload"[^>]*as="font"[^>]*>/g) || [];
+        const needs = !(label && f === 'gallery.html');
+        if (needs ? !(m.length === 1 && m[0].includes(BASE + 'suisseintl-book.woff2') && /crossorigin/.test(m[0])) : m.some(x => !x.includes(BASE))) bad.push(f);
+        if (/assets\/Suisse/i.test(s)) bad.push(f + ' (assets/Suisse)');
+    }
+    check(label + 'every html page preloads the Book face from the font host with crossorigin', bad.length === 0, bad.join(', '));
 }
-check('every html page preloads the Book face from the font host with crossorigin', bad.length === 0, bad.join(', '));
+if (SCOPES.length > 1) {
+    check('studio/ has no assets/ folder (fonts are never copied)', !fs.existsSync(path.join(ROOT, 'studio', 'assets')));
+    const sync = fs.existsSync(path.join(ROOT, 'studio', 'SYNC.md')) ? fs.readFileSync(path.join(ROOT, 'studio', 'SYNC.md'), 'utf8') : '';
+    check('studio/SYNC.md names the source commit (40 hex digits)', /Commit: [0-9a-f]{40}\b/.test(sync));
+}
 console.log(`\n${checks - failures}/${checks} checks passed`);
 process.exit(failures ? 1 : 0);

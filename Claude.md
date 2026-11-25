@@ -8,6 +8,10 @@ This repository is part of *The World of Forms* — a research project reviving 
 
 **⚠️ Open question, verify before assuming repo layout:** This repo may contain a `p5_prototype/` copy of the generator (`sketch.js`, `forms.js`) that duplicates or diverges from the standalone `world_of_forms_generator` repo. Before editing generator code, confirm which copy is canonical — check for drift between `p5_prototype/` here and the equivalent files in `world_of_forms_generator`, and consolidate if needed rather than editing both independently.
 
+## Studio copy (`/studio/`)
+
+`studio/` is a generated copy of `world_of_forms_generator` (sync: `tools/sync-studio.sh`, always `--dry-run` first; see `docs/studio.md`). Do not edit it by hand, no fonts in it. **`robots.txt` has `Disallow: /studio/` until the soft launch; remove that line then.** `p5_prototype/` is superseded by `studio/` but not yet removed.
+
 ## Related repositories
 
 - `die-welt-der-formen` (this repo) — website: Observable-notebook-derived `.js` files for the bilingual editions (`notebooks/harmony_d.js`, `notebooks/harmony.js`, `notebooks/world_d.js`, `notebooks/world.js`, plus `intro`/`about`). Also embeds a copy of the generator under `p5_prototype/` (`sketch.js`, `forms.js`) — see below.

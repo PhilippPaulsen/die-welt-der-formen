@@ -1,0 +1,1085 @@
+/**
+ * core/facecolor.js
+ * Roadmap 1.10a / Group D (Ostwald color harmony), Phase 2: which color a
+ * face gets when the user has ASSIGNED one - the geometric face-trail key,
+ * the per-sheet assignment store, and the render-path override. Phase 1's
+ * core/color.js supplies the color math (resolveColor()); nothing here is
+ * DOM (the Phase 3 Face Colors panel lives in sketch.js and drives the
+ * trail/palette/highlight functions in the Phase 3 section below) or export
+ * (Phase 4).
+ *
+ * WHY assignments cannot live on face objects: computeCellFaces()
+ * (core/faces.js) is re-run on EVERY redraw (core/tiling.js's
+ * drawTessellation()), so every face object is brand new each frame. An
+ * assignment therefore has to be found again from the face's GEOMETRY.
+ *
+ * THE KEY (design session, confirmed): the face's vertex set, canonicalized
+ * over the sheet's symmetry group - each group element g maps every vertex
+ * of the face, the mapped coordinates are rounded to 0.01px, sorted, and
+ * serialized; the lexicographic MINIMUM over all g is the key. All copies
+ * of one face under the group (its "trail" / face orbit) share one key, so
+ * one assignment colors the whole trail - finer than connIndex classes
+ * (measured: 43 of 66 real patterns had more trails than connIndex
+ * classes), which is why connIndex was not used. A centroid-only key was
+ * rejected (concentric faces collided in 2 of 80 patterns); the vertex set
+ * separates them.
+ *
+ * WHICH GROUP: the one that GENERATED the faces - the sheet's OWN. A layer's
+ * faces are expanded through drawShapeCell() with that layer's shape,
+ * symmetry mode and mirror axis (collectCellSegments()'s `sheet` override, the
+ * same parameters core/tiling.js draws the layer with), so sheetGroupElements()
+ * builds the group from the same override. (Before the per-layer face-detection
+ * fix both used the base's globals, which mismatched the drawn lines for a layer
+ * with its own mode or shape.) The base sheet passes no override and uses the
+ * globals, exactly as before.
+ *
+ * ORPHANS: nothing here ever deletes a store entry. An edit that removes
+ * or reshapes a face just leaves its key unmatched (see the Phase 2
+ * split/merge investigation); the entry is inert, and comes back to life
+ * if the geometry does (undo, or drawing the face again). Whether to prune
+ * is a Phase 3 decision, not made here.
+ *
+ * Pure except for sheetGroupElements()/faceAssignmentsFor() (live-app glue,
+ * last section) - the key/apply functions take everything explicitly, so
+ * they can be tested headlessly.
+ */
+
+// Rounding resolution of the key: 0.01px (design session).
+const FACE_KEY_SCALE = 100;
+
+// The canonical trail key for one face: `coords` = [{x,y}, ...] (the face's
+// boundary vertices, any order), `ops` = the group's coordinate transforms
+// (core/orbits.js computeGroupElements().ops, ops[g](point, center)),
+// `center` = the group's fixed point (the sheet centroid).
+function faceTrailKey(coords, ops, center) {
+    let best = null;
+    for (let g = 0; g < ops.length; g++) {
+        const pts = coords.map(p => {
+            const q = ops[g](p, center);
+            return [Math.round(q.x * FACE_KEY_SCALE), Math.round(q.y * FACE_KEY_SCALE)];
+        });
+        pts.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+        const s = pts.map(p => (p[0] + 0) + ',' + (p[1] + 0)).join(';'); // + 0: turns -0 into 0
+        if (best === null || s < best) best = s;
+    }
+    return best;
+}
+
+// Keys for every face of a findFaces()/computeCellFaces() result, parallel
+// to facesResult.faces. `group` = computeGroupElements()-shaped
+// {ops, centroid}. A face with no coordinates (cannot happen for real
+// results) gets null.
+function computeFaceTrailKeys(facesResult, group) {
+    const nodeById = new Map(facesResult.nodes.map(n => [n.id, n]));
+    return facesResult.faces.map(face => {
+        const coords = face.nodeIds.map(id => nodeById.get(id)).filter(Boolean);
+        return coords.length ? faceTrailKey(coords, group.ops, group.centroid) : null;
+    });
+}
+
+// Farborgel follow-up (real display color, not core/color.js's re-resolved recipe): a raw,
+// already-calibrated sRGB byte triple an assignment can carry alongside its hue/w/s recipe.
+// Validated the same way HarmonySelection.mjs's own toDisplayColors() validates member.srgb -
+// same contract, so a value straight from that module always passes.
+function _validDisplayColor(c) {
+    return Array.isArray(c) && c.length === 3 && c.every(x => Number.isInteger(x) && x >= 0 && x <= 255);
+}
+function _srgbBytesToHex(rgb) {
+    return '#' + rgb.map(x => x.toString(16).padStart(2, '0')).join('');
+}
+
+// Validates and stores one assignment: {hue, w, s, rule, params, displayColor?}. hue/w/s
+// are checked by actually resolving them (resolveColor() throws outside the Ostwald
+// triangle), so a bad entry can never get in and later break rendering - this stays true
+// even for a Farborgel-sourced entry, whose hue/w/s are real analytical coordinates, kept
+// for provenance/export/reconciliation even though rendering no longer resolves through
+// them when displayColor is present (see applyFaceAssignments below). rule/params are
+// provenance for the Phase 3 UI (which rule + stepper positions produced this color).
+// displayColor, when supplied, is an already-calibrated [r,g,b] byte triple (e.g.
+// Farborgel's own HarmonySelection member.srgb) that PAINTS the face directly instead of
+// core/color.js's OSTWALD_REFERENCE_SYSTEM recipe - optional, null by default, so every
+// existing caller (the old rule-registry system) is byte-identical to before this field
+// existed. The stored record is a copy.
+function setFaceAssignment(store, key, assignment) {
+    resolveColor(OSTWALD_REFERENCE_SYSTEM, assignment); // throws if invalid
+    if (assignment.displayColor !== undefined && assignment.displayColor !== null && !_validDisplayColor(assignment.displayColor)) {
+        throw new Error('setFaceAssignment: displayColor must be a [r,g,b] byte triple (0-255 integers) or null');
+    }
+    store.set(key, {
+        hue: assignment.hue, w: assignment.w, s: assignment.s,
+        rule: assignment.rule === undefined ? null : assignment.rule,
+        params: assignment.params === undefined ? null : assignment.params,
+        displayColor: (assignment.displayColor === undefined || assignment.displayColor === null) ? null : assignment.displayColor.slice()
+    });
+}
+
+// The render-path override: for every face of `facesResult` whose trail
+// key has an assignment in `store`, replaces face.color (orbitColor()'s
+// hsl string) with the assigned color's hex. Mutates faces in place -
+// they are fresh objects every redraw, so nothing persistent is touched.
+// Everything else is deliberately untouched:
+//  - unassigned faces keep orbitColor()'s value, and with an empty/absent
+//    store (or no group) this returns before computing a single key, so
+//    the unassigned path is byte-identical to before this module existed
+//    and pays no cost;
+//  - a cross-sheet face (sheets >= 2, CROSS_SHEET_COLOR) is skipped -
+//    out of scope by design;
+//  - an assignment that no longer resolves is skipped, never thrown out of
+//    the render loop.
+// Returns the number of faces recolored.
+function applyFaceAssignments(facesResult, store, group, keys = null) {
+    if (!store || store.size === 0 || !group || !facesResult.faces.length) return 0;
+    if (!keys) keys = computeFaceTrailKeys(facesResult, group); // callers that already computed them pass them in
+    let applied = 0;
+    facesResult.faces.forEach((face, i) => {
+        if (face.sheets && face.sheets.length >= 2) return;
+        const a = keys[i] === null ? undefined : store.get(keys[i]);
+        if (!a) return;
+        try {
+            // Farborgel follow-up: a displayColor paints the face directly - it is already
+            // calibrated (Oklab-mixed, gamut-mapped), and re-resolving hue/w/s through
+            // OSTWALD_REFERENCE_SYSTEM here would silently replace it with that OTHER
+            // system's (uncalibrated, muted) color, the exact bug this fixes. hue/w/s are
+            // still validated below (resolveColor throws on a stale/invalid entry) even
+            // when displayColor is used, so an assignment that no longer resolves is still
+            // correctly skipped rather than painting a face from bad data.
+            const resolved = resolveColor(OSTWALD_REFERENCE_SYSTEM, a);
+            face.color = a.displayColor ? _srgbBytesToHex(a.displayColor) : resolved.hex;
+            // Phase 4: the full Ostwald-space data rides on the face (export:
+            // face.colorSpec) so an assignment is reconstructable, not just
+            // visually reproducible. Present on ASSIGNED faces only; `trail`
+            // is the key that joins the face to meta.faceColoring's entry.
+            // displayColor is additive/null by default - a consumer re-deriving color from
+            // system+hue/w/s alone gets the OLD (uncalibrated) result for a Farborgel entry;
+            // displayColor is the authoritative one when present, a deliberate, documented
+            // exception to the "system alone reconstructs every color" Phase 4 invariant.
+            face.colorSpec = { system: OSTWALD_REFERENCE_SYSTEM.id, hue: a.hue, w: a.w, s: a.s, rule: a.rule, params: a.params, displayColor: a.displayColor, trail: keys[i] };
+            applied++;
+        } catch (err) { /* stale/invalid entry: keep the default color */ }
+    });
+    return applied;
+}
+
+// Phase 4 (export): meta.faceColoring - {system, base?, layers?}. `system`
+// is the WHOLE reference color system as plain data (hue anchors, white/
+// black, gray-letter table, mix rule, and its verified/calibrated tags), so a
+// consumer can re-derive every color without this code - EXCEPT an entry with
+// a non-null displayColor (Farborgel follow-up): that color was calibrated by
+// a different pipeline (Oklab-mixed, gamut-mapped - see core/farborgel-bridge.js),
+// not derivable from `system`+hue/w/s at all, so displayColor rides along
+// as the authoritative, already-resolved [r,g,b] a consumer should use
+// directly for those entries. base / layers[] hold every store entry of that
+// sheet, orphans included (an orphan is inert but returns on Undo - see the
+// header): [{trail, hue, w, s, rule, params, displayColor}].
+// `layerStores` = [{layerIndex, store}], layerIndex = position in the
+// EXPORTED geometry.layers array (enabled layers only). Returns null when no
+// sheet has an assignment, so unassigned patterns export byte-identically.
+function faceColoringExportData(baseStore, layerStores) {
+    const entries = store => Array.from(store.entries()).map(([trail, a]) => ({ trail, hue: a.hue, w: a.w, s: a.s, rule: a.rule, params: a.params, displayColor: a.displayColor }));
+    const out = { system: JSON.parse(JSON.stringify(OSTWALD_REFERENCE_SYSTEM)) };
+    let any = false;
+    if (baseStore && baseStore.size) { out.base = entries(baseStore); any = true; }
+    const layers = (layerStores || []).filter(l => l.store && l.store.size).map(l => ({ layerIndex: l.layerIndex, assignments: entries(l.store) }));
+    if (layers.length) { out.layers = layers; any = true; }
+    return any ? out : null;
+}
+
+// ----------------- TRAILS, PALETTE, HIGHLIGHT (Phase 3) -------------
+// Pure logic behind the Face Colors panel (sketch.js); no DOM here.
+
+// The distinct face trails of a computeCellFaces() result, one entry per
+// key: {key, faceCount, area, connIndex, color}. `color` is the color the
+// trail is DRAWN with right now (its first face's face.color: an assigned
+// hex, or orbitColor()'s default). Order is by total area, largest first
+// (area rounded to 0.01 so float noise cannot reorder equal trails), ties
+// by key - deterministic for a given geometry, so a palette's slot i keeps
+// meaning the same trail across redraws. A cross-sheet face never belongs
+// to a trail.
+function computeFaceTrails(facesResult, group) {
+    const keys = computeFaceTrailKeys(facesResult, group);
+    const byKey = new Map();
+    facesResult.faces.forEach((f, i) => {
+        if (keys[i] === null || (f.sheets && f.sheets.length >= 2)) return;
+        let t = byKey.get(keys[i]);
+        if (!t) { t = { key: keys[i], faceCount: 0, area: 0, connIndex: f.connIndex, color: f.color }; byKey.set(keys[i], t); }
+        t.faceCount++;
+        t.area += f.area;
+    });
+    return Array.from(byKey.values()).sort((a, b) =>
+        (Math.round(b.area * 100) - Math.round(a.area * 100)) || (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+}
+
+// Phase B-Farbstrategien follow-up (gray-as-selection round): computeCellFaces()'s call site needs
+// a trail list to hand ensureDefaultGrayFill() below, SEPARATELY from the one applyAssignmentsLazily()
+// already computes internally for reconciliation - computeFaceTrails() is itself built on
+// computeFaceTrailKeys(), the expensive O(faces x group size) operation this file's own earlier
+// caches (_orbitGrayRankCache, retired with _applyRealOrbitGray()) existed specifically to avoid
+// paying twice per redraw. A naive second call here reintroduced exactly that regression - found
+// by tools/color/test-inherit-hook.js's own timing guard (steady-store ratio 1.530, 53% over
+// budget) after the first version of this round's change, the same way Step 1 of the previous
+// round found an analogous one, not assumed away. Same two-level WeakMap/Map shape as that
+// retired cache: a cache HIT (the overwhelming majority of redraws - an unedited pattern) skips
+// computeFaceTrailKeys() entirely; a miss (first call, or a real structural edit) pays the real
+// cost once, same as applyAssignmentsLazily()'s own unavoidable cost for the SAME edit.
+let _trailsCache = null;
+function _trailsConnFingerprint(connSet) {
+    return connSet.length + ':' + connSet.map(c => c[0] + ',' + c[1]).join(';');
+}
+function cachedTrailsFor(facesResult, group, gridNodes, connSet) {
+    if (!group || !facesResult.faces.length) return [];
+    if (!_trailsCache) _trailsCache = new WeakMap();
+    let byFingerprint = _trailsCache.get(gridNodes);
+    if (!byFingerprint) { byFingerprint = new Map(); _trailsCache.set(gridNodes, byFingerprint); }
+    const fp = _trailsConnFingerprint(connSet);
+    let cached = byFingerprint.get(fp);
+    if (!cached || cached.faceCount !== facesResult.faces.length) {
+        cached = { faceCount: facesResult.faces.length, trails: computeFaceTrails(facesResult, group) };
+        byFingerprint.set(fp, cached);
+    }
+    return cached.trails;
+}
+
+// Phase B-Farbstrategien follow-up (gray-as-selection round, Option B3+A1): computeCellFaces()'s
+// own default-gray fix - replaces findFaces()'s naive connIndex/totalOrbits color (every
+// POSSIBLE theme-line orbit of the shape, drawn or not) with one based on
+// computeFaceTrails()'s own real, area-ranked trail order (the SAME order the Face Colors panel
+// already labels "Trail 1", "Trail 2", ...). An earlier version of this (Phase B-Farbstrategien
+// step 1, since removed) only ever touched face.color on fresh, per-redraw face objects, never
+// the store - this version gives every unassigned trail a REAL, override-able store entry via
+// the same already-built, already-tested machinery a
+// Farborgel harmony application uses (applyHarmonyToPattern(), core/farborgel-bridge.js) instead
+// of a second, parallel coloring path - so strategies, inheritance, and the per-trail override
+// stepper all work on a default-filled sheet for free, no new mechanism.
+//
+// Unifies TWO cases the old function's unconditional .color loop used to serve separately, into
+// ONE call: a never-touched sheet (every trail unassigned) and a single post-edit orphan (one
+// trail with no inheritable parent - classifyTrailTransitions()'s "0 lost -> 1 new" case, which
+// reconciliation deliberately leaves unassigned) - unassignedTrails() doesn't distinguish them,
+// and neither does this function; both get a fresh max-contrast-gray entry, correctly ranked.
+//
+// The gray spread is ALWAYS sized to the WHOLE sheet (trails.length), not the unassigned count -
+// an orphan on an otherwise-9-trail sheet gets the gray matching ITS OWN area rank among all 10
+// trails (post-edit), not a size-1 spread's dead-center letter. applyHarmonyToPattern()'s
+// inheritedRanks/strategy dispatch are computed over the FULL trails array for exactly this
+// reason; fillOnly: true then only skips the WRITE for a trail that already has an entry (any
+// rule, not just this one) - "inheritance only fills", same invariant reconcileFaceAssignments()
+// documents elsewhere in this file. Always 'cyclic' (M = trails.length, nothing inherited for a
+// fresh trail resolves to rank i - this reproduces the retired step-1 face.color-only fallback's
+// rank mapping exactly, verified byte-identical in tools/color/test-facecolor.js) - an unattended
+// backfill, not a strategy choice; Area/Symmetry/Rings stay reachable only through an explicit
+// distribution-strategy application (ui-farbe.js's applyHarmony()).
+//
+// `hueIndex: null` per member reuses applyHarmonyToPattern()'s own existing "no hue, v=0" Farborgel
+// convention (FARBORGEL_GRAY_HUE_SUBSTITUTE = 0, the exact hue the max-contrast-gray rule itself
+// hardcodes) rather than inventing a second one. No .srgb per member - setFaceAssignment() then
+// stores displayColor: null, so a gray entry resolves through OSTWALD_REFERENCE_SYSTEM natively
+// (correct: unlike Farborgel, there is no second, differently-calibrated pipeline to bypass here).
+//
+// Cheap on the overwhelming majority of calls (unassignedTrails() early-out, O(trails) - no store
+// write, no resolveColor) - the real cost (N setFaceAssignment()/resolveColor() calls) is paid
+// only the first time a gap is found, not per redraw; see the performance verification step.
+// The trivial, locally-constructed HarmonySelection-shaped object applyHarmonyToPattern() needs
+// for a max-contrast-gray fill of `n` trails - factored out so ensureDefaultGrayFill() below and
+// ui-farbe.js's own strategy-aware reapplication (afterAnchorChange()'s gray-default branch, Phase
+// B-Farbstrategien follow-up) build it identically, from the one real registered rule
+// (core/color.js), never a second, duplicated formula.
+function buildMaxContrastGraySelection(n) {
+    const colors = generateHarmonyPalette('max-contrast-gray', [0], n);
+    return { members: colors.map(c => ({ analyticalCoordinate: { hueIndex: null, w: c.w, s: c.s } })) };
+}
+
+function ensureDefaultGrayFill(store, trails) {
+    if (!store || trails.length === 0) return 0;
+    if (unassignedTrails(store, trails).length === 0) return 0;
+    return applyHarmonyToPattern(buildMaxContrastGraySelection(trails.length), store, trails, 'cyclic', undefined,
+        { ruleId: 'max-contrast-gray', source: 'maxContrastGray', fillOnly: true });
+}
+
+// A sheet's palette state: which harmony rule is applied, the chosen index
+// per rule axis (one k/c stepper each), and per-trail slot overrides
+// (trail key -> slot of the SAME generated series). Plain data; the
+// assignments themselves live in the sheet's store.
+function newFacePalette() {
+    return { ruleId: null, idx: [], overrides: new Map() };
+}
+
+// Colors the sheet's trails from its palette: the rule generates exactly
+// one color per trail (slots = trails.length) and trail i gets slot i -
+// unless the palette holds an override for it, which moves that trail to
+// another slot of the SAME series (never a color from outside it). Every
+// trail is (re)assigned through setFaceAssignment(), recording the rule and
+// {idx, slot, slots} as provenance. Assignments of keys that are no longer
+// trails (orphans) are left alone. Returns {colors, slotOf} (slotOf: key ->
+// slot), or null when no rule is applied or there are no trails.
+function applyPaletteToTrails(store, trails, palette) {
+    if (!palette || !palette.ruleId || trails.length === 0) return null;
+    const colors = generateHarmonyPalette(palette.ruleId, palette.idx, trails.length);
+    palette.slots = trails.length; // the length of the series now in force (frozen until the next full application)
+    const slotOf = new Map();
+    trails.forEach((t, i) => {
+        const o = palette.overrides.get(t.key);
+        const slot = (o !== undefined && o >= 0 && o < colors.length) ? o : i;
+        const c = colors[slot];
+        setFaceAssignment(store, t.key, { hue: c.hue, w: c.w, s: c.s, rule: palette.ruleId, params: { idx: palette.idx.slice(), slot, slots: trails.length } });
+        slotOf.set(t.key, slot);
+    });
+    return { colors, slotOf };
+}
+
+// --- editing the series in force without repainting it (follow-up step 3) ---
+// After a full application the palette's series is FROZEN at palette.slots
+// colors: an edit that adds or removes trails does not regenerate it (that would
+// repaint most surviving trails - measured 73.6-85.9%), inherited trails keep
+// their slot, and the two functions below work inside that same series.
+
+// Trails of the list that hold no assignment right now (new regions, complex
+// components, anything reconciliation could not hand a color to).
+function unassignedTrails(store, trails) {
+    return trails.filter(t => !store.has(t.key));
+}
+
+function _writeSlot(store, palette, key, slot, slots, series) {
+    const c = series[slot];
+    setFaceAssignment(store, key, { hue: c.hue, w: c.w, s: c.s, rule: palette.ruleId, params: { idx: palette.idx.slice(), slot, slots } });
+    return c;
+}
+
+// Per-trail override: ONE trail takes `slot` of the series in force - a single
+// store write, never a re-run of the rule over the other trails. The choice
+// stays inside the series (the color is series[slot]); the override is recorded
+// so a later explicit full application keeps it. `fallbackSlots` = the series
+// length to use if the palette has none recorded yet. Returns the color.
+function assignTrailSlot(store, palette, key, slot, fallbackSlots) {
+    if (!palette || !palette.ruleId) throw new Error('assignTrailSlot: no rule is applied');
+    const slots = palette.slots || fallbackSlots;
+    if (!Number.isInteger(slot) || slot < 0 || slot >= slots) throw new Error(`assignTrailSlot: slot ${slot} outside the series (0..${slots - 1})`);
+    const series = generateHarmonyPalette(palette.ruleId, palette.idx, slots);
+    const c = _writeSlot(store, palette, key, slot, slots, series);
+    palette.overrides.set(key, slot);
+    return c;
+}
+
+// "Spread colors": gives every UNASSIGNED trail a slot of the series in force -
+// nothing that already has an assignment (inherited or overridden) is touched.
+// Slot choice: the least-used slot among the trails currently holding one
+// (a free slot first - one a vanished or merged trail left behind - then the
+// lowest), trails taken in list order (area, largest first); deterministic, and
+// spreads distinct colors as far as the series allows. Not recorded as overrides
+// (nobody chose them). Returns the number of trails colored.
+function spreadPaletteToUnassigned(store, trails, palette, fallbackSlots) {
+    if (!palette || !palette.ruleId) return 0;
+    const todo = unassignedTrails(store, trails);
+    if (!todo.length) return 0;
+    const slots = palette.slots || fallbackSlots || trails.length;
+    const series = generateHarmonyPalette(palette.ruleId, palette.idx, slots);
+    const usage = new Array(slots).fill(0);
+    trails.forEach(t => {
+        const a = store.get(t.key);
+        if (a && a.rule === palette.ruleId && a.params && Number.isInteger(a.params.slot) && a.params.slot >= 0 && a.params.slot < slots) usage[a.params.slot]++;
+    });
+    todo.forEach(t => {
+        let best = 0;
+        for (let k = 1; k < slots; k++) if (usage[k] < usage[best]) best = k;
+        _writeSlot(store, palette, t.key, best, slots, series);
+        usage[best]++;
+    });
+    return todo.length;
+}
+
+// "Reset colors": back to the default symmetry-orbit coloring - clears the
+// sheet's assignment store (orphans included) and its palette state.
+function resetFaceColors(sheet) {
+    const store = faceAssignmentsFor(sheet);
+    if (store) store.clear();
+    if (sheet === 'base') baseFacePalette = null;
+    else if (additionalLayers[sheet]) additionalLayers[sheet].facePalette = null;
+    // Group D Phase B4 follow-up: also forget the last-applied harmony type - without this, the very
+    // next anchor nudge (Kreis/Dreieck/Register/a stepper) would silently reapply it, undoing the
+    // reset it just performed.
+    setLastHarmonyTypeFor(sheet, null);
+    if (faceHover && faceHover.sheet === sheet) faceHover = null;
+}
+
+// Hover highlight: the trail whose swatch row is under the pointer gets
+// its faces flagged (face.highlight), which drawFaceFillsAtTile() outlines
+// on every tile. Flags only faces of the matching key, on the fresh
+// per-redraw face objects; returns how many were flagged.
+const FACE_HIGHLIGHT_COLOR = '#ff2d55';
+function markHighlightedTrail(facesResult, key, group) {
+    if (!key || !group || !facesResult.faces.length) return 0;
+    const keys = computeFaceTrailKeys(facesResult, group);
+    let n = 0;
+    facesResult.faces.forEach((f, i) => { if (keys[i] === key) { f.highlight = true; n++; } });
+    return n;
+}
+
+// ----------------- EDIT INHERITANCE (Group D, follow-up step 1) -------
+// What happens to an assignment when an edit changes the face structure: the
+// old trail's key no longer exists, so without this its color is silently lost
+// (Phase 2's split/merge investigation, Phase 3's edit+undo friction). Pure
+// logic only - no snapshot storage and no render hook yet (later steps); the
+// caller supplies the two face-trail snapshots (before/after an edit).
+//
+// Rules (design session, decided):
+//  - Only trails whose key is LOST (old, absent afterwards) or NEW (present
+//    afterwards, unknown before) take part; trails whose key survives are never
+//    touched. Lost and new trails are linked when a face of one OVERLAPS a face
+//    of the other, and union-find over those links gives components; the
+//    component's shape (lost x new) decides the rule:
+//      1 lost -> 1 new  "reshape"  the new trail inherits the parent's assignment
+//      1 lost -> N new  "split"    EVERY child inherits it, in full
+//      M lost -> 1 new  "merge"    the parent covering the most area inside the
+//                                  merged face wins (ties: lower palette slot,
+//                                  then key); only parents WITH an assignment compete
+//      anything else               nothing: M->N "complex", N->0 "vanished" (the
+//                                  entry stays as an orphan - Undo restores it),
+//                                  0->1 "new" (a region with no predecessor)
+//  - Inheritance only FILLS: a trail that already has an entry is never
+//    overwritten (keeps Undo/redo of an orphan pure), and nothing is ever
+//    deleted from the store.
+//  - Guard: a snapshot with no faces (curve/free mode returns none, a cleared
+//    pattern has none) is never read as "everything vanished" - the whole
+//    reconciliation is skipped.
+
+// Even area-based overlap needs no polygon clipping: two faces overlap when any
+// interior sample point of one lies inside the other. Sample points per face:
+// the vertex mean, the halfway points toward each vertex, and each edge
+// midpoint pulled 15% toward the mean - kept only if inside the face's OWN
+// polygon (a concave face's mean can fall outside it). Measured on the real
+// edit corpus: switching from mean-only to these samples moved no component
+// count by more than 1.5%.
+function pointInPolygon(pt, poly) {
+    let inside = false;
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+        if ((poly[i].y > pt.y) !== (poly[j].y > pt.y) &&
+            pt.x < (poly[j].x - poly[i].x) * (pt.y - poly[i].y) / (poly[j].y - poly[i].y) + poly[i].x) inside = !inside;
+    }
+    return inside;
+}
+
+function faceSamplePoints(poly) {
+    const m = { x: poly.reduce((s, p) => s + p.x, 0) / poly.length, y: poly.reduce((s, p) => s + p.y, 0) / poly.length };
+    const cand = [m];
+    poly.forEach(v => cand.push({ x: m.x + (v.x - m.x) * 0.5, y: m.y + (v.y - m.y) * 0.5 }));
+    poly.forEach((v, i) => {
+        const w = poly[(i + 1) % poly.length];
+        const e = { x: (v.x + w.x) / 2, y: (v.y + w.y) / 2 };
+        cand.push({ x: e.x + (m.x - e.x) * 0.15, y: e.y + (m.y - e.y) * 0.15 });
+    });
+    const own = cand.filter(p => pointInPolygon(p, poly));
+    return own.length ? own : [m];
+}
+
+// A before/after description of one sheet's faces: {faceCount, keys:Set,
+// trails:Map(key -> [face index]), faces:[{key, poly, area, samples}]}.
+// Cross-sheet faces are left out, like everywhere else.
+function faceTrailSnapshot(facesResult, group, keys = null) {
+    if (!keys) keys = computeFaceTrailKeys(facesResult, group);
+    const nodeById = new Map(facesResult.nodes.map(n => [n.id, n]));
+    const snap = { faceCount: 0, keys: new Set(), trails: new Map(), faces: [] };
+    facesResult.faces.forEach((f, i) => {
+        if (keys[i] === null || (f.sheets && f.sheets.length >= 2)) return;
+        const poly = f.nodeIds.map(id => nodeById.get(id)).filter(Boolean).map(n => ({ x: n.x, y: n.y }));
+        if (poly.length < 3) return;
+        const idx = snap.faces.length;
+        snap.faces.push({ key: keys[i], poly, area: f.area, samples: faceSamplePoints(poly) });
+        snap.keys.add(keys[i]);
+        if (!snap.trails.has(keys[i])) snap.trails.set(keys[i], []);
+        snap.trails.get(keys[i]).push(idx);
+    });
+    snap.faceCount = snap.faces.length;
+    return snap;
+}
+
+function _facesOverlap(a, b) {
+    return a.samples.some(p => pointInPolygon(p, b.poly)) || b.samples.some(p => pointInPolygon(p, a.poly));
+}
+
+// The components of the lost/new link graph between two snapshots:
+// [{kind, oldKeys, newKeys, links:[[oldFaceIdx, newFaceIdx]]}], kind as in the
+// header. Deterministic: components and keys are sorted. Empty for a skipped
+// (face-less) snapshot.
+function classifyTrailTransitions(oldSnap, newSnap) {
+    if (!oldSnap || !newSnap || !oldSnap.faceCount || !newSnap.faceCount) return [];
+    const lost = [...oldSnap.keys].filter(k => !newSnap.keys.has(k)).sort();
+    const fresh = [...newSnap.keys].filter(k => !oldSnap.keys.has(k)).sort();
+    const parent = new Map();
+    const find = x => { if (!parent.has(x)) parent.set(x, x); while (parent.get(x) !== x) { parent.set(x, parent.get(parent.get(x))); x = parent.get(x); } return x; };
+    const union = (a, b) => parent.set(find(a), find(b));
+    lost.forEach(k => find('o:' + k));
+    fresh.forEach(k => find('n:' + k));
+    const links = [];
+    const lostSet = new Set(lost), freshSet = new Set(fresh);
+    oldSnap.faces.forEach((of, i) => {
+        if (!lostSet.has(of.key)) return;
+        newSnap.faces.forEach((nf, j) => {
+            if (!freshSet.has(nf.key) || !_facesOverlap(of, nf)) return;
+            union('o:' + of.key, 'n:' + nf.key);
+            links.push([i, j]);
+        });
+    });
+    const byRoot = new Map();
+    const comp = r => { if (!byRoot.has(r)) byRoot.set(r, { oldKeys: [], newKeys: [], links: [] }); return byRoot.get(r); };
+    lost.forEach(k => comp(find('o:' + k)).oldKeys.push(k));
+    fresh.forEach(k => comp(find('n:' + k)).newKeys.push(k));
+    links.forEach(l => comp(find('o:' + oldSnap.faces[l[0]].key)).links.push(l));
+    const out = [];
+    for (const c of byRoot.values()) {
+        const o = c.oldKeys.length, n = c.newKeys.length;
+        c.kind = o === 0 ? 'new' : n === 0 ? 'vanished' : (o === 1 && n === 1) ? 'reshape' : o === 1 ? 'split' : n === 1 ? 'merge' : 'complex';
+        out.push(c);
+    }
+    return out.sort((a, b) => (a.oldKeys[0] || '\uffff' + a.newKeys[0]) < (b.oldKeys[0] || '\uffff' + b.newKeys[0]) ? -1 : 1);
+}
+
+// Applies the inheritance rules to `store` for one edit (oldSnap -> newSnap).
+// Mutates the store (fills only), returns {skipped, inherited, components}
+// where each component also carries `winner` (merge) and `written` (the child
+// keys that received an entry). Idempotent: reconciling a snapshot against
+// itself, or running the same edit twice, changes nothing the second time.
+function reconcileFaceAssignments(store, oldSnap, newSnap) {
+    if (!oldSnap || !newSnap || !oldSnap.faceCount || !newSnap.faceCount) return { skipped: true, inherited: 0, components: [] };
+    const components = classifyTrailTransitions(oldSnap, newSnap);
+    let inherited = 0;
+    const give = (comp, fromKey) => {
+        const a = store.get(fromKey);
+        comp.written = comp.written || [];
+        comp.newKeys.forEach(child => {
+            if (store.has(child)) return; // fill only
+            setFaceAssignment(store, child, { hue: a.hue, w: a.w, s: a.s, rule: a.rule, params: a.params == null ? null : JSON.parse(JSON.stringify(a.params)), displayColor: a.displayColor == null ? null : a.displayColor.slice() });
+            comp.written.push(child);
+            inherited++;
+        });
+    };
+    for (const comp of components) {
+        if (comp.kind === 'reshape' || comp.kind === 'split') {
+            if (store.has(comp.oldKeys[0])) give(comp, comp.oldKeys[0]);
+        } else if (comp.kind === 'merge') {
+            // Parent's area inside the merged face = the total area of its old faces linked to it.
+            const areaOf = new Map();
+            comp.links.forEach(([i]) => {
+                const of = oldSnap.faces[i];
+                areaOf.set(of.key, (areaOf.get(of.key) || 0) + of.area);
+            });
+            const cands = comp.oldKeys.filter(k => store.has(k)).map(k => {
+                const a = store.get(k);
+                return { key: k, area: Math.round((areaOf.get(k) || 0) * 100), slot: (a.params && Number.isInteger(a.params.slot)) ? a.params.slot : Infinity };
+            }).sort((x, y) => (y.area - x.area) || (x.slot - y.slot) || (x.key < y.key ? -1 : x.key > y.key ? 1 : 0));
+            if (cands.length) { comp.winner = cands[0].key; give(comp, comp.winner); }
+        }
+    }
+    return { skipped: false, inherited, components };
+}
+
+// ----------------- LAZY RECONCILIATION (Group D follow-up, step 2) ----
+// Where the last REAL face-trail state of each sheet is remembered, and the one
+// function core/faces.js's computeCellFaces() calls to apply a store.
+//
+// The snapshot lives in a WeakMap keyed by the sheet's assignment STORE object
+// (not in state.js): the store is already the per-sheet identity (base:
+// baseFaceAssignments, layer: layer.faceAssignments), so the snapshot is per
+// sheet by construction and needs no reset code of its own - a grid rebuild
+// creates a new store Map (no snapshot), a deleted layer takes its store with
+// it (garbage-collected), and "Reset colors" (store.clear()) is caught below.
+const _faceSnapshots = new WeakMap();
+
+function faceSnapshotFor(store) { return _faceSnapshots.get(store) || null; }
+
+// Same key SET <=> nothing to reconcile (a key is the face's geometry).
+function _sameKeySet(a, b) {
+    if (a.size !== b.size) return false;
+    for (const k of a) if (!b.has(k)) return false;
+    return true;
+}
+
+// Applies one sheet's store to a fresh computeCellFaces() result, reconciling
+// first when the face structure changed since the stored snapshot:
+//  - empty/absent store: nothing is tracked - the snapshot is dropped (a later
+//    first assignment must not diff against a stale one) and no key is computed,
+//    so a sheet without assignments pays only this one WeakMap delete;
+//  - NO faces (curve/free mode returns none; a genuinely cleared pattern has
+//    none): return WITHOUT touching the snapshot. The stored snapshot stays the
+//    last REAL state, so a detour into curve mode - or clearing and redrawing -
+//    still reconciles against it afterwards (an empty snapshot would make every
+//    trail look like it had no predecessor);
+//  - no snapshot yet (the first call after the first assignment): record the
+//    current state as the baseline, nothing to reconcile - the app redraws right
+//    after every assignment, so the baseline is the state the colors were
+//    assigned in;
+//  - key set differs from the snapshot: reconcileFaceAssignments(), then the
+//    snapshot becomes the new state; same key set: nothing at all.
+// Keys are computed once and shared with applyFaceAssignments(). Returns the
+// number of faces recolored.
+function applyAssignmentsLazily(facesResult, store, gridNodes, sheet = null) {
+    if (!store) return 0;
+    if (store.size === 0) { _faceSnapshots.delete(store); return 0; }
+    if (!facesResult.faces.length) return 0;
+    const group = sheetGroupElements(gridNodes, sheet);
+    if (!group) return 0;
+    const keys = computeFaceTrailKeys(facesResult, group);
+    const prev = _faceSnapshots.get(store);
+    if (!prev) {
+        _faceSnapshots.set(store, faceTrailSnapshot(facesResult, group, keys));
+    } else {
+        const now = new Set();
+        facesResult.faces.forEach((f, i) => { if (keys[i] !== null && !(f.sheets && f.sheets.length >= 2)) now.add(keys[i]); });
+        if (!_sameKeySet(prev.keys, now)) {
+            const snap = faceTrailSnapshot(facesResult, group, keys);
+            reconcileFaceAssignments(store, prev, snap);
+            _faceSnapshots.set(store, snap);
+        }
+    }
+    return applyFaceAssignments(facesResult, store, group, keys);
+}
+
+// ----------------- CROSSFADE (Group D item 4, phase 3) ------------------
+// Face color as an animated parameter of the timeline. During playback the morphing
+// playback layer's faces change every frame (75% or more of the mid-morph area has no
+// counterpart at either keyframe, measured), so a face has no identity to follow and a
+// geometric trail key means nothing on it. Colors are therefore a FIELD over position:
+// each keyframe's coloring is a static field (its faces, each in its displayed color),
+// and a live face takes the mix of the two fields sampled INSIDE it, weights (1-t, t).
+// Mixing is in LINEAR LIGHT - Ostwald's own disc mixing, and this engine's mixing
+// space throughout (core/color.js); complementary hues therefore pass through neutral
+// at t=0.5, an accepted property, not something to work around. Pure functions here;
+// playbackCrossfadeColors() below is the live glue. Nothing is ever written to a store.
+
+// A keyframe's coloring as a field: [{poly, minX, maxX, minY, maxY, lin}] from a
+// computeCellFaces() result (assigned faces carry their hex, others the default hsl).
+function keyframeColorField(facesResult, sheet = null) {
+    const nodeById = new Map(facesResult.nodes.map(n => [n.id, n]));
+    const field = [];
+    facesResult.faces.forEach(f => {
+        const poly = f.nodeIds.map(id => nodeById.get(id)).filter(Boolean).map(n => ({ x: n.x, y: n.y }));
+        if (poly.length < 3) return;
+        const xs = poly.map(p => p.x), ys = poly.map(p => p.y);
+        field.push({ poly, minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys), lin: cssColorToLinear(f.color) });
+    });
+    // The polygon list for the face correspondence below: the same entries (bounding box, linear colour); the cell centre and width of the sheet
+    // (null without a sheet: _fieldInfo() then takes the bounding box of the field itself). Properties of the array, so every existing use of the field is unchanged.
+    if (sheet && sheet.centroid && sheet.outerCorners && sheet.outerCorners.length) {
+        const oxs = sheet.outerCorners.map(p => p.x);
+        field.ctr = { x: sheet.centroid.x, y: sheet.centroid.y };
+        field.span = Math.max(...oxs) - Math.min(...oxs);
+    }
+    return field;
+}
+
+function _lookupField(field, p) {
+    for (const f of field) {
+        if (p.x < f.minX || p.x > f.maxX || p.y < f.minY || p.y > f.maxY) continue;
+        if (pointInPolygon(p, f.poly)) return f.lin;
+    }
+    return null;
+}
+
+// The color of each face of `facesResult` at crossfade position t (0 = fieldA, 1 =
+// fieldB): per interior sample point (faceSamplePoints(), the same primitive the
+// inheritance overlap test uses) look up both fields; both present -> the linear-light
+// mix (1-t)*a + t*b; only one present -> that side alone; neither -> the sample is
+// skipped. The face takes the mean of its samples in linear light. Returns [hex | null]
+// parallel to facesResult.faces - null (no sample covered by either keyframe) leaves the
+// face's own default color. At t=0 / t=1 a face that IS a keyframe face gets exactly that
+// face's color. Sample-based, so the "area weighting" is the uniform average over the
+// face's samples, not an exact area integral.
+function _sampledFaceLin(poly, fieldA, fieldB, t) {
+    const acc = [0, 0, 0];
+    let n = 0;
+    for (const p of faceSamplePoints(poly)) {
+        const a = _lookupField(fieldA, p), b = _lookupField(fieldB, p);
+        let c;
+        if (a && b) c = [0, 1, 2].map(k => (1 - t) * a[k] + t * b[k]);
+        else c = a || b;
+        if (!c) continue;
+        acc[0] += c[0]; acc[1] += c[1]; acc[2] += c[2]; n++;
+    }
+    return n ? acc.map(v => v / n) : null;
+}
+// The location-sampled colours of every face (the behaviour before the face correspondence): kept as the fallback of crossfadeFaceColors() and as the reference of the tests.
+function crossfadeFaceColorsSampled(facesResult, fieldA, fieldB, t) {
+    const nodeById = new Map(facesResult.nodes.map(n => [n.id, n]));
+    return facesResult.faces.map(face => {
+        const poly = face.nodeIds.map(id => nodeById.get(id)).filter(Boolean).map(n => ({ x: n.x, y: n.y }));
+        if (poly.length < 3) return null;
+        const lin = _sampledFaceLin(poly, fieldA, fieldB, t);
+        return lin ? linearToHex(lin) : null;
+    });
+}
+
+// ----------------- FACE CORRESPONDENCE (task 031; measured as "h2c" in tools/morph/measure-face-match.js) ------------------
+// Sampling the two STATIC keyframe fields at the positions of a face that has grown or moved hits the NEIGHBOURING faces of the other keyframe: a face that is violet in A and in B turns pastel
+// in between (measured: error up to 0.25 in linear light). Instead each live face is matched to its partner face in A and in B (same corner count, same orbit size, centroid inside the other
+// polygon or near it, area ratio within 1/8 .. 8) and takes the mix of the partner colours, weighted by how much of the face lies in (or covers) the partners (g); the rest comes from the
+// overlap with all polygons of each keyframe (share-weighted mean per side, the two sides weighted by their coverage, (1-t, t)). A face nothing of the keyframes lies under keeps the sampled
+// colour. Stateless: the colour of a face depends on this frame only. All mixing in LINEAR LIGHT.
+const FACE_MATCH_RATIO = 8, FACE_MATCH_NEAR = 1.5;
+function _polyArea(poly) { let a = 0; for (let i = 0; i < poly.length; i++) { const p = poly[i], q = poly[(i + 1) % poly.length]; a += p.x * q.y - q.x * p.y; } return a / 2; }
+function _polyCentroid(poly) {
+    let x = 0, y = 0, a = 0;
+    for (let i = 0; i < poly.length; i++) { const p = poly[i], q = poly[(i + 1) % poly.length], c = p.x * q.y - q.x * p.y; a += c; x += (p.x + q.x) * c; y += (p.y + q.y) * c; }
+    return a ? { x: x / (3 * a), y: y / (3 * a) } : { x: poly[0].x, y: poly[0].y };
+}
+// bounding box, area, centroid, corner count and interior samples of a polygon entry (entry = { poly, minX.. } or a live face); orb = the orbit size, set by _setOrbits()
+function _faceInfo(poly, lin) {
+    const xs = poly.map(p => p.x), ys = poly.map(p => p.y);
+    return { poly, minX: Math.min(...xs), maxX: Math.max(...xs), minY: Math.min(...ys), maxY: Math.max(...ys), a: Math.abs(_polyArea(poly)), c: _polyCentroid(poly), n: poly.length, samples: faceSamplePoints(poly), lin, orb: 1 };
+}
+// the orbit of a face from the polygons themselves: faces of one sheet with the same corner count, area (1e-3) and distance of the centroid from the cell centre (1e-3 of the width)
+// (measured identical to the orbit from the symmetry group in every case of tasks 028 to 030)
+function _setOrbits(list, ctr, span) {
+// task 100 {
+    list.forEach(f => { f[_NEST] = list; });   // the list a face belongs to (for its nesting depth, computed only on a tie); a symbol key: not enumerated, not in JSON
+// task 100 }
+    const byN = new Map();
+    list.forEach(f => { f.r = Math.hypot(f.c.x - ctr.x, f.c.y - ctr.y); if (!byN.has(f.n)) byN.set(f.n, []); byN.get(f.n).push(f); });
+    byN.forEach(arr => {
+        arr.sort((p, q) => p.a - q.a);   // by area: the candidates of a face are the window of equal area
+        for (let i = 0; i < arr.length; i++) {
+            const f = arr[i]; let k = 0;
+            for (let j = i; j >= 0 && arr[j].a >= f.a * (1 - 1e-3); j--) if (Math.abs(arr[j].a - f.a) <= 1e-3 * f.a && Math.abs(arr[j].r - f.r) <= 1e-3 * span) k++;
+            for (let j = i + 1; j < arr.length && arr[j].a <= f.a * (1 + 1e-3); j++) if (Math.abs(arr[j].a - f.a) <= 1e-3 * f.a && Math.abs(arr[j].r - f.r) <= 1e-3 * span) k++;
+            f.orb = k;
+        }
+    });
+}
+const _fieldPrep = new WeakMap();
+function _fieldInfo(field) {
+    let hit = _fieldPrep.get(field);
+    if (hit && hit.len === field.length) return hit;
+    const list = field.map(e => _faceInfo(e.poly, e.lin));
+    let ctr = field.ctr, span = field.span;
+    if (!ctr && list.length) {
+        const x0 = Math.min(...list.map(f => f.minX)), x1 = Math.max(...list.map(f => f.maxX)), y0 = Math.min(...list.map(f => f.minY)), y1 = Math.max(...list.map(f => f.maxY));
+        ctr = { x: (x0 + x1) / 2, y: (y0 + y1) / 2 }; span = Math.max(x1 - x0, y1 - y0);
+    }
+    if (list.length) _setOrbits(list, ctr, span || 1);
+    const groups = new Map();
+    list.forEach(f => { const k = f.n + '|' + f.orb; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(f); });
+    groups.forEach((arr, k) => groups.set(k, { list: arr, a: Float64Array.from(arr, g => g.a), x: Float64Array.from(arr, g => g.c.x), y: Float64Array.from(arr, g => g.c.y) }));
+    // a grid over the field's bounding box (about 16 x 16 cells): a sample point then only meets the polygons of its own cell
+    let grid = null;
+    if (list.length) {
+        const x0 = Math.min(...list.map(f => f.minX)), y0 = Math.min(...list.map(f => f.minY)), x1 = Math.max(...list.map(f => f.maxX)), y1 = Math.max(...list.map(f => f.maxY));
+        const N = 16, cw = Math.max((x1 - x0) / N, 1e-9), ch = Math.max((y1 - y0) / N, 1e-9), cells = new Array(N * N).fill(null);
+        const cx = x => Math.min(N - 1, Math.max(0, Math.floor((x - x0) / cw))), cy = y => Math.min(N - 1, Math.max(0, Math.floor((y - y0) / ch)));
+        list.forEach(f => { for (let i = cx(f.minX); i <= cx(f.maxX); i++) for (let j = cy(f.minY); j <= cy(f.maxY); j++) { const k = i * N + j; if (!cells[k]) cells[k] = []; cells[k].push(f); } });
+        grid = { x0, y0, x1, y1, N, cw, ch, cells, cx, cy };
+    }
+    hit = { len: field.length, list, groups, grid, ctr, span };
+    _fieldPrep.set(field, hit);
+    return hit;
+}
+function _inBox(p, f) { return p.x >= f.minX && p.x <= f.maxX && p.y >= f.minY && p.y <= f.maxY; }
+function _inFace(p, f) { return _inBox(p, f) && pointInPolygon(p, f.poly); }
+function _shareIn(f, g) { let k = 0; for (const p of f.samples) if (_inFace(p, g)) k++; return f.samples.length ? k / f.samples.length : 0; }
+// task 100 {
+// Task 100: faces that lie INSIDE one another (a free figure in a cell: the cell face contains it) share their centroid, corner count and orbit. The first hit / the first nearest candidate then picks the enclosing face for
+// the figure. _ownerOfInnermost: of the field polygons that contain the point, the innermost (smallest) one; _partnerOfNested: among candidates at the same distance, the one whose area is closest. Ties are resolved by a fixed
+// order of the faces themselves (area, box, centroid), never by their position in the list.
+function _faceBefore(a, b) {   // a total order on distinct faces, independent of the list order
+    return (a.a - b.a) || (a.minX - b.minX) || (a.minY - b.minY) || (a.maxX - b.maxX) || (a.maxY - b.maxY) || (a.c.x - b.c.x) || (a.c.y - b.c.y);
+}
+const _sortedCells = new WeakSet();
+function _ownerOfInnermost(grid, p) {
+    if (!grid || p.x < grid.x0 || p.x > grid.x1 || p.y < grid.y0 || p.y > grid.y1) return null;
+    const cell = grid.cells[grid.cx(p.x) * grid.N + grid.cy(p.y)];
+    if (!cell) return null;
+    if (!_sortedCells.has(cell)) { cell.sort(_faceBefore); _sortedCells.add(cell); }   // the cell's own list (internal to the grid): smallest face first, so the FIRST hit is the innermost one
+    for (let i = 0; i < cell.length; i++) { const g = cell[i]; if (g.lin && p.x >= g.minX && p.x <= g.maxX && p.y >= g.minY && p.y <= g.maxY && pointInPolygon(p, g.poly)) return g; }
+    return null;
+}
+// Stage 2: the nesting depth of a face = the number of LARGER faces of its own list that contain one of its interior sample points strictly (not on their edge). Computed only when a tie has to be decided, once per face.
+const _NEST = Symbol('nest');
+const _depthCache = new WeakMap();
+let _depthComputations = 0;   // for the test: no depth is computed without a tie
+function _strictlyIn(p, g) {
+    if (!_inFace(p, g)) return false;
+    const P = g.poly, tol = 1e-6 * Math.max(1, g.maxX - g.minX, g.maxY - g.minY);
+    for (let i = 0; i < P.length; i++) {
+        const a = P[i], b = P[(i + 1) % P.length], dx = b.x - a.x, dy = b.y - a.y, L2 = dx * dx + dy * dy;
+        const t = L2 > 0 ? Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / L2)) : 0;
+        if (Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy)) <= tol) return false;
+    }
+    return true;
+}
+function _depthOf(f) {
+    let d = _depthCache.get(f);
+    if (d !== undefined) return d;
+    d = 0;
+    const list = f[_NEST], probe = f.samples && f.samples.length ? f.samples[0] : f.c;
+    if (list) for (const g of list) if (g !== f && g.a > f.a * (1 + 1e-9) && _strictlyIn(probe, g)) d++;
+    _depthComputations++;
+    _depthCache.set(f, d);
+    return d;
+}
+function _partnerOfNested(f, info) {
+    const grp = info.groups.get(f.n + '|' + f.orb);
+    if (!grp || f.a <= 0) return null;
+    let best = -1, bd2 = Infinity, bq = Infinity;
+    const near2 = FACE_MATCH_NEAR * FACE_MATCH_NEAR, fa = f.a, fx = f.c.x, fy = f.c.y, ga = grp.a, gx = grp.x, gy = grp.y, TIE = 1e-9;
+    for (let i = 0; i < ga.length; i++) {
+        const a = ga[i]; if (a <= 0) continue;
+        const q = fa / a;
+        if (q > FACE_MATCH_RATIO || q < 1 / FACE_MATCH_RATIO) continue;
+        const dx = fx - gx[i], dy = fy - gy[i], d2 = dx * dx + dy * dy;
+        if (d2 > bd2 + TIE) continue;   // farther than the best (the costly inclusion tests run only for candidates that can win)
+        if (d2 > near2 * (fa > a ? fa : a) && !_inFace(f.c, grp.list[i]) && !_inFace(grp.list[i].c, f)) continue;
+        const lq = Math.abs(Math.log(q));
+        if (best >= 0 && d2 >= bd2 - TIE) {   // the same distance (nested faces share their centroid): the same nesting depth first (the innermost to the innermost), then the closer area ratio, then the fixed order of the faces
+            let dc = 0, db = 0;
+            if (Math.abs(a - ga[best]) > 1e-6 * ga[best]) {   // candidates of EQUAL area (the mirror images of an orbit) are not nested in one another: no depth to look at
+                const df = _depthOf(f);
+                dc = Math.abs(_depthOf(grp.list[i]) - df); db = Math.abs(_depthOf(grp.list[best]) - df);
+            }
+            if (dc > db) continue;
+            if (dc === db) {
+                if (lq > bq + 1e-12) continue;
+                if (lq >= bq - 1e-12 && _faceBefore(grp.list[i], grp.list[best]) >= 0) continue;
+            }
+        }
+        bd2 = Math.min(bd2, d2); best = i; bq = lq;
+    }
+    return best < 0 ? null : grp.list[best];
+}
+// task 100 }
+// the partner of face f among the faces of one keyframe: the nearest candidate that passes every criterion, or null
+function _partnerOf(f, info) {
+// task 100 {
+    return _partnerOfNested(f, info);
+// task 100 }
+    const grp = info.groups.get(f.n + '|' + f.orb);   // the faces with this corner count and orbit size (areas and centroids as typed arrays)
+    if (!grp || f.a <= 0) return null;
+    let best = -1, bd2 = Infinity;
+    const near2 = FACE_MATCH_NEAR * FACE_MATCH_NEAR, fa = f.a, fx = f.c.x, fy = f.c.y, ga = grp.a, gx = grp.x, gy = grp.y;
+    for (let i = 0; i < ga.length; i++) {
+        const a = ga[i]; if (a <= 0) continue;
+        const q = fa / a;
+        if (q > FACE_MATCH_RATIO || q < 1 / FACE_MATCH_RATIO) continue;
+        const dx = fx - gx[i], dy = fy - gy[i], d2 = dx * dx + dy * dy;
+        if (d2 >= bd2) continue;   // only a nearer candidate can replace the best one: the (costly) inclusion tests run for those only, and only when the nearness test fails
+        if (d2 > near2 * (fa > a ? fa : a) && !_inFace(f.c, grp.list[i]) && !_inFace(grp.list[i].c, f)) continue;
+        bd2 = d2; best = i;
+    }
+    return best < 0 ? null : grp.list[best];
+}
+// per side: the share-weighted mean colour of the keyframe polygons the face overlaps, and how much of the face they cover
+function _ownerOf(grid, p) {   // the polygon of the field a point lies in (the first hit, like _lookupField()), or null
+// task 100 {
+    return _ownerOfInnermost(grid, p);
+// task 100 }
+    if (!grid || p.x < grid.x0 || p.x > grid.x1 || p.y < grid.y0 || p.y > grid.y1) return null;
+    const cell = grid.cells[grid.cx(p.x) * grid.N + grid.cy(p.y)];
+    if (cell) for (let i = 0; i < cell.length; i++) { const g = cell[i]; if (g.lin && p.x >= g.minX && p.x <= g.maxX && p.y >= g.minY && p.y <= g.maxY && pointInPolygon(p, g.poly)) return g; }
+    return null;
+}
+function _overlapSide(f, info) {
+    const acc = [0, 0, 0], w = f.samples.length ? 1 / f.samples.length : 0, owners = []; let cov = 0;
+    for (let i = 0; i < f.samples.length; i++) { const g = _ownerOf(info.grid, f.samples[i]); if (!g) continue; owners.push(g); cov += w; acc[0] += w * g.lin[0]; acc[1] += w * g.lin[1]; acc[2] += w * g.lin[2]; }
+    return cov > 0 ? { lin: [acc[0] / cov, acc[1] / cov, acc[2] / cov], cov, owners, w } : { lin: null, cov: 0, owners, w };
+}
+function _faceLinByCorrespondence(f, infoA, infoB, t) {
+    const sA = _overlapSide(f, infoA), sB = _overlapSide(f, infoB);
+    const wA = (1 - t) * sA.cov, wB = t * sB.cov;
+    const fb = wA + wB > 1e-9 ? [0, 1, 2].map(k => ((sA.lin ? wA * sA.lin[k] : 0) + (sB.lin ? wB * sB.lin[k] : 0)) / (wA + wB)) : null;
+    const pA = _partnerOf(f, infoA), pB = _partnerOf(f, infoB);
+    if (!pA || !pB || !pA.lin || !pB.lin) return fb;
+    // g: how much of the face lies in its partner, or of the partner in the face (the larger of the two: a face that grows or shrinks stays the same face); the smaller of the two sides
+    const side = (g, sh) => { let k = 0, o = 0; for (const p of g.samples) if (_inFace(p, f)) k++; for (const x of sh.owners) if (x === g) o++; return Math.max(o * sh.w, g.samples.length ? k / g.samples.length : 0); };
+    const gw = Math.min(side(pA, sA), side(pB, sB));
+    const pm = [0, 1, 2].map(k => (1 - t) * pA.lin[k] + t * pB.lin[k]);
+    if (!fb) return pm;
+    return [0, 1, 2].map(k => gw * pm[k] + (1 - gw) * fb[k]);
+}
+function crossfadeFaceColors(facesResult, fieldA, fieldB, t) {
+    const nodeById = new Map(facesResult.nodes.map(n => [n.id, n]));
+    const infoA = _fieldInfo(fieldA), infoB = _fieldInfo(fieldB);
+    const polys = facesResult.faces.map(face => face.nodeIds.map(id => nodeById.get(id)).filter(Boolean).map(n => ({ x: n.x, y: n.y })));
+    const live = polys.map(poly => (poly.length < 3 ? null : _faceInfo(poly, null)));
+    const ctr = infoA.ctr || infoB.ctr, span = infoA.span || infoB.span || 1;
+    if (ctr) _setOrbits(live.filter(Boolean), ctr, span);
+    return live.map((f, i) => {
+        if (!f) return null;
+        const lin = _faceLinByCorrespondence(f, infoA, infoB, t) || _sampledFaceLin(polys[i], fieldA, fieldB, t);
+        return lin ? linearToHex(lin) : null;
+    });
+}
+
+// ----------------- LIVE-APP GLUE ---------------------------------
+
+// The group elements the CURRENT sheet's faces are symmetric under - see
+// the header ("WHICH GROUP"). gridNodes = the sheet's own node array
+// (global `nodes` for the base, layer.nodes for a layer). null if the
+// engine cannot build them (a grid not symmetric under its claimed group -
+// a real bug elsewhere, warned once, never allowed to take rendering down;
+// the caller then simply applies no assignments).
+let faceGroupWarned = false;
+function sheetGroupElements(gridNodes, sheet = null) {
+    try {
+        // A layer's OWN shape/mode/centroid/corners (`sheet`, see
+        // faceSheetOverrideOfLayer()) - the group its faces are generated under;
+        // omitted = the base's globals, as before.
+        return sheet
+            ? getGroupElementsCached(gridNodes, sheet.centroid, sheet.shape, sheet.symmetryMode, sheet.outerCorners)
+            : getGroupElementsCached(gridNodes, centroid, currentShape, symmetryMode, outerCorners);
+    } catch (err) {
+        if (!faceGroupWarned) { faceGroupWarned = true; console.warn('Group elements unavailable - face color assignments not applied:', err.message); }
+        return null;
+    }
+}
+
+// What a LAYER's own face pipeline needs (shape, symmetry mode, centroid, outer
+// corners) - the same fields core/tiling.js's override object hands to the
+// tile functions that draw it. null for the base (its globals apply), so every
+// base-sheet call stays exactly as it was.
+// Whether a layer's tile grid IS the base sheet's (same shape and size, no offset, no rotation - true of every timeline playback layer):
+// its segments then never leave a base tile, so on a FIELD warp its faces are as exact as the base's (core/netwarp.js
+// netWarpBlocksFaces()). Read afresh on every call - a live-animated layer (1.8 Stage A) can leave this state mid-playback.
+function layerGridMatchesBase(layer) {
+    // task 067: the lage must agree too (a lage-2 layer over a lage-1 base, or the reverse, is another lattice); a missing spec / lage reads as lage 1, so every lage-1 answer is the old one
+    return layer.shape === currentShape && layer.shapeSizeFactor === shapeSizeFactor && !layer.offsetX && !layer.offsetY && !layer.rotation && ((layer.gridSpec && layer.gridSpec.lage) || 1) === ((typeof gridSpec !== 'undefined' && gridSpec && gridSpec.lage) || 1);
+}
+function faceSheetOverrideOfLayer(layer) {
+    return { shape: layer.shape, symmetryMode: layer.symmetryMode, centroid: layer.centroid, outerCorners: layer.outerCorners, gridMatchesBase: layerGridMatchesBase(layer) };
+}
+function faceSheetOverrideFor(sheet) {
+    return sheet === 'base' || !additionalLayers[sheet] ? null : faceSheetOverrideOfLayer(additionalLayers[sheet]);
+}
+
+// The assignment store of one sheet: 'base', or an integer index into
+// additionalLayers[]. The base's lives in state.js (reset whenever the
+// grid is rebuilt - its keys are geometry of the old grid); a layer's
+// lives ON the layer object, so it follows the layer through deletion and
+// reindexing (additionalLayers.splice) with no bookkeeping. Created lazily,
+// so every layer literal (addLayer(), the timeline playback layer) works
+// unchanged.
+function faceAssignmentsFor(sheet) {
+    if (sheet === 'base') return baseFaceAssignments;
+    const layer = additionalLayers[sheet];
+    if (!layer) return null;
+    if (!layer.faceAssignments) layer.faceAssignments = new Map();
+    return layer.faceAssignments;
+}
+
+// The palette state of one sheet ('base' or a layer index), created lazily
+// like the assignment store. Base's lives in state.js (null = fresh, reset
+// with the grid); a layer's on the layer object.
+function facePaletteFor(sheet) {
+    if (sheet === 'base') { if (!baseFacePalette) baseFacePalette = newFacePalette(); return baseFacePalette; }
+    const layer = additionalLayers[sheet];
+    if (!layer) return null;
+    if (!layer.facePalette) layer.facePalette = newFacePalette();
+    return layer.facePalette;
+}
+
+// Group D Phase B2: the atlas position Weiß/Schwarz/Schatten/Wert will read from (B4, not wired yet) -
+// Farborgel's OWN 1-based hue convention (core/color.js's hue stays 0-based; that conversion happens once,
+// at the point of consumption - see core/farborgel-bridge.js's _farborgelHueToCoreHue() - never here).
+// registerIndex indexes the real 28-register atlas order per hue (core/farborgel-bridge.js's
+// FARBORGEL_REGISTER_ORDER); null = hue-only (Wert has no register axis, only the 24-hue circle).
+function newFaceAnchor() {
+    return { hueIndex: 1, registerIndex: 0 };
+}
+
+// Same lazy, per-sheet lifecycle as facePaletteFor() above: independent per layer, reset with the grid
+// (core/state.js rebuildGrid()/rebuildGridFromConstruction()), an additional layer's own anchor lives on
+// the layer object and is discarded along with it when additionalLayers is cleared.
+function anchorFor(sheet) {
+    if (sheet === 'base') { if (!baseFaceAnchor) baseFaceAnchor = newFaceAnchor(); return baseFaceAnchor; }
+    const layer = additionalLayers[sheet];
+    if (!layer) return null;
+    if (!layer.faceAnchor) layer.faceAnchor = newFaceAnchor();
+    return layer.faceAnchor;
+}
+
+// Group D Phase B4 follow-up: which of the 7 harmony types (2/3/4/W/B/S/V) was last applied to
+// `sheet` via ui-farbe.js's applyHarmony() - null until one has been. Same per-sheet lifecycle as
+// anchorFor()/facePaletteFor() above: base lives in state.js (baseLastHarmonyType, reset with the
+// grid), a layer's lives directly on the layer object (no lazy-object step needed - a plain scalar,
+// unlike the anchor/palette records). Never created eagerly: a layer with no entry simply reads null.
+function lastHarmonyTypeFor(sheet) {
+    if (sheet === 'base') return baseLastHarmonyType;
+    const layer = additionalLayers[sheet];
+    return layer ? (layer.lastHarmonyType === undefined ? null : layer.lastHarmonyType) : null;
+}
+// Farborgel sub-page P3: the "type" of a sheet colored from a selection composed ON the standalone Farborgel page
+// and handed back to this tab. It is not one of the 7 regenerable types - there is no (anchor, type) recipe for
+// it - so the selection itself is kept in lastSelectionFor(sheet) below. Using a SENTINEL value in
+// lastHarmonyType (rather than a separate flag) is deliberate: every existing "a Farborgel harmony owns this
+// sheet" gate is `lastHarmonyTypeFor(sheet) !== null` (sketch.js's resync gate, the per-trail stepper, ui-farbe.js's
+// reapply) and stays correct unchanged; the view-follow and the harmony-button highlight look the type up in a
+// table of the 7 real ones and simply find nothing for 'custom'.
+const CUSTOM_HARMONY_TYPE = 'custom';
+function setLastHarmonyTypeFor(sheet, type) {
+    if (sheet === 'base') { baseLastHarmonyType = type; if (type !== CUSTOM_HARMONY_TYPE) baseLastSelection = null; return; }
+    const layer = additionalLayers[sheet];
+    if (layer) { layer.lastHarmonyType = type; if (type !== CUSTOM_HARMONY_TYPE) layer.lastSelection = null; }
+}
+// The stored selection of a 'custom' sheet, else null. Any other type (including null, i.e. Reset Color and the
+// switch to the old rule system, which both go through setLastHarmonyTypeFor()) drops it automatically, so a
+// stale selection can never outlive the coloring it belonged to. Callers set the type FIRST, then the selection.
+function lastSelectionFor(sheet) {
+    if (sheet === 'base') return baseLastSelection;
+    const layer = additionalLayers[sheet];
+    return layer && layer.lastSelection ? layer.lastSelection : null;
+}
+function setLastSelectionFor(sheet, selection) {
+    if (sheet === 'base') { baseLastSelection = selection; return; }
+    const layer = additionalLayers[sheet];
+    if (layer) layer.lastSelection = selection;
+}
+
+// Phase B-Farbstrategien: which distribution strategy (core/farborgel-bridge.js's
+// DISTRIBUTION_STRATEGIES) `sheet`'s last harmony application used - null (ui-farbe.js treats
+// this as 'cyclic', today's default) until one has been explicitly chosen. Exact same
+// lifecycle/shape as lastHarmonyTypeFor()/setLastHarmonyTypeFor() just above - see their own
+// comment for why base/layer are stored differently.
+function distributionStrategyFor(sheet) {
+    if (sheet === 'base') return baseDistributionStrategy;
+    const layer = additionalLayers[sheet];
+    return layer ? (layer.distributionStrategy === undefined ? null : layer.distributionStrategy) : null;
+}
+function setDistributionStrategyFor(sheet, strategy) {
+    if (sheet === 'base') { baseDistributionStrategy = strategy; return; }
+    const layer = additionalLayers[sheet];
+    if (layer) layer.distributionStrategy = strategy;
+}
+
+// The trail key to outline on `sheet`'s faces right now: the hovered trail of that sheet, else its selected trail (the chip view), or null.
+// typeof: a page or a test that loads this file without core/state.js has no faceSelected.
+function faceHighlightKeyFor(sheet) {
+    if (faceHover && faceHover.sheet === sheet) return faceHover.key;
+    return typeof faceSelected !== 'undefined' && faceSelected && faceSelected.sheet === sheet ? faceSelected.key : null;
+}
+
+// ----------------- CROSSFADE: LIVE GLUE ------------------------------
+// The two keyframe fields are rebuilt only when a keyframe's connections, store or grid
+// change (signature below), not per frame - per frame only the sampling runs.
+const _keyframeFieldCache = new WeakMap();
+function keyframeFieldFor(layerIndex) {
+    const layer = additionalLayers[layerIndex];
+    const store = faceAssignmentsFor(layerIndex);
+    const sigOf = () => JSON.stringify([layer.connections, [...store], layer.shape, layer.symmetryMode, layer.nodes.length, layer.outerCorners[0], layer.gridSpec ? layer.gridSpec.lage : 1]);   // task 067: lage 1 and lage 2 grids can have the same node count (triangle lage 1 ordnung 3 = lage 2 ordnung 2 = 10)
+    const hit = _keyframeFieldCache.get(layer);
+    if (hit && hit.sig === sigOf()) return hit.field;
+    const sheet = faceSheetOverrideOfLayer(layer);
+    const field = keyframeColorField(computeCellFaces(layer.connections, layer.nodes, store, null, sheet), sheet);
+    // computeCellFaces() may have reconciled the keyframe's store against an edit (inheritance), so the
+    // signature is taken AFTER it: the next frame then hits the cache instead of rebuilding once more.
+    _keyframeFieldCache.set(layer, { sig: sigOf(), field });
+    return field;
+}
+
+// The crossfade colors for the playback layer's current frame, or null when there is
+// nothing to fade between (no timeline frame applied yet, a keyframe layer gone, or
+// NEITHER bracketing keyframe has any color assignment - then the playback layer keeps
+// its default orbit colors, exactly as before). One keyframe colored, the other not:
+// crossfades from the colored look to the default one. timeline.currentFrame =
+// {segmentIndex, localT} is written by sketch.js's applyTimelineFrame().
+function playbackCrossfadeColors(facesResult) {
+    if (!timeline || !timeline.currentFrame) return null;
+    const { segmentIndex, localT } = timeline.currentFrame;
+    const idA = timeline.keyframeLayerIds[segmentIndex], idB = timeline.keyframeLayerIds[segmentIndex + 1];
+    if (!additionalLayers[idA] || !additionalLayers[idB]) return null;
+    if (faceAssignmentsFor(idA).size === 0 && faceAssignmentsFor(idB).size === 0) return null;
+    return crossfadeFaceColors(facesResult, keyframeFieldFor(idA), keyframeFieldFor(idB), localT);
+}

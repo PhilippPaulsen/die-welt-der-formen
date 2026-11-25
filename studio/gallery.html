@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>World of Forms — Pattern Catalog</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css?v=20270107font">
+
+  <style>
+    /* Same flat black/white design tokens as index.html's own inline
+       <style> - kept in sync by eye (both pages are small enough that a
+       shared stylesheet extraction isn't warranted yet). */
+    :root {
+      --background: #ffffff;
+      --text: #000000;
+      --accent: #ff3b30;
+      --hover-bg: #f0f0f0;
+      --muted-border: #ccc;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+      background: var(--background);
+      color: var(--text);
+      /* These four used to be inherited from style.css's old body rule.
+         Explicit here so this page's layout does not depend on it (UI
+         rework Phase 0 removed them from style.css). */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .page-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    h1 {
+      font-size: 18px;
+      margin: 0;
+    }
+
+    #manifest-status {
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .filter-group label {
+      font-size: 11px;
+      font-weight: 600;
+      opacity: 0.7;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    /* Same chrome as index.html's .layer-btn: flat, bordered, invert on
+       active - reused here for shape/order/k filter buttons so this page
+       reads as part of the same app, not a bolted-on tool. */
+    .filter-btn {
+      background: var(--background);
+      border: 1px solid var(--text);
+      border-radius: 4px;
+      height: 32px;
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      transition: background 0.2s ease;
+    }
+
+    /* Icon-bearing .filter-btn instances (shape row's triangle/square/
+       hex icons, mode row's Spiegeling/Drehling icons - Roadmap 1.11
+       gallery Phase (ii)) - same button, just an <svg> child instead of
+       (or alongside) a text label; the gap rule above already spaces
+       icon+text combinations correctly. */
+    .filter-btn svg {
+      display: block;
+    }
+
+    /* Same specificity fix as .pager[hidden] below - author .filter-
+       group{display:flex} would otherwise beat the native [hidden] UA
+       rule, so a JS-toggled hidden filter-group (Fold row, Group row -
+       both introduced in Phase (ii)) would stay visible. */
+    .filter-group[hidden] {
+      display: none;
+    }
+
+    .filter-btn:hover {
+      background: var(--hover-bg);
+    }
+
+    .filter-btn.active {
+      background: var(--text);
+      color: var(--background);
+    }
+
+    #result-status {
+      font-size: 13px;
+      opacity: 0.8;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 10px;
+    }
+
+    .gallery-cell {
+      border: 1px solid var(--muted-border);
+      border-radius: 4px;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: border-color 0.15s ease;
+    }
+
+    .gallery-cell:hover {
+      border-color: var(--text);
+    }
+
+    .gallery-cell img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: contain;
+      background: var(--background);
+    }
+
+    .gallery-cell-label {
+      font-size: 10px;
+      opacity: 0.65;
+      text-align: center;
+      word-break: break-word;
+    }
+
+    /* Ostwald plate backfill badge (docs/terminology.md Part B /
+       ROADMAP.md 1.11) - a small pill/link shown only where a
+       gallery/ostwald-backfill.csv mapping exists for that entry's
+       catalog path; every entry without one renders exactly as before
+       (purely additive). Reused identically on grid thumbnails, orbit-
+       table tiles, and combination tiles - only the detail view (below)
+       gets a fuller, differently-styled citation. */
+    .backfill-badge {
+      display: inline-block;
+      margin-top: 2px;
+      padding: 1px 6px;
+      border: 1px solid var(--accent);
+      border-radius: 10px;
+      font-size: 8px;
+      color: var(--text);
+      text-decoration: none;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .backfill-badge:hover {
+      background: var(--accent);
+      color: var(--background);
+    }
+
+    .pager {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 8px 0;
+    }
+
+    /* Same specificity as .pager{display:flex} above, so without this
+       the native [hidden] UA rule (also display:none at that
+       specificity, but author styles always beat UA styles regardless)
+       never actually hides #combo-pager - the one .pager instance that
+       toggles [hidden] (Pass 1's own pagers never do). Same fix
+       index.html already applies to .control-group[hidden] for the
+       identical reason - see its own comment. */
+    .pager[hidden] {
+      display: none;
+    }
+
+    #page-info {
+      font-size: 13px;
+      opacity: 0.8;
+      min-width: 220px;
+      text-align: center;
+    }
+
+    /* Custom orbit combinations (Roadmap 1.11 gallery Phase (c), pass
+       3) - a bordered callout, distinct from the manifest grid below,
+       since it's a separate live-computed workflow keyed to the same
+       Shape/Order filter selection rather than a browse-the-manifest
+       one. */
+    #orbit-builder-section {
+      border: 1px solid var(--muted-border);
+      border-radius: 4px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    #orbit-builder-section h2 {
+      font-size: 15px;
+      margin: 0;
+    }
+
+    #orbit-builder-placeholder {
+      font-size: 13px;
+      opacity: 0.7;
+    }
+
+    #orbit-builder-heading {
+      font-size: 13px;
+      opacity: 0.8;
+    }
+
+    /* Smaller tiles than .gallery-grid/.gallery-cell (140px/300px SVG) -
+       an orbit table can have dozens of entries and is meant to be
+       scanned quickly, not admired individually. */
+    .orbit-grid {
+      display: grid;
+      /* Widened from 100px (measured, not guessed - a realistic plate
+         label like "Sh. 3. The Net in 2nd Position" still truncated at
+         100px even at the badge's own reduced 8px font; 120px plus 8px
+         fits every label length tested, including that one). */
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 8px;
+    }
+
+    .orbit-tile {
+      border: 1px solid var(--muted-border);
+      border-radius: 4px;
+      padding: 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .orbit-tile:hover {
+      border-color: var(--text);
+    }
+
+    /* Selected = accent border + faint accent tint, distinct from the
+       plain hover/active-invert convention used elsewhere (.filter-btn,
+       .gallery-cell) since this is a multi-select state that needs to
+       stay visible even when the pointer moves away - same semantic
+       role as the layer table's eye, just tile-sized. */
+    .orbit-tile.selected {
+      border-color: var(--accent);
+      background: rgba(255, 59, 48, 0.08);
+    }
+
+    .orbit-tile-preview {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+    }
+
+    .orbit-tile-preview svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .orbit-tile-label {
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    /* Purely a visual indicator of selection state, driven entirely by
+       toggleOrbitSelection() - not independently interactive, so a
+       click on the checkbox itself doesn't fire a second, redundant
+       native toggle alongside the tile's own click handler. */
+    .orbit-checkbox {
+      pointer-events: none;
+    }
+
+    #orbit-selection-status {
+      font-size: 13px;
+      opacity: 0.8;
+    }
+
+    /* Live C(selected, k) counts + Generate buttons (Roadmap 1.11
+       gallery Phase (c), pass 3, point 2/4) - computed and shown before
+       anything is generated, per the design session's own point that
+       this shouldn't be silent. One row per k=2,3,4. */
+    #combo-summary {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .combo-summary-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      flex-wrap: wrap;
+    }
+
+    .combo-warn {
+      color: var(--accent);
+      font-size: 12px;
+    }
+
+    #combo-results-heading {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* Ad-hoc combination preview tiles reuse .gallery-cell's chrome
+       (border/hover/click-affordance) but hold an inline <svg> (nothing
+       to look up - these were never pre-generated) instead of an <img
+       src>, so they need their own sizing rule matching .gallery-cell
+       img's own 1:1 box. */
+    .gallery-cell .inline-preview {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+    }
+
+    .gallery-cell .inline-preview svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Detail view (Roadmap 1.11 gallery Phase (c), pass 2) - same
+       dialog-overlay/dialog-content chrome as index.html's own help/
+       export dialogs (fixed inset, dark backdrop, flat bordered panel),
+       reimplemented here rather than shared since gallery.html already
+       keeps its own self-contained <style> block (see the design-tokens
+       comment above). Wider max-width than index.html's own dialogs
+       (320px, sized for a short help list) - this one has to fit the
+       600x600 rendered tessellation. */
+    .dialog-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .dialog-overlay.hidden {
+      display: none;
+    }
+
+    .detail-dialog {
+      background: var(--background);
+      color: var(--text);
+      border: 1px solid var(--text);
+      padding: 16px;
+      max-width: 640px;
+      max-height: 90vh;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    #detail-title {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* Fuller citation than .backfill-badge (Phase c task point 3: "the
+       most natural place for a fuller citation, given it's already a
+       dedicated per-entry view") - empty/absent when there's no
+       backfill match for this entry, same purely-additive rule as
+       everywhere else. */
+    #detail-citation {
+      font-size: 12px;
+      opacity: 0.85;
+    }
+
+    #detail-citation a {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    #detail-svg-container {
+      width: 600px;
+      max-width: 100%;
+      aspect-ratio: 1 / 1;
+    }
+
+    #detail-svg-container svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Row for the two detail-dialog actions (Roadmap: catalog ->
+       generator back-link) - #detail-open-generator sits alongside
+       #detail-close instead of both stacking full-width, matching how
+       action buttons pair up elsewhere in this app (e.g. the pager
+       rows above). align-self:flex-start moved here from #detail-close
+       itself, since the ROW is what should hug the left edge now, not
+       each button individually. */
+    .detail-actions {
+      display: flex;
+      gap: 8px;
+      align-self: flex-start;
+    }
+
+    /* Shares #detail-close's exact chrome (same border/radius/height/
+       hover) but as a real <a>, not a <button> - see gallery.js's
+       openDetailView() for why: a genuine link (not a JS-driven
+       window.open()) gets native middle-click/cmd-click/"copy link"
+       behavior for free, matching this page's own #btn-gallery link in
+       index.html. href is rebuilt on every openDetailView() call, same
+       "no stale content between entries" rule #detail-citation already
+       follows. */
+    /* #detail-open-new-layer (Roadmap: catalog -> NEW LAYER back-link
+       extension) shares this exact chrome - a second link alongside
+       #detail-open-generator, not a replacement for it.
+       #detail-copy-pattern (Roadmap: catalog -> clipboard extension) is
+       a real <button> (no destination to link to - it never navigates),
+       but shares this same chrome too, per the design session's own
+       "same chrome as the existing two links" instruction. */
+    #detail-open-generator, #detail-open-new-layer, #detail-copy-pattern {
+      background: var(--background);
+      border: 1px solid var(--text);
+      border-radius: 4px;
+      height: 32px;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      box-sizing: border-box;
+    }
+
+    #detail-open-generator:hover, #detail-open-new-layer:hover, #detail-copy-pattern:hover {
+      background: var(--hover-bg);
+    }
+
+    #detail-close {
+      background: var(--background);
+      border: 1px solid var(--text);
+      border-radius: 4px;
+      height: 32px;
+      padding: 0 14px;
+      cursor: pointer;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    #detail-close:hover {
+      background: var(--hover-bg);
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <div>
+      <h1>Pattern Catalog</h1>
+      <div id="manifest-status">Loading manifest…</div>
+    </div>
+
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label>Shape</label>
+        <div class="filter-row" id="shape-filter"></div>
+      </div>
+      <div class="filter-group">
+        <label>Order</label>
+        <div class="filter-row" id="order-filter"></div>
+      </div>
+      <div class="filter-group">
+        <label>k</label>
+        <div class="filter-row" id="k-filter"></div>
+      </div>
+      <!-- Task 064 (G7a): the Mode / Fold / Group filter rows are gone: the v2 catalog holds the whole main group (3* / 4* / 6*) of each shape only, there is nothing left
+           to filter by symmetry group. Shape, Order (= ordnung) and k remain. -->
+    </div>
+
+    <!-- Custom orbit combinations (Roadmap 1.11 gallery Phase (c), pass
+         3) - keyed to the same Shape/Order filter selection above (no
+         separate selector); reuses ORBIT_BUILDER_SYMMETRY_MODE, the
+         only symmetry mode any manifest entry or the live app currently
+         supports. -->
+    <div id="orbit-builder-section">
+      <h2>Custom Orbit Combinations</h2>
+      <div id="orbit-builder-placeholder">Select a specific Shape and Order above to build custom orbit combinations.</div>
+      <div id="orbit-builder-content" hidden>
+        <div id="orbit-builder-heading"></div>
+        <div class="orbit-grid" id="orbit-grid"></div>
+        <div id="orbit-selection-status"></div>
+        <div id="combo-summary"></div>
+        <div id="combo-results-heading"></div>
+        <div class="gallery-grid" id="combo-grid"></div>
+        <div class="pager" id="combo-pager" hidden>
+          <button class="filter-btn" id="combo-prev-page">← Prev</button>
+          <span id="combo-page-info"></span>
+          <button class="filter-btn" id="combo-next-page">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="result-status"></div>
+
+    <div class="pager">
+      <button class="filter-btn" id="prev-page">← Prev</button>
+      <span id="page-info"></span>
+      <button class="filter-btn" id="next-page">Next →</button>
+    </div>
+
+    <div class="gallery-grid" id="gallery-grid"></div>
+
+    <div class="pager">
+      <button class="filter-btn" id="prev-page-bottom">← Prev</button>
+      <span id="page-info-bottom"></span>
+      <button class="filter-btn" id="next-page-bottom">Next →</button>
+    </div>
+  </div>
+
+  <!-- Detail view (Roadmap 1.11 gallery Phase (c), pass 2): full
+       tessellation, rendered on demand when a grid thumbnail is
+       clicked - see gallery-render.js's renderFullTessellationSVG().
+       Same open/close convention as index.html's #help-overlay/
+       #export-overlay (explicit close button + click-on-backdrop). -->
+  <div id="detail-overlay" class="dialog-overlay hidden">
+    <div class="detail-dialog">
+      <div id="detail-title"></div>
+      <div id="detail-citation"></div>
+      <div id="detail-svg-container"></div>
+      <div class="detail-actions">
+        <a id="detail-open-generator" href="index.html" target="_blank" rel="noopener">Open in generator</a>
+        <a id="detail-open-new-layer" href="index.html" target="_blank" rel="noopener">Open as new layer</a>
+        <button id="detail-copy-pattern">Copy pattern</button>
+        <button id="detail-close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Roadmap 1.11 gallery Phase (c), pass 2: the same core/*.js engine
+       the live app (index.html) uses, in the same load order - but NO
+       p5 library and NOT the full set index.html loads. Only the five
+       files the design session traced and proved necessary for a
+       headless-safe drawTessellation() call: no core/state.js (its
+       top-level centroid/currentShape/etc would shadow gallery-
+       render.js's own same-named globals - see that file's docblock),
+       no core/faces.js (never reached - showFaces=false), no
+       core/export.js (not used; gallery-render.js writes its own SVG
+       wrapper instead of generateSVGString()'s getComputedStyle() call).
+
+       Cache-busting: same ?v=CACHE_BUST_VERSION convention as
+       index.html's own script tags (see that file's own comment for
+       the full reasoning/real-bug precedent) - this page has the exact
+       same exposure (no build step, every local script at a fixed URL
+       every deploy), so its own scripts need the same protection.
+       Bump alongside index.html's whenever any of these files change. -->
+  <script src="core/forms.js?v=20270107font"></script>
+  <script src="core/orbits.js?v=20270107font"></script>
+  <script src="core/glossary.js?v=20270107font"></script>
+  <script src="core/catalog.js?v=20270107font"></script>
+  <script src="core/symmetry.js?v=20270107font"></script>
+  <script src="core/curves.js?v=20270107font"></script>
+  <script src="core/netwarp.js?v=20270107font"></script>
+  <script src="core/tiling.js?v=20270107font"></script>
+  <script src="gallery-render.js?v=20270107font"></script>
+  <!-- Roadmap 1.11 gallery Phase (c), pass 3: the real Node combination-
+       enumeration tool, loaded verbatim (not a browser-side rewrite) -
+       now dual-environment-safe via the guard added to its own trailing
+       module.exports line. -->
+  <script src="tools/gallery/combinations.js?v=20270107font"></script>
+  <script src="gallery.js?v=20270107font"></script>
+</body>
+</html>
