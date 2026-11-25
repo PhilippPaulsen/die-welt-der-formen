@@ -1,35 +1,46 @@
-/* Einbindung der Suisse-Schrift */
+/* Typeface: Suisse Int'l is commercially licensed and NOT part of this repository.
+   The web fonts are served from https://bachmann-paulsen.de/fonts/ (CORS and referer
+   restricted to die-welt-der-formen.de). Locally and in forks the request is blocked and
+   the stack below falls back to the system font. Only the four faces in use are declared. */
 @font-face {
-  font-family: "Suisse";
-  src: url("assets/SuisseIntl-Book.woff2") format("woff2");
-  font-weight: normal;
+  font-family: "SuisseIntl";
+  src: url("https://bachmann-paulsen.de/fonts/suisseintl-book.woff2") format("woff2");
+  font-weight: 400;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
-  font-family: "Suisse";
-  src: url("assets/SuisseIntl-BookIt.woff2") format("woff2");
-  font-weight: normal;
+  font-family: "SuisseIntl";
+  src: url("https://bachmann-paulsen.de/fonts/suisseintl-bookit.woff2") format("woff2");
+  font-weight: 400;
   font-style: italic;
+  font-display: swap;
 }
 
 @font-face {
-  font-family: "Suisse";
-  src: url("assets/SuisseIntl-Bold.woff2") format("woff2");
-  font-weight: bold;
+  font-family: "SuisseIntl";
+  src: url("https://bachmann-paulsen.de/fonts/suisseintl-bold.woff2") format("woff2");
+  font-weight: 700;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
-  font-family: "Suisse";
-  src: url("assets/SuisseIntl-BoldIt.woff2") format("woff2");
-  font-weight: bold;
+  font-family: "SuisseIntl";
+  src: url("https://bachmann-paulsen.de/fonts/suisseintl-boldit.woff2") format("woff2");
+  font-weight: 700;
   font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  --font-ui: "SuisseIntl", system-ui, "Helvetica Neue", Arial, sans-serif;
 }
 
 /* General Styling */
 body {
-  font-family: "Suisse", Helvetica, Arial, sans-serif;
+  font-family: var(--font-ui);
   margin: 0;
   padding: 0;
   background-color: #fff;
@@ -423,7 +434,7 @@ a:active {
 
 /* Small Number Inputs */
 .p5-controls input[type="number"] {
-  font-family: "Suisse", Helvetica, Arial, sans-serif;
+  font-family: var(--font-ui);
   font-size: 16px;
   color: #000;
   background: #fff;

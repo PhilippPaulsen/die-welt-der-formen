@@ -68,5 +68,8 @@ For the development roadmap and long-term vision, see [ROADMAP.md](./ROADMAP.md)
 ## Contributors
 - Philipp Paulsen: Researcher and Editor
 
+## Typeface
+The site is set in Suisse Int'l (family name `SuisseIntl`), a commercially licensed typeface that is **not part of this repository**: its licence does not allow redistribution in public repositories. The web fonts are served from `https://bachmann-paulsen.de/fonts/` (CORS and referer restricted to `die-welt-der-formen.de`). Locally and in forks that request is blocked and the page shows the fallback (`--font-ui`: `"SuisseIntl", system-ui, "Helvetica Neue", Arial, sans-serif`); the browser console then shows an expected CORS message for the font files. The licence proof is held by the licensee, not by this repository. Please do not add Suisse font files to a fork; `.gitignore` and `node tools/test-no-suisse-fonts.cjs` guard against it.
+
 ## License
-This project is licensed under the MIT License.
+This project is licensed under the MIT License. The typeface Suisse Int'l is excluded from it (see Typeface).

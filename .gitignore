@@ -1,1 +1,6 @@
 node_modules/
+# Commercial typeface Suisse Intl: served externally, never commit (licence)
+*[Ss]uisse*.woff
+*[Ss]uisse*.woff2
+*[Ss]uisse*.otf
+*[Ss]uisse*.ttf
