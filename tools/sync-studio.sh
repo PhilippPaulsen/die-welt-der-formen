@@ -13,7 +13,7 @@
 # - Writes studio/SYNC.md (source SHA, date, file count, size); left untouched if nothing else changed.
 set -euo pipefail
 
-SCRIPT_VERSION=1
+SCRIPT_VERSION=2
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 GEN="$(cd "$REPO/.." && pwd)/world_of_forms_generator"
 REF=main
@@ -66,6 +66,12 @@ for page in index.html color-harmony/ui/index.html gallery.html; do
   done <<< "$refs"
 done
 [ "$MISSING" -eq 0 ] || { echo "reference check failed (extend the allowlist)"; exit 1; }
+
+# Check (task 135): files the page cannot work without must be in the copy. ui-mode.js (task 133, the interface mode) is loaded by index.html: the reference check above
+# finds it only through the script tag, this names it, so a change of the allowlist that drops it fails here with a clear message.
+for need in index.html style.css nav.js sketch.js ui-mode.js ui-i18n.js core/state.js core/session.js; do
+  [ -e "$TMP/out/$need" ] || { echo "REQUIRED file missing in copy: $need (extend the allowlist)"; exit 1; }
+done
 
 SIZE_KB="$(du -sk "$TMP/out" | cut -f1)"
 echo "source: $GEN @ $SHA"
