@@ -1,0 +1,9 @@
+/* studio-site/menu.css (task 146). WEBSITE-owned. The ONE rule for every menu of the website and of the Studio menu (studio-site/site-nav.css): the same size and weight
+   for all entries, grey for the others, black for the current one (and on hover or focus), never bold or underlined. style.css (website menu, language switch, brand) and
+   site-nav.css (Studio menu panel) read these four values; tools/test-menu-style.cjs checks that they do and that nothing else sets a menu weight or underline. */
+:root {
+  --menu-fs: 18px;
+  --menu-fw: 400;
+  --menu-ink: #000;
+  --menu-muted: #757575;
+}
