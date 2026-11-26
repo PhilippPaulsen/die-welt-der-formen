@@ -1,0 +1,52 @@
+/* studio-site/site-nav.css (task 140): the website menu inside the Studio header. Website-owned. Uses the Studio's own tokens; no shadow, no glass, one hairline. */
+/* the button: left of Plus; it takes the auto margin that Plus had, Plus sits close to it like Help sits close to Plus */
+.app-header .icon-btn.site-nav-btn { margin-left: auto; }
+.app-header .site-nav-btn + .site-nav-panel + .icon-btn.mode-plus { margin-left: -12px; }
+@media (min-width: 768px) {
+  .app-header .site-nav-btn + .site-nav-panel + .icon-btn.mode-plus { margin-left: -24px; }
+}
+.app-header .icon-btn.site-nav-btn[aria-expanded="true"] { color: var(--color-text); }
+
+.site-nav-panel {
+  position: absolute;
+  top: var(--bar-h, 60px);
+  right: 0;
+  z-index: 50;
+  box-sizing: border-box;
+  min-width: 240px;
+  padding: 8px 24px 16px;
+  background: var(--color-bg, #fff);
+  border-bottom: 1px solid var(--color-hairline, #d9d9d9);
+  border-left: 1px solid var(--color-hairline, #d9d9d9);
+}
+.site-nav-panel[hidden] { display: none; }
+.app-header { position: relative; }
+.site-nav-block ul { list-style: none; margin: 0; padding: 0; }
+.site-nav-block li { margin: 0; }
+.site-nav-block li a,
+.site-nav-block li span {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--fs-tab, 18px);
+  color: var(--color-secondary, #757575);
+  text-decoration: none;
+}
+.site-nav-block li a:hover { color: var(--color-text, #000); }
+.site-nav-block li span[aria-current="page"] { color: var(--color-text, #000); font-weight: var(--weight-strong, 600); }
+.site-nav-lang { display: flex; gap: 16px; padding-top: 8px; }
+.site-nav-lang a { display: inline-flex; align-items: center; min-height: 44px; font-size: var(--fs-tab, 18px); color: var(--color-secondary, #757575); text-decoration: none; }
+.site-nav-lang a[aria-current="true"] { color: var(--color-text, #000); font-weight: var(--weight-strong, 600); }
+
+/* phone: the panel is a sheet across the whole width under the header (the header is 40px high there) */
+@media (max-width: 767px) {
+  .site-nav-panel { top: var(--ph-header-h, 40px); left: 0; right: 0; min-width: 0; padding: 8px 16px 16px; border-left: 0; }
+}
+
+/* 320 to 374px: no room for a third button; the block lives in the Help overlay then */
+.site-nav-help { display: none; }
+@media not all and (min-width: 375px) {
+  .app-header .icon-btn.site-nav-btn, .site-nav-panel { display: none; }
+  .app-header .site-nav-btn + .site-nav-panel + .icon-btn.mode-plus { margin-left: auto; }
+  .site-nav-help { display: block; margin: 16px 0; padding-top: 8px; border-top: 1px solid var(--color-hairline, #d9d9d9); }
+}

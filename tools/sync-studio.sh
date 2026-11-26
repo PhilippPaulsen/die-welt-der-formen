@@ -13,7 +13,7 @@
 # - Writes studio/SYNC.md (source SHA, date, file count, size); left untouched if nothing else changed.
 set -euo pipefail
 
-SCRIPT_VERSION=2
+SCRIPT_VERSION=3
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 GEN="$(cd "$REPO/.." && pwd)/world_of_forms_generator"
 REF=main
@@ -67,6 +67,23 @@ for page in index.html color-harmony/ui/index.html gallery.html; do
 done
 [ "$MISSING" -eq 0 ] || { echo "reference check failed (extend the allowlist)"; exit 1; }
 
+# Site hook (task 140): ONE line is put into the COPY of index.html (never into the generator source): it loads studio-site/site-nav.js, the website-owned menu and language
+# switch (the way back to Start, Harmony, World, About). studio-site/ lies next to studio/, so rsync --delete (inside studio/ only) never touches it. Checked: the file exists,
+# the page has a </body>, and the hook is in the copy exactly once afterwards. Not a patch of the generator: without this line the generator's own pages are unchanged.
+HOOK='  <script src="../studio-site/site-nav.js" defer data-site-hook></script>'
+[ -f "$REPO/studio-site/site-nav.js" ] && [ -f "$REPO/studio-site/site-nav.css" ] || { echo "site hook: studio-site/site-nav.js / .css missing in the website repo"; exit 1; }
+grep -q 'data-site-hook' "$TMP/out/index.html" && { echo "site hook: the generator source already contains a data-site-hook line (it must not)"; exit 1; }
+[ "$(grep -c '</body>' "$TMP/out/index.html")" -eq 1 ] || { echo "site hook: index.html needs exactly one </body>"; exit 1; }
+python3 - "$TMP/out/index.html" "$HOOK" <<'PY'
+import sys
+p, hook = sys.argv[1], sys.argv[2]
+s = open(p, encoding='utf-8').read()
+s = s.replace('</body>', hook + '\n</body>', 1)
+open(p, 'w', encoding='utf-8').write(s)
+PY
+[ "$(grep -c 'data-site-hook' "$TMP/out/index.html")" -eq 1 ] || { echo "site hook: not exactly once in the copy"; exit 1; }
+echo "site hook: studio-site/site-nav.js (1 line in index.html)"
+
 # Check (task 135): files the page cannot work without must be in the copy. ui-mode.js (task 133, the interface mode) is loaded by index.html: the reference check above
 # finds it only through the script tag, this names it, so a change of the allowlist that drops it fails here with a clear message.
 for need in index.html style.css nav.js sketch.js ui-mode.js ui-i18n.js core/state.js core/session.js; do
@@ -98,6 +115,7 @@ Regenerate with \`tools/sync-studio.sh [commit]\` (run \`--dry-run\` first). Cha
 - Files: $N (without this file)
 - Size: ${SIZE_KB} KB
 - Script version: $SCRIPT_VERSION
+- Site hook: one line in index.html loads ../studio-site/site-nav.js (website-owned menu and language switch; not in the generator)
 - Synced (UTC): $(date -u +%Y-%m-%dT%H:%M:%SZ)
 - Fonts: none. SuisseIntl is served from https://bachmann-paulsen.de/fonts/ (see style.css).
 EOF
