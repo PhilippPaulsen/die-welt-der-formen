@@ -73,6 +73,8 @@
     ['en', 'de'].forEach(function (code) {
       var a = el('a', { href: langUrl(location.href, code), lang: code, hreflang: code }, [code.toUpperCase()]);
       if (code === l) a.setAttribute('aria-current', 'true');
+      // the target is computed at the CLICK (the hash, i.e. the tab, changes while the page is open); the href is only for a middle click or "copy link"
+      a.addEventListener('click', function (e) { if (e.button || e.metaKey || e.ctrlKey || e.shiftKey) return; e.preventDefault(); location.assign(langUrl(location.href, code)); });
       b.sw.appendChild(a);
     });
   }

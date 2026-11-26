@@ -28,6 +28,7 @@ check('the language URL replaces ?lang= and keeps the hash', api.langUrl('https:
 check('...adds ?lang= where there is none and keeps other parameters', api.langUrl('https://x.de/studio/?mode=advanced#netz', 'de') === 'https://x.de/studio/?mode=advanced&lang=de#netz');
 check('...never produces anything but en or de', api.langUrl('https://x.de/studio/', 'fr').endsWith('lang=de'));
 check('the script does not touch storage and reads only uiI18n from the generator', !/localStorage|sessionStorage/.test(js) && (js.match(/window\.([A-Za-z0-9]+)/g) || []).filter(w => !['window.wofSiteNav', 'window.uiI18n'].includes(w)).length === 0);
+check('the language links compute their target at the click, so the tab (hash) is kept (a plain click is intercepted, a modified click keeps the href)', /addEventListener\('click'[\s\S]*?location\.assign\(langUrl\(location\.href, code\)\)/.test(js) && /e\.metaKey \|\| e\.ctrlKey \|\| e\.shiftKey/.test(js));
 check('the CSS hides the button below 375px and shows the Help block there (and nowhere else)', /not all and \(min-width: 375px\)[\s\S]*?\.site-nav-btn[\s\S]*?display: none/.test(css) && /\.site-nav-help \{ display: none; \}/.test(css) && /\.site-nav-help \{ display: block;/.test(css));
 check('the CSS has no shadow and no gradient (minimal style)', !/box-shadow|gradient|backdrop-filter/.test(css));
 
