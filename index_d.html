@@ -16,9 +16,6 @@
     <link rel="icon" type="image/svg+xml" href="assets/WdF.svg">
     <link rel="preload" href="https://bachmann-paulsen.de/fonts/suisseintl-book.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/addons/p5.dom.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/addons/p5.sound.min.js"></script>
 </head>
 
 <body class="editorial-page">
@@ -40,7 +37,7 @@
                 </button>
                 <div class="dropdown-content">
                     <a href="index_d.html" class="active">Start</a>
-                    <a href="studio/">Studio</a>
+                    <a href="studio/?lang=de">Studio</a>
                     <a href="harmony_d.html">Harmonie</a>
                     <a href="world_d.html">Welt</a>
                     <a href="about_d.html">Über</a>
@@ -58,131 +55,11 @@
     <!-- Divider -->
     <hr class="divider">
 
-    <!-- App Interface -->
-    <div id="interface-container">
-        <div id="canvas-container"></div>
-
-        <div class="p5-controls">
-
-            <!-- Shape Icons -->
-            <div class="control-group">
-                <div class="icon-row">
-                    <button class="shape-icon-btn active" data-shape="triangle" title="Dreieck">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M12 4L4 20h16L12 4z" />
-                        </svg>
-                    </button>
-                    <button class="shape-icon-btn" data-shape="square" title="Quadrat">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <rect x="4" y="4" width="16" height="16" />
-                        </svg>
-                    </button>
-                    <button class="shape-icon-btn" data-shape="hex" title="Sechseck">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M12 2l8.66 5v10L12 22 3.34 17V7L12 2z" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Nodes Input (Simple Number) -->
-            <div class="control-group">
-                <input type="number" id="node-count-input" min="1" max="5" value="3" title="Anzahl Knoten (1-5)">
-            </div>
-
-            <!-- Visibility Toggle (Eye Icon) & Curve Toggle (Wave Icon) -->
-            <div class="control-group">
-                <div class="button-group icon-group">
-                    <button id="btn-toggle-nodes" class="action-btn active" title="Knoten anzeigen">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                            <circle cx="12" cy="12" r="3" />
-                        </svg>
-                    </button>
-                    <button id="btn-toggle-curve" class="action-btn" title="Krümmung an/aus">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M4 12c2-4 6-4 8 0s6 4 8 0" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="control-group">
-                <div class="button-group icon-group">
-                    <button id="btn-clear" class="action-btn" title="Leeren">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-                        </svg>
-                    </button>
-                    <button id="btn-undo" class="action-btn" title="Rückgängig">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M9 14 4 9l5-5" />
-                            <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11" />
-                        </svg>
-                    </button>
-                    <button id="btn-redo" class="action-btn" title="Wiederholen">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M15 14 20 9l-5-5" />
-                            <path d="M20 9h-10.5a5.5 5.5 0 0 0 -5.5 5.5v0a5.5 5.5 0 0 0 5.5 5.5H13" />
-                        </svg>
-                    </button>
-                    <button id="btn-random" class="action-btn" title="Zufall">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l-5 5M4 4l5 5" />
-                        </svg>
-                    </button>
-                    <button id="btn-save" class="action-btn" title="Bild speichern">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
-                        </svg>
-                    </button>
-                    <button id="btn-help" class="action-btn" title="Hilfe">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Hidden Canvas Size Slider -->
-            <input type="range" id="canvas-size-slider" min="200" max="800" value="600" style="display:none;">
-
-            <!-- Help Overlay -->
-            <div id="help-overlay" class="hidden">
-                <div class="help-content">
-                    <p><strong>Bedienung:</strong></p>
-                    <ul>
-                        <li>Klicke auf Knoten, um sie zu verbinden.</li>
-                        <li>Nutze die Steuerung für Form und Komplexität.</li>
-                        <li>Schalte Knoten und Krümmung an/aus.</li>
-                    </ul>
-                    <button id="close-help">Schließen</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Vanilla P5 Initialization -->
-    <!-- Global P5 Sketch (Not a module) -->
-    <script src="p5_prototype/sketch.js"></script>
-
     <!-- Main Content (DE) -->
     <section class="content">
         <h2>Die Welt der Formen</h2>
+        <a class="studio-entry" href="studio/?lang=de"><span>Studio &ouml;ffnen</span><span aria-hidden="true">&rarr;</span></a>
+        <p class="studio-entry-note">Ein interaktives Werkzeug, um Wilhelm Ostwalds Formen zu erkunden: Knoten verbinden, Symmetrie w&auml;hlen, Farbe und Netz hinzuf&uuml;gen.</p>
         <p>
             Der Naturforscher und Nobelpreisträger Wilhelm Ostwald veröffentlichte 1922 seine Formenlehre <em>Die
                 Harmonie der Formen</em>. Bis 1928 folgten vier Mappenwerke unter dem Titel <em>Die Welt der

@@ -132,7 +132,6 @@ a:active {
 
 /* Left-align the main content */
 #notebook,
-#interface-container,
 .content {
   margin: 18px auto;
   padding: 20px;
@@ -140,13 +139,6 @@ a:active {
   background-color: #fff;
   text-align: left;
   /* Ensures content is left-aligned */
-}
-
-#interface-container {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  /* Align everything left by default */
 }
 
 #canvas-target {
@@ -345,28 +337,6 @@ a:active {
     background-color: #f0f0f0;
   }
 
-  /* Canvas Styling */
-  #canvas-container {
-    width: 100%;
-    max-width: 600px;
-    height: auto;
-    margin-bottom: 20px;
-    display: flex !important;
-    justify-content: center;
-    background-color: #fff;
-  }
-
-  #canvas-container canvas {
-    width: 100% !important;
-    height: auto !important;
-    outline: none;
-    border: none !important;
-    box-shadow: none !important;
-    display: block;
-  }
-
-
-
   #notebook,
   .content {
     padding: 10px;
@@ -375,155 +345,42 @@ a:active {
   }
 }
 
-/* p5.js UI Controls Styling - Horizontal Toolbar */
-.p5-controls {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: center;
-  /* Center everything vertically */
-  flex-wrap: wrap;
-  gap: 15px;
-  /* Tighter gap */
-  margin-top: 20px;
-  width: 100%;
-  max-width: 600px;
-}
-
-.control-group {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  /* Center items */
-  gap: 0;
-}
-
-.p5-controls label {
-  display: none;
-  /* Hide any remaining labels */
-}
-
-/* Icon Rows (Shapes) */
-.icon-row {
-  display: flex;
-  gap: 5px;
-}
-
-/* Button Group (Actions) */
-.button-group.icon-group {
-  display: flex;
-  gap: 5px;
-  flex-direction: row;
-}
-
-/* Buttons (Shapes & Actions) */
-.shape-icon-btn,
-.action-btn {
-  background: #fff;
-  border: 1px solid #000;
-  border-radius: 4px;
-  width: 40px;
-  height: 40px;
+/* Studio entry on the start page (task 139): a full-width black block, white text, an arrow; no shadow, no gradient */
+.content a.studio-entry,
+.content a.studio-entry:visited {
   display: flex;
   align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  padding: 0;
-  color: #000;
-}
-
-.shape-icon-btn:hover,
-.action-btn:hover {
-  background: #f0f0f0;
-}
-
-.shape-icon-btn.active {
-  background: #000;
-  color: #fff;
-}
-
-/* Small Number Inputs */
-.p5-controls input[type="number"] {
-  font-family: var(--font-ui);
-  font-size: 16px;
-  color: #000;
-  background: #fff;
-  border: 1px solid #000;
-  border-radius: 4px;
-  padding: 5px;
-  width: 60px;
-  height: 40px;
+  justify-content: space-between;
   box-sizing: border-box;
-  margin: 0;
-}
-
-
-
-/* Ensure canvas spacing */
-canvas+.p5-controls {
-  margin-top: 10px;
-}
-
-/* Mobile responsive fallback */
-@media (max-width: 600px) {
-  .p5-controls {
-    justify-content: space-between;
-    gap: 15px;
-  }
-}
-
-/* Help Overlay */
-#help-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  opacity: 1;
-  transition: opacity 0.2s;
-}
-
-#help-overlay.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.help-content {
-  background: #fff;
-  border: 1px solid #000;
-  padding: 30px;
-  max-width: 400px;
-  text-align: left;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-}
-
-.help-content ul {
-  padding-left: 20px;
-  margin-bottom: 20px;
-}
-
-.help-content li {
-  margin-bottom: 5px;
-}
-
-.help-content button {
+  height: 72px;
+  margin: 24px 0 8px;
+  padding: 0 24px;
   background: #000;
   color: #fff;
-  border: none;
-  padding: 10px 20px;
-  cursor: pointer;
-  font-family: inherit;
-  font-weight: bold;
+  font-size: 20px;
+  text-decoration: none;
 }
 
-.help-content button:hover {
+.content a.studio-entry:hover,
+.content a.studio-entry:active {
   background: #333;
+  color: #fff;
+  text-decoration: none;
+}
+
+.content a.studio-entry:focus-visible {
+  outline: 2px solid #000;
+  outline-offset: 3px;
+}
+
+.studio-entry-note {
+  margin: 0 0 32px;
+  font-size: 16px;
+  text-indent: 0;
+}
+
+.studio-entry-note + p {
+  text-indent: 0;   /* the first text paragraph is not an indented follower of the note */
 }
 
 /* Kursivkorrektur: kleiner Abstand nach kursiven Wortteilen,
