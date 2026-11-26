@@ -21,3 +21,8 @@
 - **Language:** the links follow the Studio's language (`uiI18n.lang`: EN -> `index.html`, `harmony.html`, ...; DE -> the `*_d.html` pages). The switch reloads the Studio with the other `?lang=`; the autosave survives because the generator's `core/session-store.js` leaves `lang` out of the URL the snapshot is bound to (generator task 138). From the website, every Studio link carries the language of its page (`studio/?lang=en` on the English pages, `studio/?lang=de` on the `_d` pages) and so does the start-page entry.
 - **Tests:** `node tools/test-site-nav.cjs`, `node tools/test-start-page.cjs`, `node tools/test-no-suisse-fonts.cjs`.
 - **Out of scope (backlog):** the Formorgel (`studio/gallery.html`) stays English only; the Farborgel has its own language choice.
+
+## Menu rule (Task 146)
+- **One rule for every menu:** `studio-site/menu.css` holds `--menu-fs: 18px`, `--menu-fw: 400`, `--menu-ink: #000`, `--menu-muted: #757575`. The website menu, language switch and brand (`style.css`) and the Studio menu panel (`studio-site/site-nav.css`) read these values: all entries have the same size and weight, the current one (and hover/focus) is black, the others grey; never bold, never underlined. All 8 pages load `studio-site/menu.css` before `style.css`; `site-nav.js` loads it before `site-nav.css`.
+- **Order on the right of the Studio header:** Plus, Help, then the website menu ring (`site-nav.js` appends its button last). The ring stroke (2px, the stem of Suisse Book) and the tab marking (colour only) come from the generator (task 148).
+- **Test:** `node tools/test-menu-style.cjs`.

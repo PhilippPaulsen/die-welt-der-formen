@@ -1,9 +1,9 @@
-/* studio-site/site-nav.css (task 140): the website menu inside the Studio header. Website-owned. Uses the Studio's own tokens; no shadow, no glass, one hairline. */
-/* the button: left of Plus; it takes the auto margin that Plus had, Plus sits close to it like Help sits close to Plus */
-.app-header .icon-btn.site-nav-btn { margin-left: auto; }
-.app-header .site-nav-btn + .site-nav-panel + .icon-btn.mode-plus { margin-left: -12px; }
+/* studio-site/site-nav.css (task 140, 146): the website menu inside the Studio header. Website-owned. Size, weight and colours come from menu.css (the same rule as the website's own menu);
+   the rest uses the Studio's tokens; no shadow, no glass, one hairline. */
+/* order on the right: Plus (takes the auto margin), Help, then this button; every button sits close to the one before it (the header gap is taken back) */
+.app-header .icon-btn.site-nav-btn { margin-left: -12px; }
 @media (min-width: 768px) {
-  .app-header .site-nav-btn + .site-nav-panel + .icon-btn.mode-plus { margin-left: -24px; }
+  .app-header .icon-btn.site-nav-btn { margin-left: -24px; }
 }
 .app-header .icon-btn.site-nav-btn[aria-expanded="true"] { color: var(--color-text); }
 
@@ -24,19 +24,23 @@
 .site-nav-block ul { list-style: none; margin: 0; padding: 0; }
 .site-nav-block li { margin: 0; }
 .site-nav-block li a,
-.site-nav-block li span {
+.site-nav-block li span,
+.site-nav-lang a {
   display: flex;
   align-items: center;
   min-height: 44px;
-  font-size: var(--fs-tab, 18px);
-  color: var(--color-secondary, #757575);
+  font-size: var(--menu-fs, 18px);
+  font-weight: var(--menu-fw, 400);
+  color: var(--menu-muted, #757575);
   text-decoration: none;
 }
-.site-nav-block li a:hover { color: var(--color-text, #000); }
-.site-nav-block li span[aria-current="page"] { color: var(--color-text, #000); font-weight: var(--weight-strong, 600); }
+.site-nav-block li a:hover,
+.site-nav-block li a:focus-visible,
+.site-nav-lang a:hover,
+.site-nav-lang a:focus-visible,
+.site-nav-block li span[aria-current="page"],
+.site-nav-lang a[aria-current="true"] { color: var(--menu-ink, #000); }
 .site-nav-lang { display: flex; gap: 16px; padding-top: 8px; }
-.site-nav-lang a { display: inline-flex; align-items: center; min-height: 44px; font-size: var(--fs-tab, 18px); color: var(--color-secondary, #757575); text-decoration: none; }
-.site-nav-lang a[aria-current="true"] { color: var(--color-text, #000); font-weight: var(--weight-strong, 600); }
 
 /* phone: the panel is a sheet across the whole width under the header (the header is 40px high there) */
 @media (max-width: 767px) {
@@ -47,6 +51,5 @@
 .site-nav-help { display: none; }
 @media not all and (min-width: 375px) {
   .app-header .icon-btn.site-nav-btn, .site-nav-panel { display: none; }
-  .app-header .site-nav-btn + .site-nav-panel + .icon-btn.mode-plus { margin-left: auto; }
   .site-nav-help { display: block; margin: 16px 0; padding-top: 8px; border-top: 1px solid var(--color-hairline, #d9d9d9); }
 }

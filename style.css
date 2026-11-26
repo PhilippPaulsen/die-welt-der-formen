@@ -159,15 +159,15 @@ a:active {
   position: sticky;
   top: 0;
   z-index: 1000;
-  font-size: 16px;
-  /* Unified header font size */
+  font-size: var(--menu-fs, 18px);
+  /* Unified header font size (task 146: the menu's size, studio-site/menu.css) */
 }
 
 /* Page Title (Left) */
 .brand {
-  font-weight: normal;
+  font-weight: var(--menu-fw, 400);
   /* Consistent weight */
-  font-size: 16px;
+  font-size: var(--menu-fs, 18px);
   /* Match nav links */
   display: flex;
   align-items: center;
@@ -214,34 +214,41 @@ a:active {
 }
 
 .dropdown-content a {
-  color: black;
+  /* task 146: one rule for every menu entry (studio-site/menu.css holds the values, the Studio menu uses the same): the same size and weight for all,
+     grey for the others, black for the current page and on hover/focus; no bold, no underline */
+  color: var(--menu-muted, #757575);
   padding: 0 10px;
   text-decoration: none;
-  font-size: 16px;
-  /* Match brand size */
+  font-size: var(--menu-fs, 18px);
+  font-weight: var(--menu-fw, 400);
   white-space: nowrap;
 }
 
-.dropdown-content a.active {
-  font-weight: bold;
-  text-decoration: underline;
+.dropdown-content a.active,
+.dropdown-content a:hover,
+.dropdown-content a:focus-visible {
+  color: var(--menu-ink, #000);
+  text-decoration: none;
 }
 
 /* Language Switcher */
 .lang-switch {
   display: flex;
   gap: 5px;
-  font-size: 16px;
+  font-size: var(--menu-fs, 18px);
+  font-weight: var(--menu-fw, 400);
 }
 
 .lang-switch a {
   text-decoration: none;
-  color: #999;
+  color: var(--menu-muted, #757575);
   /* Inactive color */
 }
 
-.lang-switch a.active {
-  color: #000;
+.lang-switch a.active,
+.lang-switch a:hover,
+.lang-switch a:focus-visible {
+  color: var(--menu-ink, #000);
   /* Active color */
 }
 
@@ -250,7 +257,6 @@ a:active {
 }
 
 .dropdown-content a:hover {
-  text-decoration: underline;
   background-color: transparent;
 }
 
