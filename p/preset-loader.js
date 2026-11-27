@@ -8,7 +8,10 @@
  * The contract with the generator (tools/test-presets.cjs runs this file against the synced studio/core/session-store.js):
  *   key 'wof:session' = JSON { v: 1, href: origin + pathname + search of the Studio URL (no hash), at: ms, snapshot: <the session JSON text> }.
  *
- * Work in the tab: if this tab's autosave holds work (a line or a layer) that is not the preset itself, nothing is written or removed before the visitor has chosen:
+ * Work in the tab: if this tab's autosave holds work (a line or a layer) that is not an unchanged preset, nothing is written or removed before the visitor has chosen.
+ * "Unchanged preset" = equal to ANY preset of the manifest after removing what the Studio derives when it writes an autosave: savedAt, settings.symmetryCategory and
+ * symmetryFold (the inverse of settings.symmetryMode, which stays compared), and base.facePalette when it is null or exactly the default gray palette
+ * {ruleId: 'max-contrast-gray', idx: [0], overrides: []} (any other palette still counts). Every real edit (a line, the symmetry, the net, a colour) still differs.
  *   "keep my work"  -> back to the Studio URL the autosave belongs to (it restores unchanged);
  *   "open preset"   -> the old autosave text is first copied to 'wof:session:before-preset' (one slot, newest wins; a backup, the Studio has no control to bring it back),
  *                      only if that copy was stored the preset is written and opened; otherwise the visitor stays and is told.
@@ -67,7 +70,22 @@
       return o;
     } catch (e) { return null; }
   }
-  function withoutSavedAt(text) { try { var o = JSON.parse(text); delete o.savedAt; return JSON.stringify(o); } catch (e) { return null; } }
+  function canon(x) {
+    if (Array.isArray(x)) return '[' + x.map(canon).join(',') + ']';
+    if (x && typeof x === 'object') return '{' + Object.keys(x).sort().map(function (k) { return JSON.stringify(k) + ':' + canon(x[k]); }).join(',') + '}';
+    return JSON.stringify(x);
+  }
+  var DEFAULT_PALETTE = canon({ ruleId: 'max-contrast-gray', idx: [0], overrides: [] });
+  // a snapshot text without what the Studio fills in by itself (see the header); null when it is not JSON
+  function essence(text) {
+    try {
+      var o = JSON.parse(text);
+      delete o.savedAt;
+      if (o.settings) { delete o.settings.symmetryCategory; delete o.settings.symmetryFold; }
+      if (o.base && o.base.facePalette !== undefined) { var pal = o.base.facePalette; o.base.facePalette = (pal === null || canon(pal) === DEFAULT_PALETTE) ? null : pal; }
+      return canon(o);
+    } catch (e) { return null; }
+  }
   // is there work in a snapshot text: a line on the base or any layer
   function hasWork(snapshotText) {
     try {
@@ -88,41 +106,53 @@
       var target = studioUrl(deps.base, deps.slug, deps.mode, deps.lang);
       var targetHref = hrefOf(target);
       deps.ui.status('opening');
-      return deps.fetchText(deps.base.replace(/\/?$/, '/') + 'presets/' + deps.file).then(function (presetText) {
+      var dir = deps.base.replace(/\/?$/, '/') + 'presets/';
+      // is the stored snapshot one of the manifest's presets, untouched? (fetched only when there is something that could be work; a failure counts as "not unchanged")
+      function isUnchangedPreset(snapshotText) {
+        var mine = essence(snapshotText);
+        if (mine === null) return Promise.resolve(false);
+        return deps.fetchText(dir + 'manifest.json').then(function (mt) {
+          var files = JSON.parse(mt).presets.map(function (p) { return p.file; });
+          return Promise.all(files.map(function (f) { return deps.fetchText(dir + f).then(essence, function () { return null; }); }));
+        }).then(function (all) { return all.indexOf(mine) >= 0; }, function () { return false; });
+      }
+      return deps.fetchText(dir + deps.file).then(function (presetText) {
         if (!storage) { deps.ui.fail('fail'); return; }
         var raw = readExisting();
         var env = raw ? parseEnvelope(raw) : null;
-        var presetNorm = withoutSavedAt(presetText);
-        var work = !!(env && hasWork(env.snapshot) && withoutSavedAt(env.snapshot) !== presetNorm);
-        function openPreset() {
-          if (raw && (work || !env)) {   // the backup first (work, or a stored text we cannot read: never dropped silently); without it nothing is replaced
+        var somethingThere = !!(env && hasWork(env.snapshot));
+        return (somethingThere ? isUnchangedPreset(env.snapshot) : Promise.resolve(true)).then(function (unchanged) {
+          var work = somethingThere && !unchanged;
+          function openPreset() {
+            if (raw && (work || !env)) {   // the backup first (work, or a stored text we cannot read: never dropped silently); without it nothing is replaced
+              try {
+                var backup = JSON.stringify({ v: 1, reason: 'preset', preset: deps.slug, at: deps.now(), text: raw });
+                storage.setItem(BACKUP_KEY, backup);
+                if (storage.getItem(BACKUP_KEY) !== backup) throw new Error('backup not readable');
+              } catch (e) { deps.ui.fail('noBackup', true); return; }
+            }
             try {
-              var backup = JSON.stringify({ v: 1, reason: 'preset', preset: deps.slug, at: deps.now(), text: raw });
-              storage.setItem(BACKUP_KEY, backup);
-              if (storage.getItem(BACKUP_KEY) !== backup) throw new Error('backup not readable');
-            } catch (e) { deps.ui.fail('noBackup', true); return; }
+              var text = JSON.stringify({ v: 1, href: targetHref, at: deps.now(), snapshot: presetText });
+              if (text.length > MAX_CHARS) throw new Error('too large');
+              storage.setItem(KEY, text);
+              if (storage.getItem(KEY) !== text) throw new Error('not readable');
+            } catch (e) { deps.ui.fail('fail'); return; }
+            deps.ui.go(target.toString());
           }
-          try {
-            var text = JSON.stringify({ v: 1, href: targetHref, at: deps.now(), snapshot: presetText });
-            if (text.length > MAX_CHARS) throw new Error('too large');
-            storage.setItem(KEY, text);
-            if (storage.getItem(KEY) !== text) throw new Error('not readable');
-          } catch (e) { deps.ui.fail('fail'); return; }
-          deps.ui.go(target.toString());
-        }
-        function keepWork() {
-          var back = new URL(env.href);
-          back.hash = '';
-          if (deps.lang) back.searchParams.set('lang', deps.lang);
-          deps.ui.go(back.toString());
-        }
-        if (work) deps.ui.ask(keepWork, openPreset); else openPreset();
+          function keepWork() {
+            var back = new URL(env.href);
+            back.hash = '';
+            if (deps.lang) back.searchParams.set('lang', deps.lang);
+            deps.ui.go(back.toString());
+          }
+          if (work) deps.ui.ask(keepWork, openPreset); else openPreset();
+        });
       }, function () { deps.ui.fail('fail'); });
     }
     return { start: start };
   }
 
-  var api = { createLoader: createLoader, studioUrl: studioUrl, hrefOf: hrefOf, parseEnvelope: parseEnvelope, hasWork: hasWork, withoutSavedAt: withoutSavedAt, langOf: langOf, modeOf: modeOf, TEXT: TEXT, KEY: KEY, BACKUP_KEY: BACKUP_KEY };
+  var api = { createLoader: createLoader, studioUrl: studioUrl, hrefOf: hrefOf, parseEnvelope: parseEnvelope, hasWork: hasWork, essence: essence, langOf: langOf, modeOf: modeOf, TEXT: TEXT, KEY: KEY, BACKUP_KEY: BACKUP_KEY };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (typeof document === 'undefined' || !document.documentElement || !document.documentElement.hasAttribute('data-preset')) return;
 
