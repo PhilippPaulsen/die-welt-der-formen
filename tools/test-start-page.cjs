@@ -47,7 +47,7 @@ for (const [p, lang] of PAGES) {
     const h = read(p + '.html');
     const hr = /<div class="header-right">([\s\S]*?)<\/nav>/.exec(h)[1];
     const label = lang === 'de' ? 'Navigation umschalten' : 'Toggle navigation menu';
-    check(`${p}.html: header-right order = language switch, then the menu (the hamburger is the last item; tab order = screen order)`, hr.indexOf('class="lang-switch"') >= 0 && hr.indexOf('class="lang-switch"') < hr.indexOf('class="dropdown"'));
+    check(`${p}.html: header-right order = language switch (lang-before), the menu (hamburger and items), language switch (lang-after, task 179; tools/test-lang-switch.cjs checks the pair)`, hr.indexOf('class="lang-switch lang-before"') >= 0 && hr.indexOf('class="lang-switch lang-before"') < hr.indexOf('class="dropdown"') && hr.indexOf('class="dropdown"') < hr.indexOf('class="lang-switch lang-after"'));
     check(`${p}.html: the menu button has aria-label and title "${label}", aria-haspopup, and the shared hamburger drawing (viewBox 0 0 18 14, three 2px lines, no spans)`, new RegExp(`<button class="dropbtn" type="button" aria-label="${label}" title="${label}" aria-haspopup="true">\\s*<svg viewBox="0 0 18 14" aria-hidden="true"><path d="M0 1H18M0 7H18M0 13H18"/></svg>\\s*</button>`).test(hr) && !/class="hamburger"|<span><\/span>/.test(hr));
 }
 const css = read('style.css');

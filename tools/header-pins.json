@@ -1,17 +1,237 @@
 {
   "source": "Measured in the Browser pane (Chromium, Suisse loaded, device pixels 2) with getBoundingClientRect, task 176/177: the website's bar and menu button (index_d.html, .top-bar, .dropbtn) and the Studio's header and menu button (studio/?lang=de on the website's studio copy, #btn-site-nav). Window widths 375, 430, 800 and 1280; heights 812 / 900 / 900 / 800.",
-  "stemPx": { "l@18": 1.91, "I@18": 2.09, "emdash@18": 1.73, "note": "Suisse Book, 18 px, measured with canvas measureText (actualBoundingBox) on the loaded font; the hamburger's 2 px lines are the stem rounded to whole pixels" },
+  "stemPx": {
+    "l@18": 1.91,
+    "I@18": 2.09,
+    "emdash@18": 1.73,
+    "note": "Suisse Book, 18 px, measured with canvas measureText (actualBoundingBox) on the loaded font; the hamburger's 2 px lines are the stem rounded to whole pixels"
+  },
   "website": {
-    "375": { "barH": 40, "glyphRight": 359, "galleryRight": 359, "btn": [328, -2.5, 44, 44], "galleryY": 48, "scrollWidth": 375 },
-    "430": { "barH": 40, "glyphRight": 414, "galleryRight": 414, "btn": [383, -2.5, 44, 44], "galleryY": 48, "scrollWidth": 430 },
-    "800": { "barH": 60, "glyphRight": 770, "btn": [739, 7.5, 44, 44], "panelTop": 59.5, "scrollWidth": 800 },
-    "1280": { "barH": 60, "hamburger": "hidden" }
+    "375": {
+      "barH": 40,
+      "glyphRight": 359,
+      "galleryRight": 359,
+      "btn": [
+        328,
+        -2.5,
+        44,
+        44
+      ],
+      "galleryY": 48,
+      "scrollWidth": 375
+    },
+    "430": {
+      "barH": 40,
+      "glyphRight": 414,
+      "galleryRight": 414,
+      "btn": [
+        383,
+        -2.5,
+        44,
+        44
+      ],
+      "galleryY": 48,
+      "scrollWidth": 430
+    },
+    "800": {
+      "barH": 60,
+      "glyphRight": 770,
+      "btn": [
+        739,
+        7.5,
+        44,
+        44
+      ],
+      "panelTop": 59.5,
+      "scrollWidth": 800
+    },
+    "1280": {
+      "barH": 60,
+      "hamburger": "hidden"
+    }
   },
   "studio": {
-    "375": { "headerH": 40, "glyphRight": 359, "canvasRight": 359, "btn": [328, -2.5, 44, 44], "canvasY": 48, "scrollWidth": 375 },
-    "430": { "headerH": 40, "glyphRight": 414, "canvasRight": 414, "btn": [383, -2.5, 44, 44], "canvasY": 48, "scrollWidth": 430 },
-    "1280": { "headerH": 60, "glyphRight": 1256, "btn": [1225, 7.5, 44, 44], "panelOpens": true, "scrollWidth": 1280 }
+    "375": {
+      "headerH": 40,
+      "glyphRight": 359,
+      "canvasRight": 359,
+      "btn": [
+        328,
+        -2.5,
+        44,
+        44
+      ],
+      "canvasY": 48,
+      "scrollWidth": 375
+    },
+    "430": {
+      "headerH": 40,
+      "glyphRight": 414,
+      "canvasRight": 414,
+      "btn": [
+        383,
+        -2.5,
+        44,
+        44
+      ],
+      "canvasY": 48,
+      "scrollWidth": 430
+    },
+    "1280": {
+      "headerH": 60,
+      "glyphRight": 1256,
+      "btn": [
+        1225,
+        7.5,
+        44,
+        44
+      ],
+      "panelOpens": true,
+      "scrollWidth": 1280
+    }
   },
-  "before": { "studio375": { "menuButtonRight": 365.7, "glyphRight": 354.7, "note": "the header was 6.7 px too wide at 375: the ring button ended 6.7 px beyond the canvas edge" }, "website375": { "barH": 60, "hamburger": "20 x 15 px, 3 px bars, left of EN | DE" } },
-  "markerTexts": { "de": "Navigation umschalten", "en": "Toggle navigation menu" }
+  "before": {
+    "studio375": {
+      "menuButtonRight": 365.7,
+      "glyphRight": 354.7,
+      "note": "the header was 6.7 px too wide at 375: the ring button ended 6.7 px beyond the canvas edge"
+    },
+    "website375": {
+      "barH": 60,
+      "hamburger": "20 x 15 px, 3 px bars, left of EN | DE"
+    }
+  },
+  "markerTexts": {
+    "de": "Navigation umschalten",
+    "en": "Toggle navigation menu"
+  },
+  "websiteLangRight": {
+    "768": {
+      "visible": "before",
+      "hidden": "after",
+      "bothVisible": false,
+      "noneVisible": false,
+      "langX": 634.2,
+      "langWidth": 64.8,
+      "langRight": 699,
+      "hamburgerGlyphRight": 738
+    },
+    "900": {
+      "visible": "before",
+      "hidden": "after",
+      "bothVisible": false,
+      "noneVisible": false,
+      "langX": 766.2,
+      "langWidth": 64.8,
+      "langRight": 831,
+      "hamburgerGlyphRight": 870
+    },
+    "901": {
+      "visible": "after",
+      "hidden": "before",
+      "bothVisible": false,
+      "noneVisible": false,
+      "langX": 816.2,
+      "langWidth": 64.8,
+      "langRight": 881,
+      "startX": 434.2,
+      "itemsWidthDe": 362.0,
+      "startBefore": 519
+    },
+    "1024": {
+      "visible": "after",
+      "hidden": "before",
+      "bothVisible": false,
+      "noneVisible": false,
+      "langX": 939.2,
+      "langWidth": 64.8,
+      "langRight": 1004,
+      "startX": 557.2,
+      "itemsWidthDe": 362.0,
+      "startBefore": 642
+    },
+    "1280": {
+      "visible": "after",
+      "hidden": "before",
+      "bothVisible": false,
+      "noneVisible": false,
+      "langX": 1195.2,
+      "langWidth": 64.8,
+      "langRight": 1260,
+      "startX": 813.2,
+      "itemsWidthDe": 362.0,
+      "startBefore": 898
+    },
+    "1920": {
+      "visible": "after",
+      "hidden": "before",
+      "bothVisible": false,
+      "noneVisible": false,
+      "langX": 1835.2,
+      "langWidth": 64.8,
+      "langRight": 1900,
+      "startX": 1453.2,
+      "itemsWidthDe": 362.0,
+      "startBefore": 1538
+    }
+  },
+  "notebooks901": [
+    {
+      "page": "harmony_d",
+      "brandW": 221,
+      "gap": 193.1,
+      "noWrap": true,
+      "itemsW": 362
+    },
+    {
+      "page": "harmony",
+      "brandW": 194.5,
+      "gap": 204.7,
+      "noWrap": true,
+      "itemsW": 377
+    },
+    {
+      "page": "world_d",
+      "brandW": 174,
+      "gap": 240.2,
+      "noWrap": true,
+      "itemsW": 362
+    },
+    {
+      "page": "world",
+      "brandW": 166.1,
+      "gap": 233.1,
+      "noWrap": true,
+      "itemsW": 377
+    },
+    {
+      "page": "about_d",
+      "brandW": 42.2,
+      "gap": 372,
+      "noWrap": true,
+      "itemsW": 362
+    },
+    {
+      "page": "about",
+      "brandW": 51.6,
+      "gap": 347.6,
+      "noWrap": true,
+      "itemsW": 377
+    },
+    {
+      "page": "index_d",
+      "brandW": 41.6,
+      "gap": 372.8,
+      "noWrap": true,
+      "itemsW": 362
+    },
+    {
+      "page": "index",
+      "brandW": 41.6,
+      "gap": 357.6,
+      "noWrap": true,
+      "itemsW": 377
+    }
+  ],
+  "langRightNote": "Task 179: measured in the Browser pane (index_d.html at the widths; the notebook pages and index.html at 901 px). From 901 px the language switch is the LAST element at the bar's inner margin (W - 20), the items moved 84.8 px to the left (startBefore = the x before task 179, = after task 176). 768 to 900 px unchanged: EN | DE left of the hamburger, whose lines end at W - 30. The 'EN' items are 377.0 px wide (DE 362.0): Start at 419.2 (EN) / 434.2 (DE) at 901 px. noWrap: header-right 27 px, brand 27 px, bar 60 px high, no horizontal overflow."
 }

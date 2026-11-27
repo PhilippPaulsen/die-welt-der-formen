@@ -240,6 +240,15 @@ a:active {
   font-weight: var(--menu-fw, 400);
 }
 
+/* Task 179: the language switch stands twice in the markup (the same text, links and active mark), exactly one of them is displayed (display: none takes the other out of the tab order and
+   the screen reader): up to 900px (hamburger) it is the one BEFORE the menu (bar: brand, EN | DE, hamburger), from 901px (the menu items stand in the bar) the one AFTER it (brand, the menu
+   items, EN | DE as the last element). 901px is the width from which the items are shown (the max-width: 900px block above). */
+.lang-switch.lang-after { display: none; }
+@media (min-width: 901px) {
+  .lang-switch.lang-before { display: none; }
+  .lang-switch.lang-after { display: flex; }
+}
+
 .lang-switch a {
   text-decoration: none;
   color: var(--menu-muted, #757575);
