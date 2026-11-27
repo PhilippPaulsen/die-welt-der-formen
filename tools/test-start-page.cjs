@@ -43,8 +43,16 @@ for (const [p, lang] of PAGES) {
     check(`${p}.html: menu = Start, Studio (?lang=${lang}), Harmony, World, About in this order`, JSON.stringify(links) === JSON.stringify(want), links.join(' '));
     check(`${p}.html: exactly one active entry in the menu`, (menu.match(/class="active"/g) || []).length === 1);
 }
+for (const [p, lang] of PAGES) {
+    const h = read(p + '.html');
+    const hr = /<div class="header-right">([\s\S]*?)<\/nav>/.exec(h)[1];
+    const label = lang === 'de' ? 'Navigation umschalten' : 'Toggle navigation menu';
+    check(`${p}.html: header-right order = language switch, then the menu (the hamburger is the last item; tab order = screen order)`, hr.indexOf('class="lang-switch"') >= 0 && hr.indexOf('class="lang-switch"') < hr.indexOf('class="dropdown"'));
+    check(`${p}.html: the menu button has aria-label and title "${label}", aria-haspopup, and the shared hamburger drawing (viewBox 0 0 18 14, three 2px lines, no spans)`, new RegExp(`<button class="dropbtn" type="button" aria-label="${label}" title="${label}" aria-haspopup="true">\\s*<svg viewBox="0 0 18 14" aria-hidden="true"><path d="M0 1H18M0 7H18M0 13H18"/></svg>\\s*</button>`).test(hr) && !/class="hamburger"|<span><\/span>/.test(hr));
+}
 const css = read('style.css');
 check('style.css: the prototype rules are gone', !/p5-controls|control-group|icon-row|button-group|shape-icon-btn|action-btn|#help-overlay|\.help-content|interface-container|canvas-container/.test(css));
+check('style.css: task 176: the bar is 40px high below 768px (--bar-h) with a 16px inner margin, 60px above; the hamburger is a frameless 44 x 44 px button (margin-right -13px) with an 18 x 14 px drawing of 2px lines; the old three-span hamburger CSS is gone', /\.top-bar \{[^}]*--bar-h: 60px;[^}]*height: var\(--bar-h\)/.test(css) && /@media \(max-width: 767px\) \{\s*\.top-bar \{\s*--bar-h: 40px;\s*padding: 0 16px;/.test(css) && /\.dropbtn \{[^}]*width: 44px;[^}]*height: 44px;[^}]*margin: 0 -13px 0 0;/.test(css) && /\.dropbtn svg \{[^}]*width: 18px; height: 14px;[^}]*stroke-width: 2;/.test(css) && !/\.hamburger/.test(css));
 check('style.css: the phone menu also opens for keyboard focus (.dropdown:focus-within, task 175), besides :hover', /@media \(max-width: 900px\)[\s\S]*\.dropdown:hover \.dropdown-content \{[\s\S]*?\}[\s\S]*\.dropdown:focus-within \.dropdown-content \{\s*display: flex;/.test(css));
 check('notebooks/intro.js (not loaded by any page) says 2027 in both languages, no 2025 left', /Herbst 2027/.test(read('notebooks/intro.js')) && /fall of 2027/.test(read('notebooks/intro.js')) && !/2025/.test(read('notebooks/intro.js')));
 check('style.css: the .studio-entry rules of the black block are gone (the block is gone)', !/studio-entry/.test(css));
