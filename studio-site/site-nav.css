@@ -5,6 +5,11 @@
 @media (min-width: 768px) {
   .app-header .icon-btn.site-nav-btn { margin-left: -24px; }
 }
+/* task 177: the hamburger, as the website's: frameless, a 44 x 44 px hit area, the drawing (18 x 14 px, 2px lines) centred in it; the hit area reaches 13px into the header's right padding, so the lines end
+   flush with the right edge of the canvas (16px gutter). Black like the website's, the neighbours (Plus, Help) keep their grey rings. Lines with flat ends: 18px stay 18px. */
+/* html.ph .app-header .icon-btn (studio/style.css) sets the phone's 40px square with the same weight: the selectors below out-rank it */
+html .app-header .icon-btn.site-nav-btn, html.ph .app-header .icon-btn.site-nav-btn { width: 44px; height: 44px; min-width: 44px; min-height: 44px; margin-right: -13px; color: var(--color-text); }
+.app-header .icon-btn.site-nav-btn .ico { width: 18px; height: 14px; stroke-width: 2; stroke-linecap: butt; shape-rendering: crispEdges; }
 .app-header .icon-btn.site-nav-btn[aria-expanded="true"] { color: var(--color-text); }
 
 .site-nav-panel {
