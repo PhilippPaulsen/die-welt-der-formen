@@ -1,0 +1,17 @@
+{
+  "source": "Measured in the Browser pane (Chromium, Suisse loaded, device pixels 2) with getBoundingClientRect, task 176/177: the website's bar and menu button (index_d.html, .top-bar, .dropbtn) and the Studio's header and menu button (studio/?lang=de on the website's studio copy, #btn-site-nav). Window widths 375, 430, 800 and 1280; heights 812 / 900 / 900 / 800.",
+  "stemPx": { "l@18": 1.91, "I@18": 2.09, "emdash@18": 1.73, "note": "Suisse Book, 18 px, measured with canvas measureText (actualBoundingBox) on the loaded font; the hamburger's 2 px lines are the stem rounded to whole pixels" },
+  "website": {
+    "375": { "barH": 40, "glyphRight": 359, "galleryRight": 359, "btn": [328, -2.5, 44, 44], "galleryY": 48, "scrollWidth": 375 },
+    "430": { "barH": 40, "glyphRight": 414, "galleryRight": 414, "btn": [383, -2.5, 44, 44], "galleryY": 48, "scrollWidth": 430 },
+    "800": { "barH": 60, "glyphRight": 770, "btn": [739, 7.5, 44, 44], "panelTop": 59.5, "scrollWidth": 800 },
+    "1280": { "barH": 60, "hamburger": "hidden" }
+  },
+  "studio": {
+    "375": { "headerH": 40, "glyphRight": 359, "canvasRight": 359, "btn": [328, -2.5, 44, 44], "canvasY": 48, "scrollWidth": 375 },
+    "430": { "headerH": 40, "glyphRight": 414, "canvasRight": 414, "btn": [383, -2.5, 44, 44], "canvasY": 48, "scrollWidth": 430 },
+    "1280": { "headerH": 60, "glyphRight": 1256, "btn": [1225, 7.5, 44, 44], "panelOpens": true, "scrollWidth": 1280 }
+  },
+  "before": { "studio375": { "menuButtonRight": 365.7, "glyphRight": 354.7, "note": "the header was 6.7 px too wide at 375: the ring button ended 6.7 px beyond the canvas edge" }, "website375": { "barH": 60, "hamburger": "20 x 15 px, 3 px bars, left of EN | DE" } },
+  "markerTexts": { "de": "Navigation umschalten", "en": "Toggle navigation menu" }
+}

@@ -4,7 +4,7 @@
  * source never mentions the website. Without that line (the generator's own GitHub Pages site) nothing of this exists.
  *
  * What it does
- *  - a ring button with three short lines (the same 18px ring as Help and Plus) in the header, at the right edge after Plus and Help: #btn-site-nav, aria-expanded / aria-controls, opens #site-nav-panel
+ *  - a frameless hamburger button (three 2px lines, 18 x 14px, no ring; task 177, the website's menu button has the same drawing) in the header, at the right edge after Plus and Help: #btn-site-nav, aria-expanded / aria-controls, opens #site-nav-panel
  *    (Esc, a click outside or the button close it; the focus goes back to the button). From 375px up. Below 375px the header has no room (320 to 374px: tabs + three buttons do not
  *    fit): the same block is appended to the Help overlay instead and the button is hidden (site-nav.css).
  *  - the links follow the Studio's language (uiI18n.lang, 'de' | 'en'): EN -> index.html, harmony.html, world.html, about.html; DE -> the *_d.html pages. They are rewritten on 'langchange'.
@@ -94,7 +94,8 @@
     if (!header || document.getElementById('btn-site-nav')) return;
     // the menu values (size, weight, colours) are shared with the website: menu.css first, then the panel's own rules
     ['menu.css', 'site-nav.css'].forEach(function (f) { document.head.appendChild(el('link', { rel: 'stylesheet', href: root + 'studio-site/' + f })); });
-    var svg = '<svg class="ico" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M8 9.5h8M8 12h8M8 14.5h8"></path></svg>';
+    // task 177: the frameless hamburger, the SAME drawing as the website's menu button (style.css .dropbtn svg): viewBox 0 0 18 14, three lines of 2px, no ring
+    var svg = '<svg class="ico" width="18" height="14" viewBox="0 0 18 14" aria-hidden="true"><path d="M0 1H18M0 7H18M0 13H18"></path></svg>';
     button = el('button', { id: 'btn-site-nav', 'class': 'icon-btn site-nav-btn', type: 'button', 'aria-expanded': 'false', 'aria-controls': 'site-nav-panel' });
     button.innerHTML = svg;
     // the order on the right is Plus, Help, then this menu (the last, at the right edge): the button and its panel are appended to the header
