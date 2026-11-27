@@ -2,8 +2,7 @@
  * tools/build-presets.cjs (task 163). The stub pages p/<slug>/index.html from studio/presets/manifest.json (the synced copy of the generator's manifest).
  *   node tools/build-presets.cjs [--check]      writes the stubs; --check only compares (exit 1 on a difference, used by tools/test-presets.cjs)
  * One stub per slug AND one per old slug of manifest.redirects (it opens the NEW preset, its canonical URL is the new one). Stubs are committed: GitHub Pages does not build.
- * Every stub: noindex (until the soft launch), title and description in German for the static meta tags (crawlers run no script), og:title/description/url/type, no og:image yet
- * (task 165). The page text and the choice dialog are written by p/preset-loader.js (DE/EN, ?lang=). No font file is added: the pages load style.css (its @font-face points to the font host) and fall back to the system font stack.
+ * Every stub: noindex (until the soft launch), title and description in German for the static meta tags (crawlers run no script), og:title/description/url/type, og:image = the 600 x 600 png of the preset (assets/presets/<slug>.png, task 172; the alt text is the gallery's or the description). The page text and the choice dialog are written by p/preset-loader.js (DE/EN, ?lang=). No font file is added: the pages load style.css (its @font-face points to the font host) and fall back to the system font stack.
  */
 const fs = require('fs');
 const path = require('path');
@@ -27,6 +26,12 @@ function stub(entry, slugForUrl) {
   <meta property="og:title" content="${esc(entry.title.de)}">
   <meta property="og:description" content="${esc(entry.description.de)}">
   <meta property="og:url" content="${url}">
+  <meta property="og:image" content="${BASE}/assets/presets/${esc(entry.slug)}.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="600">
+  <meta property="og:image:height" content="600">
+  <meta property="og:image:alt" content="${esc(entry.gallery ? entry.gallery.alt.de : entry.description.de)}">
+  <meta name="twitter:card" content="summary">
   <meta property="og:locale" content="de_DE">
   <meta property="og:locale:alternate" content="en_US">
   <link rel="preload" href="https://bachmann-paulsen.de/fonts/suisseintl-book.woff2" as="font" type="font/woff2" crossorigin>

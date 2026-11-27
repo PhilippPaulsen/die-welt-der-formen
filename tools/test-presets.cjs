@@ -38,6 +38,15 @@ for (const p of man.presets) {
 }
 check('redirect stubs (none yet) would open the NEW preset (built from the target entry): build refuses a missing target', (() => { try { const b = require('./build-presets.cjs'); return typeof b.stub === 'function'; } catch (e) { return false; } })());
 
+console.log('== 6b og:image (task 172) ==');
+for (const p of man.presets) {
+    const h = read(`p/${p.slug}/index.html`), f = path.join(ROOT, 'assets', 'presets', p.slug + '.png');
+    const png = fs.existsSync(f) ? fs.readFileSync(f) : Buffer.alloc(0);
+    const isPng = png.length > 24 && png.slice(0, 8).toString('hex') === '89504e470d0a1a0a', w = isPng ? png.readUInt32BE(16) : 0, hh = isPng ? png.readUInt32BE(20) : 0;
+    check(`${p.slug}: og:image is the absolute URL of assets/presets/${p.slug}.png (not under /studio/), with type, 600 x 600 and an alt text`, h.includes(`<meta property="og:image" content="https://www.die-welt-der-formen.de/assets/presets/${p.slug}.png">`) && h.includes('property="og:image:type" content="image/png"') && h.includes('og:image:width" content="600"') && h.includes('og:image:height" content="600"') && /property="og:image:alt" content="[^"]+"/.test(h) && h.includes('name="twitter:card" content="summary"'));
+    check(`${p.slug}.png: a real PNG, 600 x 600 px, under 150 KB`, isPng && w === 600 && hh === 600 && png.length < 150 * 1024, `${w}x${hh}, ${png.length} B`);
+}
+
 console.log('== 7 404.html and robots.txt ==');
 {
     const h = read('404.html');
