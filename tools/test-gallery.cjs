@@ -51,6 +51,7 @@ check('the Studio stepper chevron is M6 15 L12 9 L18 15; gallery.js draws it tur
 check('the controls have no visible border (transparent) but the 1px box of the Studio icon button, no autoplay in gallery.js', /\.gallery \.icon-btn \{[^}]*border: 1px solid transparent/.test(css) && !/setInterval|autoplay/i.test(js.replace(/\/\/.*$/gm, '')));   // comments stripped: the file says "No autoplay" in a comment
 check('reduced motion: smooth scrolling only without prefers-reduced-motion; keyboard: left/right on the strip; the invisible live text "n von m" exists', /prefers-reduced-motion: no-preference\) \{ \.g-viewport \{ scroll-behavior: smooth/.test(css) && /ArrowLeft/.test(js) && /ArrowRight/.test(js) && /aria-live="polite"/.test(js));
 check('invisible slides are out of the tab order and hidden from screen readers (tabIndex -1, aria-hidden); the slides\' caption links (the bar has the one open link) are never tabbable', /tabIndex = k === idx \? 0 : -1/.test(js) && /aria-hidden/.test(js) && /figcaption a'\), function \(a\) \{ a\.tabIndex = -1/.test(js));
+check('the caption has no vertical offset (Safari is the reference, task 175): no top / position: relative on .g-text', !/\.g-text \{[^}]*((?<![-\w])top:|position: relative)/.test(css));
 check('the phone caption is centred on the buttons by their size, not by a fixed number (padding-top from --g-target)', /padding-top: calc\(\(var\(--g-target\) - 1\.4em\) \/ 2\)/.test(css));
 const pins = JSON.parse(read('tools/gallery-position-pins.json'));
 check('position pins: the gallery frame sits where the Studio canvas sits (same x and width on desktop and phone, same y on desktop; the phone y is 20 px lower: 60 px bar against 40 px header)', J({ x: pins.gallery.desktop.x, y: pins.gallery.desktop.y, w: pins.gallery.desktop.w }) === J(pins.studio.desktop) && pins.gallery.phone.x === pins.studio.phone.x && pins.gallery.phone.w === pins.studio.phone.w && pins.gallery.phone.y - pins.studio.phone.y === 20);
@@ -60,7 +61,7 @@ console.log('== the sheet the user sees without images or script ==');
 for (const [file, lang] of [['index_d.html', 'de'], ['index.html', 'en']]) {
     const h = read(file);
     const last = [...h.matchAll(/<p>([\s\S]*?)<\/p>/g)].pop()[1];
-    check(`${file}: the way into the Studio is in the page text itself (a text link at the end of the last paragraph) and in the menu`, new RegExp(`<a class="studio-link" href="studio/\\?lang=${lang}">[^<]+</a>\\s*$`).test(last) && h.includes(`<a href="studio/?lang=${lang}">Studio</a>`));
+    check(`${file}: the way into the Studio is in the page text itself (the word "Studio" in the last sentence of the last paragraph is the link, studio/?lang=${lang}) and in the menu`, new RegExp(`<a class="studio-link" href="studio/\\?lang=${lang}">Studio</a>[^<]*\\.\\s*$`).test(last) && h.includes(`<a href="studio/?lang=${lang}">Studio</a>`));
 }
 check('robots.txt unchanged (only /studio/ is disallowed)', read('robots.txt').trim() === 'User-agent: *\nDisallow: /studio/');
 check('no font file or @font-face in gallery.css / gallery.js / the start pages (the font comes from style.css as before)', !/@font-face|\.woff|font-family/.test(css + js));

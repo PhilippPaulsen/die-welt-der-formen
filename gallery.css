@@ -33,9 +33,9 @@ html:not(.js) .g-slide { margin-bottom: 28px; }
 /* with JavaScript: the strip scrolls sideways; the slides' own captions are read by screen readers only, the visible caption and the controls are built by gallery.js */
 .js .g-slide figcaption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
 .g-bar { display: flex; align-items: center; gap: 12px; width: var(--g-cv); margin: 8px calc((100% - var(--g-cv)) / 2) 0; min-height: var(--g-target); }
-.g-text { flex: 1; min-width: 0; margin: 0; position: relative; top: -2px; font-size: 16px; line-height: 1.4; color: #555; text-indent: 0; }
+.g-text { flex: 1; min-width: 0; margin: 0; font-size: 16px; line-height: 1.4; color: #555; text-indent: 0; }
 .g-btns { display: flex; flex: none; }
 .g-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-/* phone: the caption may take up to three lines; its FIRST line is centred on the buttons (36 px fine, 48 px coarse), then lifted 2 px like on desktop */
+/* the caption is centred on the buttons with no vertical offset (Safari is the reference; the 2 px lift of task 171 was removed in task 175). Phone: up to three lines, the FIRST line is centred on the buttons (36 px fine, 48 px coarse) */
 @media (max-width: 767px) { .g-bar { align-items: flex-start; min-height: calc(1.4em * 3); } .g-text { padding-top: calc((var(--g-target) - 1.4em) / 2); } }
 @media (prefers-reduced-motion: no-preference) { .g-viewport { scroll-behavior: smooth; } }
