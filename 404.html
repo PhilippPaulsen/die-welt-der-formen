@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>Nicht gefunden · Not found · Die Welt der Formen</title>
+  <link rel="preload" href="https://bachmann-paulsen.de/fonts/suisseintl-book.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    body { margin: 0; font: 16px/1.5 "SuisseIntl", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif; color: #000; background: #fff; }
+    main { max-width: 34rem; margin: 0 auto; padding: 4rem 1.25rem; }
+    h1 { font-size: 1.25rem; font-weight: 700; margin: 0 0 1rem; }
+    p { margin: 0 0 1rem; }
+    a { color: inherit; }
+    .links { display: flex; flex-wrap: wrap; gap: .75rem; }
+    a.link { padding: .6rem 1rem; border: 1px solid #000; text-decoration: none; }
+    a.link:hover { background: #000; color: #fff; }
+    a:focus-visible { outline: 2px solid #000; outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1 id="t">Diese Seite gibt es nicht.</h1>
+    <p id="m"></p>
+    <div class="links"><a class="link" id="studio" href="/studio/">Studio</a><a class="link" id="start" href="/index_d.html">Start</a></div>
+  </main>
+  <script>
+    (function () {
+      var m = /(?:^|[?&])lang=([A-Za-z]+)/.exec(location.search), en = m && m[1].toLowerCase() === 'en';
+      var preset = location.pathname.indexOf('/p/') === 0;
+      var T = en
+        ? { t: preset ? 'This preset does not exist (any more).' : 'This page does not exist.', m: preset ? 'The link may be old or mistyped. You can open the Studio and start from there.' : 'The link may be old or mistyped.', studio: 'Studio', start: 'Start', startHref: '/index.html' }
+        : { t: preset ? 'Dieses Preset gibt es nicht (mehr).' : 'Diese Seite gibt es nicht.', m: preset ? 'Der Link ist vielleicht alt oder falsch geschrieben. Du kannst das Studio öffnen und dort beginnen.' : 'Der Link ist vielleicht alt oder falsch geschrieben.', studio: 'Studio', start: 'Start', startHref: '/index_d.html' };
+      document.documentElement.lang = en ? 'en' : 'de';
+      document.getElementById('t').textContent = T.t;
+      document.getElementById('m').textContent = T.m;
+      var s = document.getElementById('studio'); s.textContent = T.studio; s.href = '/studio/' + (en ? '?lang=en' : '');
+      var st = document.getElementById('start'); st.textContent = T.start; st.href = T.startHref;
+    })();
+  </script>
+</body>
+</html>
