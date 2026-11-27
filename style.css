@@ -334,6 +334,11 @@ a:active {
     /* Show on hover */
   }
 
+  /* task 175: the menu also opens for keyboard focus (a link or the button inside it), not only on hover */
+  .dropdown:focus-within .dropdown-content {
+    display: flex;
+  }
+
   .dropdown-content a {
     padding: 12px 16px;
     border-bottom: 1px solid #eee;
