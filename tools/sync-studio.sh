@@ -3,6 +3,7 @@
 #
 #   tools/sync-studio.sh [<generator-commit-ish>] [--dry-run] [--gen <path-to-generator-repo>]
 #
+# - Task 162 (script v4): also presets/manifest.json and presets/<slug>.session.json (the A2 presets). NOT presets/quellen/ (the exports are sources, not runtime files).
 # - Reads from a COMMIT (git ls-tree / git archive), never from the working tree: untracked or ignored
 #   files (docs/quellen, reports/*-bilder, fonts) can not end up in studio/.
 # - ALLOWLIST, not a blocklist. Not copied: .git, tasks/, reports/, docs/, tools/ (except
@@ -13,7 +14,7 @@
 # - Writes studio/SYNC.md (source SHA, date, file count, size); left untouched if nothing else changed.
 set -euo pipefail
 
-SCRIPT_VERSION=3
+SCRIPT_VERSION=4
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 GEN="$(cd "$REPO/.." && pwd)/world_of_forms_generator"
 REF=main
@@ -38,7 +39,9 @@ INCLUDE='^(index\.html|style\.css|nav\.js|sketch\.js|ui[^/]*\.js|gallery\.html|g
 ^color-harmony/(ColorSpace|HarmonyGrammar|CompoundHarmony|ColorHarmonyEngine)\.js$
 ^color-harmony/ui/.+\.(mjs|css|html)$
 ^gallery/.+
-^tools/gallery/combinations\.js$'
+^tools/gallery/combinations\.js$
+^presets/manifest\.json$
+^presets/[a-z0-9-]+\.session\.json$'
 EXCLUDE='(^|/)(test[^/]*|[^/]*\.test\.m?js)$|(^|/)(build|serve)\.js$|\.(woff2?|otf|ttf)$|(^|/)assets/'
 
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
@@ -90,6 +93,21 @@ for need in index.html style.css nav.js sketch.js ui-mode.js ui-i18n.js core/sta
   [ -e "$TMP/out/$need" ] || { echo "REQUIRED file missing in copy: $need (extend the allowlist)"; exit 1; }
 done
 
+# Check (task 162): the presets. The manifest is in the copy, every file it names is there, every session file is named by the manifest, and nothing of presets/quellen/ came along.
+[ -e "$TMP/out/presets/manifest.json" ] || { echo "REQUIRED file missing in copy: presets/manifest.json (is the generator commit before task 160?)"; exit 1; }
+python3 - "$TMP/out" <<'PY' || exit 1
+import json, os, sys
+root = sys.argv[1]
+m = json.load(open(os.path.join(root, 'presets', 'manifest.json'), encoding='utf-8'))
+named = {p['file'] for p in m['presets']}
+have = {f for f in os.listdir(os.path.join(root, 'presets')) if f.endswith('.session.json')}
+if named != have:
+    print('presets check: manifest and session files differ: only in manifest %s, only in copy %s' % (sorted(named - have), sorted(have - named))); sys.exit(1)
+if os.path.exists(os.path.join(root, 'presets', 'quellen')):
+    print('presets check: presets/quellen/ is in the copy (it must not be)'); sys.exit(1)
+print('presets check: ok (%d presets, %d listed)' % (len(m['presets']), sum(1 for p in m['presets'] if p['listed'])))
+PY
+
 SIZE_KB="$(du -sk "$TMP/out" | cut -f1)"
 echo "source: $GEN @ $SHA"
 echo "files:  $N   size: $((SIZE_KB / 1024)).$(( (SIZE_KB % 1024) * 10 / 1024 )) MB   guard: ok   reference check: ok"
@@ -115,6 +133,7 @@ Regenerate with \`tools/sync-studio.sh [commit]\` (run \`--dry-run\` first). Cha
 - Files: $N (without this file)
 - Size: ${SIZE_KB} KB
 - Script version: $SCRIPT_VERSION
+- Presets: presets/manifest.json and presets/*.session.json (the exports in presets/quellen/ stay in the generator)
 - Site hook: one line in index.html loads ../studio-site/site-nav.js (website-owned menu and language switch; not in the generator)
 - Synced (UTC): $(date -u +%Y-%m-%dT%H:%M:%SZ)
 - Fonts: none. SuisseIntl is served from https://bachmann-paulsen.de/fonts/ (see style.css).
