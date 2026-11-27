@@ -34,7 +34,7 @@ check('the CSS has no shadow and no gradient (minimal style)', !/box-shadow|grad
 
 console.log('\n== tools/sync-studio.sh ==');
 const sh = read('tools/sync-studio.sh');
-check('the script is version 3 and writes the hook into the COPY (before rsync), checks it exactly once, and names it in SYNC.md', /SCRIPT_VERSION=3/.test(sh) && /data-site-hook/.test(sh) && /grep -c 'data-site-hook'/.test(sh) && /Site hook:/.test(sh));
+check('the script is version 4 (task 162; the hook lines are from version 3) and writes the hook into the COPY (before rsync), checks it exactly once, and names it in SYNC.md', /SCRIPT_VERSION=4/.test(sh) && /data-site-hook/.test(sh) && /grep -c 'data-site-hook'/.test(sh) && /Site hook:/.test(sh));
 check('the hook is inserted after the reference check (the check must not see ../studio-site)', sh.indexOf('Site hook (task 140)') > sh.indexOf('reference check failed'));
 check('the script requires studio-site/site-nav.js and .css in the website repo', /studio-site\/site-nav\.css/.test(sh) && /studio-site\/site-nav\.js/.test(sh));
 check('ui-mode.js is still a required file of the copy (task 135)', /ui-mode\.js/.test(sh));
