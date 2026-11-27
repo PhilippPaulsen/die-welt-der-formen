@@ -1,0 +1,41 @@
+/* gallery.css (task 171). The start page's gallery: one image in the frame of the Studio canvas (square; 560 px on tablet/desktop, the viewport width minus 2 x 16 px on the phone),
+   controls under it in the Studio's icon-button size (36 px, 48 px on a coarse pointer, radius 6 px, hover #f0f0f0), the caption on their left. No shadow, no gradient, no font of its own.
+   Without JavaScript the five slides stand under each other (html:not(.js)); gallery.js adds the strip behaviour, the controls and ONE caption area. Values are checked against studio/style.css
+   by tools/test-gallery.cjs. Only linked from the two start pages. */
+:root { --g-cv: min(560px, calc(100vw - 32px)); --g-target: 36px; --g-radius: 6px; --g-hover: #f0f0f0; }
+@media (pointer: coarse) { :root { --g-target: 48px; } }
+.start-page .content { max-width: 560px; }
+.start-page .content h2 { margin-top: 1.2em; }
+.start-page .content a.studio-link, .start-page .content a.studio-link:visited { color: #000; text-decoration: underline; white-space: nowrap; }
+.gallery .ico { fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; display: block; flex: none; width: 18px; height: 18px; }
+.gallery .icon-btn { box-sizing: border-box; width: var(--g-target); height: var(--g-target); padding: 0; display: inline-flex; align-items: center; justify-content: center; flex: none; background: transparent; color: #000; border: 1px solid transparent; border-radius: var(--g-radius); cursor: pointer; text-decoration: none; transition: background .2s ease; font: inherit; }
+@media (hover: hover) { .gallery .icon-btn:hover { background: var(--g-hover); } }
+.gallery .icon-btn:focus-visible { outline: 2px solid #000; outline-offset: 0; }
+.gallery .icon-btn[disabled] { opacity: .35; cursor: not-allowed; }
+.gallery .icon-btn.g-open { color: #757575; }
+@media (hover: hover) { .gallery .icon-btn.g-open:hover { color: #000; } }
+
+/* the canvas position: the frame starts 128 px from the top on tablet/desktop (as the Studio canvas) and 8 px under the 60 px bar on the phone (Studio: 8 px under its 40 px header) */
+.gallery { margin: 14px 0 0; color: #000; }
+@media (max-width: 767px) { .gallery { margin-top: -28px; } }
+.g-viewport { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; width: var(--g-cv); margin-inline: calc((100% - var(--g-cv)) / 2); }
+.g-viewport::-webkit-scrollbar { display: none; }
+.g-viewport:focus-visible { outline: 2px solid #000; outline-offset: 3px; }
+.g-slide { position: relative; flex: 0 0 100%; scroll-snap-align: start; margin: 0; }
+.g-frame { display: block; width: 100%; aspect-ratio: 1 / 1; background: #fff; }
+.g-frame:focus-visible { outline: 2px solid #000; outline-offset: -2px; }
+.g-frame img { display: block; width: 100%; height: 100%; }
+.g-slide figcaption { margin: 10px 0 0; font-size: 16px; line-height: 1.4; color: #555; display: flex; gap: 12px; align-items: center; }
+.g-slide figcaption span { flex: 1; }
+/* without JavaScript: the slides stand under each other, each with its caption and its open icon */
+html:not(.js) .g-viewport { display: block; overflow: visible; width: var(--g-cv); }
+html:not(.js) .g-slide { margin-bottom: 28px; }
+/* with JavaScript: the strip scrolls sideways; the slides' own captions are read by screen readers only, the visible caption and the controls are built by gallery.js */
+.js .g-slide figcaption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
+.g-bar { display: flex; align-items: center; gap: 12px; width: var(--g-cv); margin: 8px calc((100% - var(--g-cv)) / 2) 0; min-height: var(--g-target); }
+.g-text { flex: 1; min-width: 0; margin: 0; position: relative; top: -2px; font-size: 16px; line-height: 1.4; color: #555; text-indent: 0; }
+.g-btns { display: flex; flex: none; }
+.g-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* phone: the caption may take up to three lines; its FIRST line is centred on the buttons (36 px fine, 48 px coarse), then lifted 2 px like on desktop */
+@media (max-width: 767px) { .g-bar { align-items: flex-start; min-height: calc(1.4em * 3); } .g-text { padding-top: calc((var(--g-target) - 1.4em) / 2); } }
+@media (prefers-reduced-motion: no-preference) { .g-viewport { scroll-behavior: smooth; } }

@@ -351,44 +351,6 @@ a:active {
   }
 }
 
-/* Studio entry on the start page (task 139): a full-width black block, white text, an arrow; no shadow, no gradient */
-.content a.studio-entry,
-.content a.studio-entry:visited {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-sizing: border-box;
-  height: 72px;
-  margin: 24px 0 8px;
-  padding: 0 24px;
-  background: #000;
-  color: #fff;
-  font-size: 20px;
-  text-decoration: none;
-}
-
-.content a.studio-entry:hover,
-.content a.studio-entry:active {
-  background: #333;
-  color: #fff;
-  text-decoration: none;
-}
-
-.content a.studio-entry:focus-visible {
-  outline: 2px solid #000;
-  outline-offset: 3px;
-}
-
-.studio-entry-note {
-  margin: 0 0 32px;
-  font-size: 16px;
-  text-indent: 0;
-}
-
-.studio-entry-note + p {
-  text-indent: 0;   /* the first text paragraph is not an indented follower of the note */
-}
-
 /* Kursivkorrektur: kleiner Abstand nach kursiven Wortteilen,
    damit z. B. "drei|faltig" nicht verschmilzt */
 em, i {
