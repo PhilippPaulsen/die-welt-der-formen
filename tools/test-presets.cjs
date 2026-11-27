@@ -32,7 +32,7 @@ for (const p of man.presets) {
     const h = read('p/quadrat-linien/index.html');
     const loader = read('p/preset-loader.js');
     check('every element id the loader writes into exists in the stub', ['p-title', 'p-status', 'p-ask', 'p-ask-title', 'p-ask-body', 'p-keep', 'p-open', 'p-fallback'].every(id => h.includes(`id="${id}"`) && loader.includes(`'${id}'`)));
-    check('the stub has a noscript fallback to the plain Studio and adds no font file or font-face', /<noscript>[\s\S]*studio\/[\s\S]*<\/noscript>/.test(h) && !/@font-face|\.woff|suisse/i.test(h));
+    check('the stub has a noscript fallback to the plain Studio and adds no font file or font-face', /<noscript>[\s\S]*studio\/[\s\S]*<\/noscript>/.test(h) && !/@font-face/.test(h) && !/\.woff2?(?!")/.test(h.replace(/href="https:\/\/bachmann-paulsen\.de\/fonts\/suisseintl-book\.woff2"/, '')));
     check('the Studio ignores ?preset= (only v and orbitIds are read by the catalog parser)', /params\.has\('v'\)/.test(read('studio/sketch.js')) && !/get\('preset'\)|has\('preset'\)/.test(read('studio/sketch.js')));
 }
 check('redirect stubs (none yet) would open the NEW preset (built from the target entry): build refuses a missing target', (() => { try { const b = require('./build-presets.cjs'); return typeof b.stub === 'function'; } catch (e) { return false; } })());
@@ -40,7 +40,7 @@ check('redirect stubs (none yet) would open the NEW preset (built from the targe
 console.log('== 7 404.html and robots.txt ==');
 {
     const h = read('404.html');
-    check('404.html: noindex, DE and EN text, links to the Studio and Start, no external font', /noindex/.test(h) && /Diese Seite gibt es nicht/.test(h) && /This page does not exist/.test(h) && /Dieses Preset gibt es nicht \(mehr\)/.test(h) && /This preset does not exist/.test(h) && /href="\/studio\/"/.test(h) && !/@font-face|\.woff|suisse/i.test(h));
+    check('404.html: noindex, DE and EN text, links to the Studio and Start, no external font', /noindex/.test(h) && /Diese Seite gibt es nicht/.test(h) && /This page does not exist/.test(h) && /Dieses Preset gibt es nicht \(mehr\)/.test(h) && /This preset does not exist/.test(h) && /href="\/studio\/"/.test(h) && !/@font-face/.test(h) && /preload[^>]*bachmann-paulsen\.de\/fonts\/suisseintl-book\.woff2[^>]*crossorigin/.test(h));
     check('404.html uses absolute paths only (it is served for any path depth)', !/(src|href)="(?!\/|#|https?:)/.test(h.replace(/<script>[\s\S]*<\/script>/, '')));
     const r = read('robots.txt');
     check('robots.txt: the rule for /studio/ is unchanged and /p/ is NOT disallowed', r === 'User-agent: *\nDisallow: /studio/\n' || r.trim() === 'User-agent: *\nDisallow: /studio/', JSON.stringify(r));

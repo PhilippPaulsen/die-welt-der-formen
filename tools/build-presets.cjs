@@ -3,7 +3,7 @@
  *   node tools/build-presets.cjs [--check]      writes the stubs; --check only compares (exit 1 on a difference, used by tools/test-presets.cjs)
  * One stub per slug AND one per old slug of manifest.redirects (it opens the NEW preset, its canonical URL is the new one). Stubs are committed: GitHub Pages does not build.
  * Every stub: noindex (until the soft launch), title and description in German for the static meta tags (crawlers run no script), og:title/description/url/type, no og:image yet
- * (task 165). The page text and the choice dialog are written by p/preset-loader.js (DE/EN, ?lang=). No font is added: the page uses the system font stack.
+ * (task 165). The page text and the choice dialog are written by p/preset-loader.js (DE/EN, ?lang=). No font file is added: the pages load style.css (its @font-face points to the font host) and fall back to the system font stack.
  */
 const fs = require('fs');
 const path = require('path');
@@ -29,8 +29,10 @@ function stub(entry, slugForUrl) {
   <meta property="og:url" content="${url}">
   <meta property="og:locale" content="de_DE">
   <meta property="og:locale:alternate" content="en_US">
+  <link rel="preload" href="https://bachmann-paulsen.de/fonts/suisseintl-book.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="../../style.css">
   <style>
-    body { margin: 0; font: 16px/1.5 system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif; color: #000; background: #fff; }
+    body { margin: 0; font: 16px/1.5 "SuisseIntl", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif; color: #000; background: #fff; }
     main { max-width: 34rem; margin: 0 auto; padding: 4rem 1.25rem; }
     h1 { font-size: 1.25rem; font-weight: 700; margin: 0 0 1rem; }
     p { margin: 0 0 1rem; }
