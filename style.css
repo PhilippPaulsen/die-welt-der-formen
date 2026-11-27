@@ -152,7 +152,8 @@ a:active {
   align-items: center;
   /* Task 134: same height and hairline as the Studio header (studio/style.css .app-header: 60px, 1px #d9d9d9) */
   box-sizing: border-box;
-  height: 60px;
+  --bar-h: 60px;   /* task 176: the bar height; 40px on the phone (below 768px), like the Studio's header; the menu panel's top follows it */
+  height: var(--bar-h);
   padding: 0 20px;
   background-color: #fff;
   border-bottom: 1px solid #d9d9d9;
@@ -282,37 +283,28 @@ a:active {
     padding: 0 30px;
   }
 
-  /* Mobile Navigation Overrides */
+  /* Mobile Navigation Overrides (task 176): the menu button is a frameless hamburger drawn like the Studio's: three 18 x 14 px lines of 2 px (the stem of Suisse Book at 18px is 1.9px;
+     the Studio's header icons are 2px on the screen too), no ring, 6px pitch. It is the LAST item of the bar (after EN | DE), its lines end flush with the content edge (bar padding),
+     the hit area is 44 x 44 px and reaches 13px into the margin (centred drawing). */
+  .header-right { gap: 8px; }
   .dropbtn {
-    display: flex;
-    /* Show hamburger */
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 0;
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 44px;
+    height: 44px;
+    margin: 0 -13px 0 0;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #000;
+    cursor: pointer;
   }
-
-  /* Hamburger Icon */
-  .hamburger {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    width: 20px;
-    height: 15px;
-  }
-
-  .hamburger span {
-    display: block;
-    height: 3px;
-    width: 100%;
-    background-color: black;
-    border-radius: 2px;
-  }
-
-  .hamburger span:hover {
-    background-color: #555;
-  }
+  .dropbtn svg { display: block; width: 18px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; shape-rendering: crispEdges; }
+  @media (hover: hover) { .dropbtn:hover { background-color: #f0f0f0; } }
+  .dropbtn:focus-visible { outline: 2px solid #000; outline-offset: 0; }
 
   .dropdown-content {
     display: none;
@@ -321,7 +313,7 @@ a:active {
     /* Vertical layout */
     position: absolute;
     right: 0;
-    top: 100%;
+    top: calc(22px + var(--bar-h) / 2);   /* the bar's lower edge: the dropdown box is 44px high and centred in the bar */
     background-color: #fff;
     min-width: 200px;
     box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
@@ -353,6 +345,15 @@ a:active {
     padding: 10px;
     margin: 10px;
     max-width: 90%;
+  }
+}
+
+/* Phone (task 176): the bar is as high as the Studio's phone header (40px, the hairline inside) and its inner margin is 16px, so the gallery's frame lies at y 48 and x 16 like the Studio canvas;
+   above 767px both bars stay 60px. The page text keeps its own margin (x 30). */
+@media (max-width: 767px) {
+  .top-bar {
+    --bar-h: 40px;
+    padding: 0 16px;
   }
 }
 

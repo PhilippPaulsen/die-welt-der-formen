@@ -1,6 +1,28 @@
 {
-  "source": "Measured in the Browser pane (Chromium, device pixels 2) with getBoundingClientRect: the Studio canvas (studio/?preset=quadrat-spiegelung-sinus, #canvas-container canvas) and the start page's gallery frame (.g-frame of index.html and index_d.html, task 171), Studio on generator b9633aa5, website task 171. Window 1280 x 900 and 375 x 812 (mobile preset). y is the page position.",
-  "studio": { "desktop": { "x": 360, "y": 128, "w": 560 }, "phone": { "x": 16, "y": 48, "w": 343 } },
-  "gallery": { "desktop": { "x": 360, "y": 128, "w": 560 }, "phone": { "x": 16, "y": 68, "w": 343 } },
-  "phoneYNote": "The start page's bar is 60 px high, the Studio's phone header 40 px; both put the frame 8 px below it (68 = 60 + 8, 48 = 40 + 8)."
+  "source": "Measured in the Browser pane (Chromium, device pixels 2) with getBoundingClientRect: the Studio canvas (studio/?preset=quadrat-spiegelung-sinus, #canvas-container canvas) and the start page's gallery frame (.g-frame of index.html and index_d.html, task 171), Studio on generator b9633aa5, website task 171, updated in task 176 (phone bar 40 px: y 48). Window 1280 x 900 and 375 x 812 (mobile preset). y is the page position.",
+  "studio": {
+    "desktop": {
+      "x": 360,
+      "y": 128,
+      "w": 560
+    },
+    "phone": {
+      "x": 16,
+      "y": 48,
+      "w": 343
+    }
+  },
+  "gallery": {
+    "desktop": {
+      "x": 360,
+      "y": 128,
+      "w": 560
+    },
+    "phone": {
+      "x": 16,
+      "y": 48,
+      "w": 343
+    }
+  },
+  "phoneYNote": "Since task 176 the start page's phone bar is as high as the Studio's phone header (40 px, hairline inside; both 60 px from 768 px), so the gallery frame lies at y 48 like the Studio canvas (before: 68)."
 }

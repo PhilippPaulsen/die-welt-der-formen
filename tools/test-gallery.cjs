@@ -54,8 +54,8 @@ check('invisible slides are out of the tab order and hidden from screen readers 
 check('the caption has no vertical offset (Safari is the reference, task 175): no top / position: relative on .g-text', !/\.g-text \{[^}]*((?<![-\w])top:|position: relative)/.test(css));
 check('the phone caption is centred on the buttons by their size, not by a fixed number (padding-top from --g-target)', /padding-top: calc\(\(var\(--g-target\) - 1\.4em\) \/ 2\)/.test(css));
 const pins = JSON.parse(read('tools/gallery-position-pins.json'));
-check('position pins: the gallery frame sits where the Studio canvas sits (same x and width on desktop and phone, same y on desktop; the phone y is 20 px lower: 60 px bar against 40 px header)', J({ x: pins.gallery.desktop.x, y: pins.gallery.desktop.y, w: pins.gallery.desktop.w }) === J(pins.studio.desktop) && pins.gallery.phone.x === pins.studio.phone.x && pins.gallery.phone.w === pins.studio.phone.w && pins.gallery.phone.y - pins.studio.phone.y === 20);
-check('the CSS puts the frame there: .gallery margin-top 14px (desktop) / -28px (phone) under the .content padding; text column 560px', /\.gallery \{ margin: 14px 0 0/.test(css) && /\(max-width: 767px\) \{ \.gallery \{ margin-top: -28px/.test(css) && /\.start-page \.content \{ max-width: 560px/.test(css));
+check('position pins: the gallery frame sits exactly where the Studio canvas sits: the same x, y and width on desktop AND on the phone (task 176: the phone bar is 40 px like the Studio header)', J(pins.gallery.desktop) === J(pins.studio.desktop) && J(pins.gallery.phone) === J(pins.studio.phone) && pins.studio.phone.y === 48);
+check('the CSS puts the frame there: .gallery margin-top 14px (desktop) / -28px (phone) under the .content padding (the phone bar is 40 px); text column 560px', /\.gallery \{ margin: 14px 0 0/.test(css) && /\(max-width: 767px\) \{ \.gallery \{ margin-top: -28px/.test(css) && /\.start-page \.content \{ max-width: 560px/.test(css));
 
 console.log('== the sheet the user sees without images or script ==');
 for (const [file, lang] of [['index_d.html', 'de'], ['index.html', 'en']]) {
