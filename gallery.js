@@ -21,6 +21,8 @@
     open.href = s.getAttribute('data-href');
     prev.disabled = idx === 0; next.disabled = idx === slides.length - 1;
     slides.forEach(function (sl, k) { sl.querySelector('.g-frame').tabIndex = k === idx ? 0 : -1; sl.setAttribute('aria-hidden', k === idx ? 'false' : 'true'); });
+    // the slides' own captions are read by screen readers only (their open links are replaced by the one in the bar): never in the tab order
+    [].forEach.call(g.querySelectorAll('.g-slide figcaption a'), function (a) { a.tabIndex = -1; });
   }
   function go(i) { i = Math.max(0, Math.min(slides.length - 1, i)); vp.scrollTo({ left: i * vp.clientWidth }); show(i); }
   prev.addEventListener('click', function () { go(idx - 1); });
